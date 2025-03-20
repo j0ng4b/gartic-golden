@@ -10,6 +10,38 @@ class Server:
         self.socket.bind((address, int(port)))
 
 
+        # Store the list rooms on below format
+        #
+        # Room
+        # {
+        #   'name': 'room name',
+        #   'code': 'room code',
+        #   'max_clients': number maximum clients,
+        #   'clients': [
+        #     Client,
+        #   ]
+        # }
+        #
+        # Client
+        # [
+        #   'address',
+        #   port
+        # ]
+        self.rooms = []
+
+        # Store the list of client on below format
+        #
+        # Client
+        # {
+        #   'name': 'client name',
+        #   'room': 'room code',
+        #
+        #   'address': 'address of the client',
+        #   'port': port number of the client
+        # }
+        self.clients = []
+
+
     def start(self):
         while True:
             msg, address = self.socket.recvfrom(1024)
@@ -17,20 +49,26 @@ class Server:
             # Parse message
             msg_type, args = msg.decode().split(':')
             args = args.split(';')
-            response = self.parse_message(msg_type, args)
+            response = self.parse_message(msg_type, args, address)
 
             # Sends response to client
             self.socket.sendto(response.encode(), address)
 
 
-    def parse_message(self, msg_type, args):
+    def parse_message(self, msg_type, args, address):
         if msg_type == 'REGISTER':
             if len(args) != 1:
                 return 'Número de argumentos inválido'
             elif args[0] == '':
                 return 'Nome de jogador inválido'
 
-            # TODO: implement success action
+            self.clients.append({
+                'name': args[0],
+                'room': '',
+
+                'address': address[0],
+                'port': address[1],
+            })
         elif msg_type == 'ROOM':
             if len(args) < 2 or len(args) > 3:
                 return 'Número de argumentos inválido'
