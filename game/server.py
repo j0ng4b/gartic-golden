@@ -139,9 +139,29 @@ class Server:
             return res
 
         elif msg_type == 'ENTER':
-            # TODO: implement fail condition
-            # TODO: implement success action
-            pass
+            if len(args) > 2:
+                return 'Número de argumentos inválido'
+
+            # Verifica se a sala existe
+            room = self.get_room(args[0])
+            if room is None:
+                return 'Código da sala inválido'
+
+            # Verifica se o cliente está na sala
+            for room_client in self.rooms[room]['clients']:
+                if room_client == address:
+                    return 'Cliente já está na sala'
+
+            # Verifica a senha da sala
+            if self.rooms[room]['password'] is not None and len(args) != 2:
+                return 'Senha não fornecida'
+            elif self.rooms[room]['password'] is not None and args[1] != self.rooms[room]['password']:
+                return 'Senha da sala está incorreta'
+
+            # TODO: Notifica os clientes da sala que um novo cliente entrou
+            # TODO: Adiciona o cliente na sala
+
+            return 'OK'
 
         return 'Tipo de mensagem inválido'
 

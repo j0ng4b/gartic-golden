@@ -165,6 +165,76 @@ def test_list_rooms(server):
     assert 'RoomTwo' in lines_priv[0]
 
 
+def test_enter_invalid_arguments(server):
+    addr = ('127.0.0.1', 6000)
+
+    # Test when more than two arguments are provided.
+    response = server.parse_message('ENTER', ['room_code', 'pwd', 'extra'], addr)
+    assert response == 'Número de argumentos inválido'
+
+
+def test_enter_invalid_room_code(server, monkeypatch):
+    addr = ('127.0.0.1', 6001)
+    monkeypatch.setattr(server, 'get_room', lambda _: None)
+
+    # Simulate the case when get_room returns None (room not found)
+    response = server.parse_message('ENTER', ['999'], addr)
+    assert response == 'Código da sala inválido'
+
+
+def test_enter_already_in_room(server, monkeypatch):
+    addr = ('127.0.0.1', 6002)
+
+    room_code = '1'
+    monkeypatch.setattr(server, 'get_room', lambda code: 0 if code == room_code else None)
+    server.rooms = [{
+         'name': 'TestRoom',
+         'code': room_code,
+         'password': None,
+         'max_clients': 10,
+         'clients': [addr]
+    }]
+
+    # Simulate get_room returning a valid index (0) and a room where the client
+    # is already present.
+    response = server.parse_message('ENTER', [room_code], addr)
+    assert response == 'Cliente já está na sala'
+
+
+def test_enter_no_password_provided(server, monkeypatch):
+    addr = ('127.0.0.1', 6003)
+    room_code = '2'
+    monkeypatch.setattr(server, 'get_room', lambda code: 0 if code == room_code else None)
+    server.rooms = [{
+         'name': 'PrivateRoom',
+         'code': room_code,
+         'password': 'secret',
+         'max_clients': 10,
+         'clients': []
+    }]
+
+    # Test entering a private room without providing a password.
+    response = server.parse_message('ENTER', [room_code], addr)
+    assert response == 'Senha não fornecida'
+
+
+def test_enter_incorrect_password(server, monkeypatch):
+    addr = ('127.0.0.1', 6004)
+    room_code = '3'
+    monkeypatch.setattr(server, 'get_room', lambda code: 0 if code == room_code else None)
+    server.rooms = [{
+         'name': 'PrivateRoom',
+         'code': room_code,
+         'password': 'secret',
+         'max_clients': 10,
+         'clients': []
+    }]
+
+    # Test entering a private room with an incorrect password.
+    response = server.parse_message('ENTER', [room_code, 'wrongpass'], addr)
+    assert response == 'Senha da sala está incorreta'
+
+
 def test_get_client(server):
     addr = ('127.0.0.1', 5008)
     assert server.get_client(addr[0], addr[1]) is None

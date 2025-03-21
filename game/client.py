@@ -1,5 +1,6 @@
 import logging
 import socket
+import threading
 
 
 class Client:
@@ -11,6 +12,8 @@ class Client:
         self.socket.connect((address, int(port)))
 
         self.name = 'Player'
+
+        self.room = None
 
     def start(self):
         self.register()
@@ -70,6 +73,7 @@ class Client:
 
         # Se for possível converter res em um inteiro quer dizer que a sala foi criada com sucesso.
         if res.isdigit():
+            self.room = res
             logging.warning(f'Sala criada com sucesso, código: {res}')
         else:
             logging.warning(f'Sala não criada, motivo: {res}')
@@ -93,4 +97,6 @@ class Client:
         res = self.send_message('ENTER', *args)
         if res != 'OK':
             logging.error(res)
+        else:
+            self.room = room_code
 
