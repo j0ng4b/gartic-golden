@@ -2,7 +2,7 @@ import argparse
 import logging
 
 from game.config import Config
-from game.client import TextClient
+from game.client.text import TextClient
 from game.server import Server
 
 
