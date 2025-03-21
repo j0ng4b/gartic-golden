@@ -1,6 +1,0 @@
-# Testar - Criar sala
-self.create_room('pub', 'tomei', '10') # Sala válida
-self.create_room('priv', 'tomei', '10', '12345') # Sala válida
-self.create_room('pub', 'menino', '15', '12345') # Sala pública com senha? Erro
-self.create_room('priv', 'menino', '15') # Sala privada sem senha? Erro
-self.create_room('priv', '', '15') # Cadê o nome da sala ? Erro

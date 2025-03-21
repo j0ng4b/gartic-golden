@@ -138,6 +138,17 @@ class Server:
 
             return res
 
+        elif msg_type == 'STATUS':
+            index_client = self.get_client(address[0], address[1])
+            room_code = self.clients[index_client]['room']
+            if room_code == '':
+                return 'Não possui sala'
+            else:
+                index_room = self.get_room(room_code)
+                room = self.rooms[index_room]
+                room_type = 'priv' if room['password'] is not None else 'pub'
+                return f"{room_type},{room['name']},{room['code']},{room_code},{str(len(room['clients']))},{room['max_clients']}\n"
+
         elif msg_type == 'ENTER':
             if len(args) > 2:
                 return 'Número de argumentos inválido'
@@ -172,3 +183,8 @@ class Server:
 
         return None
 
+    def get_room(self, room_code):
+        for i, room in enumerate(self.rooms):
+            if room['code'] == room_code:
+                return i
+        return None

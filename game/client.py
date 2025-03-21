@@ -100,3 +100,6 @@ class Client:
         else:
             self.room = room_code
 
+    def status_room(self):
+        res = self.send_message('STATUS')
+        logging.warning(f'{res}')
