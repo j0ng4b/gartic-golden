@@ -14,11 +14,40 @@ class Client:
 
     def start(self):
         self.register()
-        self.list_rooms('priv')
-        self.list_rooms('pub')
+
+        # Start the server thread
+        server_thrd = threading.Thread(target=self.handle_server_messages)
+        server_thrd.daemon = True
+        server_thrd.start()
+
+        while True:
+            # TODO: client logic
+            ...
 
     def handle_input(self):
         ...
+
+    def handle_server_messages(self):
+        while True:
+            msg = self.socket.recv(1024).decode()
+
+            # Parse message
+            if ':' not in msg:
+                logging.error('Mensagem inválida')
+                continue
+
+            msg_type, args = msg.split(':')
+            args = args.split(';')
+            if len(args) == 1 and args[0] == '':
+                args = []
+
+            response = self.parse_message(msg_type, args)
+            if response is not None:
+                self.socket.sendall(response.encode())
+
+
+    def parse_message(self, msg_type, args, address=None):
+        return 'Tipo de mensagem inválido'
 
     ###
     ### Communication methods
