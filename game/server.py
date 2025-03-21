@@ -46,7 +46,12 @@ class Server:
             msg, address = self.socket.recvfrom(1024)
 
             # Parse message
-            msg_type, args = msg.decode().split(':')
+            msg = msg.decode()
+            if ':' not in msg:
+                self.socket.sendto('Mensagem inválida'.encode(), address)
+                continue
+
+            msg_type, args = msg.split(':')
             args = args.split(';')
             if len(args) == 1 and args[0] == '':
                 args = []
@@ -70,6 +75,8 @@ class Server:
                 'address': address[0],
                 'port': address[1],
             })
+
+            return 'OK'
 
         elif msg_type == 'ROOM':
             if len(args) < 2 or len(args) > 3:
@@ -136,7 +143,7 @@ class Server:
             # TODO: implement success action
             pass
 
-        return 'OK'
+        return 'Tipo de mensagem inválido'
 
     def get_client(self, address, port):
         for i in range(len(self.clients)):
