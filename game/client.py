@@ -3,8 +3,12 @@ import socket
 import threading
 
 
-class Client:
+class BaseClient:
     def __init__(self, address, port):
+        if self.__class__ is BaseClient:
+            raise TypeError("BaseClient class cannot be instantiated")
+
+
         if address is None or port is None:
             raise ValueError('server address and port must be set')
 
@@ -22,13 +26,6 @@ class Client:
         server_thrd = threading.Thread(target=self.handle_server_messages)
         server_thrd.daemon = True
         server_thrd.start()
-
-        while True:
-            # TODO: client logic
-            ...
-
-    def handle_input(self):
-        ...
 
     def handle_server_messages(self):
         while True:
@@ -53,7 +50,7 @@ class Client:
         return 'Tipo de mensagem inválido'
 
     ###
-    ### Communication methods
+    ### Sever communication methods
     ###
     def send_message(self, type, *args):
         self.socket.sendall(f'{type}:{';'.join(args)}'.encode())
@@ -61,8 +58,7 @@ class Client:
 
     def register(self):
         res = self.send_message('REGISTER', self.name)
-        if res != 'OK':
-            logging.error(res)
+        return res == 'OK'
 
     def create_room(self, room_type, room_name, room_password=None):
         args = [room_type, room_name]
@@ -71,12 +67,11 @@ class Client:
 
         res = self.send_message('ROOM', *args)
 
-        # Se for possível converter res em um inteiro quer dizer que a sala foi criada com sucesso.
         if res.isdigit():
             self.room = res
-            logging.warning(f'Sala criada com sucesso, código: {res}')
-        else:
-            logging.warning(f'Sala não criada, motivo: {res}')
+            return True
+
+        return False
 
     def close_room(self, room_code):
         ...
@@ -87,7 +82,12 @@ class Client:
             args.append(room_type)
 
         res = self.send_message('LIST', *args)
-        logging.warning(f'{res}')
+
+        rooms = None
+        if res.find('\n'):
+            rooms = res.split('\n')
+
+        return rooms
 
     def enter_room(self, room_code, room_password=None):
         args = [room_code]
@@ -95,11 +95,13 @@ class Client:
             args.append(room_password)
 
         res = self.send_message('ENTER', *args)
-        if res != 'OK':
-            logging.error(res)
-        else:
+        if res == 'OK':
             self.room = room_code
+            return True
+
+        return False
 
     def status_room(self):
         res = self.send_message('STATUS')
         logging.warning(f'{res}')
+
