@@ -2,7 +2,7 @@ import argparse
 import logging
 
 from game.config import Config
-from game.client import Client
+from game.client import TextClient
 from game.server import Server
 
 
@@ -18,7 +18,7 @@ def main(args):
     if args.server:
         mode = Server(args.address, args.port)
     else:
-        mode = Client(args.address, args.port)
+        mode = TextClient(args.address, args.port)
     mode.start()
 
 
