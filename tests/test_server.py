@@ -153,16 +153,16 @@ def test_list_rooms(server):
     assert len(lines) == 2
 
     # Filter pub rooms
-    response_pub = server.parse_message('LIST', ['pub'], addr)
-    lines_pub = [line for line in response_pub.strip().split('\n') if line]
-    assert len(lines_pub) == 1
-    assert 'RoomOne' in lines_pub[0]
+    response = server.parse_message('LIST', ['pub'], addr)
+    lines = [line for line in response.strip().split('\n') if line]
+    assert len(lines) == 1
+    assert 'RoomOne' in lines[0]
 
     # Filter priv rooms
-    response_priv = server.parse_message('LIST', ['priv'], addr)
-    lines_priv = [line for line in response_priv.strip().split('\n') if line]
-    assert len(lines_priv) == 1
-    assert 'RoomTwo' in lines_priv[0]
+    response = server.parse_message('LIST', ['priv'], addr)
+    lines = [line for line in response.strip().split('\n') if line]
+    assert len(lines) == 1
+    assert 'RoomTwo' in lines[0]
 
 
 def test_enter_invalid_arguments(server):
@@ -173,20 +173,18 @@ def test_enter_invalid_arguments(server):
     assert response == 'Número de argumentos inválido'
 
 
-def test_enter_invalid_room_code(server, monkeypatch):
+def test_enter_invalid_room_code(server):
     addr = ('127.0.0.1', 6001)
-    monkeypatch.setattr(server, 'get_room', lambda _: None)
 
     # Simulate the case when get_room returns None (room not found)
     response = server.parse_message('ENTER', ['999'], addr)
     assert response == 'Código da sala inválido'
 
 
-def test_enter_already_in_room(server, monkeypatch):
+def test_enter_already_in_room(server):
     addr = ('127.0.0.1', 6002)
 
     room_code = '1'
-    monkeypatch.setattr(server, 'get_room', lambda code: 0 if code == room_code else None)
     server.rooms = [{
          'name': 'TestRoom',
          'code': room_code,
@@ -201,10 +199,10 @@ def test_enter_already_in_room(server, monkeypatch):
     assert response == 'Cliente já está na sala'
 
 
-def test_enter_no_password_provided(server, monkeypatch):
+def test_enter_no_password_provided(server):
     addr = ('127.0.0.1', 6003)
+
     room_code = '2'
-    monkeypatch.setattr(server, 'get_room', lambda code: 0 if code == room_code else None)
     server.rooms = [{
          'name': 'PrivateRoom',
          'code': room_code,
@@ -218,10 +216,10 @@ def test_enter_no_password_provided(server, monkeypatch):
     assert response == 'Senha não fornecida'
 
 
-def test_enter_incorrect_password(server, monkeypatch):
+def test_enter_incorrect_password(server):
     addr = ('127.0.0.1', 6004)
+
     room_code = '3'
-    monkeypatch.setattr(server, 'get_room', lambda code: 0 if code == room_code else None)
     server.rooms = [{
          'name': 'PrivateRoom',
          'code': room_code,
