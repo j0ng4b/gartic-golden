@@ -172,3 +172,10 @@ class Server:
 
         return None
 
+    def get_room(self, code):
+        for i in range(len(self.rooms)):
+            if self.rooms[i]['code'] == code:
+                return i
+
+        return None
+
