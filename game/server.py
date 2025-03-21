@@ -106,28 +106,17 @@ class Server:
         elif msg_type == 'LIST':
             if len(args) == 1 and args[0] not in ['priv', 'pub']:
                 return 'Tipo da sala inválido'
-            elif len(args) != 1:
+            elif len(args) > 1:
                 return 'Número de argumentos inválido'
 
-            contents = []
-            type_room = ''
-            if args[0] == 'priv':
-                contents = list(
-                    filter(lambda room: room['password'] != 'No', self.rooms))
-                type_room = 'priv'
-            else:
-                contents = list(
-                    filter(lambda room: room['password'] == 'No', self.rooms))
-                type_room = 'pub'
-
-            if contents == []:
-                return 'Nenhuma sala encontrada'
-
             res = ''
-            for content in contents:
-                clients_current = str(len(content['clients']))
-                res += type_room + ',' + content['name'] + ',' + content['code'] + \
-                    ',' + clients_current + ',' + content['max_clients'] + '\n'
+            for room in self.rooms:
+                room_type = 'priv' if room['password'] is not None else 'pub'
+                if len(args) == 1 and room_type != args[0]:
+                    continue
+
+                res += f'{room_type},{room['name']},{room['code']},'
+                res += f'{str(len(room['clients']))},{room['max_clients']}\n'
 
             return res
 
