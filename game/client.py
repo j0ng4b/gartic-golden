@@ -18,7 +18,6 @@ class Client:
     def handle_input(self):
         ...
 
-
     ###
     ### Communication methods
     ###
@@ -31,8 +30,14 @@ class Client:
         if res != 'OK':
             logging.error(res)
 
-    def create_room(self, room_type, room_name, room_password=None):
-        ...
+    def create_room(self, room_type, room_name, max_clients, room_password='No'):
+        res = self.send_message('ROOM', room_type, room_name, max_clients, room_password)
+        # Se for possível converter res em um inteiro quer dizer que a sala foi criada com sucesso.
+        try:
+            code = int(res)
+            logging.warning(f'Sala criada com sucesso, código: {code}')
+        except ValueError as ex:
+            logging.warning(f'Sala não criada, motivo: {res}')
 
     def close_room(self, room_code):
         ...

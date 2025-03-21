@@ -16,6 +16,7 @@ class Server:
         # {
         #   'name': 'room name',
         #   'code': 'room code',
+        #   'password': 'room password',
         #   'max_clients': number maximum clients,
         #   'clients': [
         #     Client,
@@ -23,10 +24,10 @@ class Server:
         # }
         #
         # Client
-        # [
+        # (
         #   'address',
-        #   port
-        # ]
+        #    port
+        # )
         self.rooms = []
 
         # Store the list of client on below format
@@ -69,25 +70,41 @@ class Server:
                 'address': address[0],
                 'port': address[1],
             })
+
         elif msg_type == 'ROOM':
-            if len(args) < 2 or len(args) > 3:
+            print('\nCriando Sala')
+            if len(args) != 4:
                 return 'Número de argumentos inválido'
-            elif args[0] != 'priv' or args[0] != 'pub':
+            elif args[0] not in ['priv', 'pub']:
                 return 'Tipo da sala inválido'
             elif args[1] == '':
                 return 'Nome da sala inválido'
-            elif args[0] == 'priv' and len(args) == 2:
+            elif args[0] == 'priv' and args[3] == 'No':
                 return 'Senha não fornecida para sala privada'
-            elif args[0] == 'pub' and len(args) == 3:
+            elif args[0] == 'pub' and args[3] != 'No':
                 return 'Sala pública não requer senha'
+        
+            # A lista de clientes da sala recém-criada neste momento possui apenas o host da sala.
+            # O código da sala será sempre a quantidade de salas existentes mais 1.
+            code = str(len(self.rooms) + 1)
+            self.rooms.append({
+                'name': args[1],
+                'code': code,
+                'password': args[3],
+                'max_clients': args[2],
+                'clients': [
+                    (address[0], address[1]),
+                ]
+            })
 
-            # TODO: implement success action
+            return code
+        
         elif 'CROOM':
             # TODO: implement fail condition
             # TODO: implement success action
             pass
 
-        elif 'LIST':
+        elif msg_type =='LIST':
             if len(args) == 1 and (args[0] != 'priv' or args[0] != 'pub'):
                 return 'Tipo da sala inválido'
 
