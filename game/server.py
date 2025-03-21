@@ -133,8 +133,8 @@ class Server:
                 if len(args) == 1 and room_type != args[0]:
                     continue
 
-                res += f'{room_type},{room['name']},{room['code']},'
-                res += f'{str(len(room['clients']))},{room['max_clients']}\n'
+                res += f"{room_type},{room['name']},{room['code']},"
+                res += f"{str(len(room['clients']))},{room['max_clients']}\n"
 
             return res
 
@@ -183,8 +183,10 @@ class Server:
 
         return None
 
-    def get_room(self, room_code):
-        for i, room in enumerate(self.rooms):
-            if room['code'] == room_code:
+    def get_room(self, code):
+        for i in range(len(self.rooms)):
+            if self.rooms[i]['code'] == code:
                 return i
+
         return None
+
