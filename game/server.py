@@ -48,6 +48,9 @@ class Server:
             # Parse message
             msg_type, args = msg.decode().split(':')
             args = args.split(';')
+            if len(args) == 1 and args[0] == '':
+                args = []
+
             response = self.parse_message(msg_type, args, address)
 
             # Sends response to client
