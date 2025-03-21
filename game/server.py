@@ -83,9 +83,12 @@ class Server:
             elif args[0] == 'pub' and len(args) != 2:
                 return 'Sala pública não requer senha'
 
-            client = self.getClient(address[0], address[1])
+            client = self.get_client(address[0], address[1])
             if client is None:
                 return 'Cliente não registrado'
+
+            if self.clients[client]['room'] != '':
+                return 'Cliente já está em uma sala'
 
             # A lista de clientes da sala recém-criada neste momento possui apenas o host da sala.
             # O código da sala será sempre a quantidade de salas existentes mais 1.
@@ -135,7 +138,7 @@ class Server:
 
         return 'OK'
 
-    def getClient(self, address, port):
+    def get_client(self, address, port):
         for i in range(len(self.clients)):
             if self.clients[i]['address'] == address and self.clients[i]['port'] == port:
                 return i
