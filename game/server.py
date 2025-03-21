@@ -9,7 +9,6 @@ class Server:
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.socket.bind((address, int(port)))
 
-
         # Store the list rooms on below format
         #
         # Room
@@ -42,7 +41,6 @@ class Server:
         # }
         self.clients = []
 
-
     def start(self):
         while True:
             msg, address = self.socket.recvfrom(1024)
@@ -54,7 +52,6 @@ class Server:
 
             # Sends response to client
             self.socket.sendto(response.encode(), address)
-
 
     def parse_message(self, msg_type, args, address):
         if msg_type == 'REGISTER':
@@ -83,7 +80,7 @@ class Server:
                 return 'Senha não fornecida para sala privada'
             elif args[0] == 'pub' and args[3] != 'No':
                 return 'Sala pública não requer senha'
-        
+
             # A lista de clientes da sala recém-criada neste momento possui apenas o host da sala.
             # O código da sala será sempre a quantidade de salas existentes mais 1.
             code = str(len(self.rooms) + 1)
@@ -98,22 +95,41 @@ class Server:
             })
 
             return code
-        
-        elif 'CROOM':
+
+        elif msg_type == 'CROOM':
             # TODO: implement fail condition
             # TODO: implement success action
             pass
 
-        elif msg_type =='LIST':
-            if len(args) == 1 and (args[0] != 'priv' or args[0] != 'pub'):
+        elif msg_type == 'LIST':
+            if args[0] not in ['priv', 'pub']:
                 return 'Tipo da sala inválido'
 
-            # TODO: implement success action
+            contents = []
+            type_room = ''
+            if args[0] == 'priv':
+                contents = list(
+                    filter(lambda room: room['password'] != 'No', self.rooms))
+                type_room = 'priv'
+            else:
+                contents = list(
+                    filter(lambda room: room['password'] == 'No', self.rooms))
+                type_room = 'pub'
 
-        elif 'ENTER':
+            if contents == []:
+                return 'Nenhuma sala encontrada'
+
+            res = ''
+            for content in contents:
+                clients_current = str(len(content['clients']))
+                res += type_room + ',' + content['name'] + ',' + content['code'] + \
+                    ',' + clients_current + ',' + content['max_clients'] + '\n'
+
+            return res
+
+        elif msg_type == 'ENTER':
             # TODO: implement fail condition
             # TODO: implement success action
             pass
 
         return 'OK'
-

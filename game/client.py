@@ -14,6 +14,8 @@ class Client:
 
     def start(self):
         self.register()
+        self.list_rooms('priv')
+        self.list_rooms('pub')
 
     def handle_input(self):
         ...
@@ -42,8 +44,9 @@ class Client:
     def close_room(self, room_code):
         ...
 
-    def list_rooms(self, room_type=None):
-        ...
+    def list_rooms(self, room_type):
+        res = self.send_message('LIST', room_type)
+        logging.warning(f'{res}')
 
     def enter_room(self, room_code, room_password=None):
         ...
