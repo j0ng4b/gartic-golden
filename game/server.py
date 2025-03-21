@@ -69,16 +69,15 @@ class Server:
             })
 
         elif msg_type == 'ROOM':
-            print('\nCriando Sala')
-            if len(args) != 4:
+            if len(args) < 2 or len(args) > 3:
                 return 'Número de argumentos inválido'
             elif args[0] not in ['priv', 'pub']:
                 return 'Tipo da sala inválido'
             elif args[1] == '':
                 return 'Nome da sala inválido'
-            elif args[0] == 'priv' and args[3] == 'No':
+            elif args[0] == 'priv' and len(args) != 3:
                 return 'Senha não fornecida para sala privada'
-            elif args[0] == 'pub' and args[3] != 'No':
+            elif args[0] == 'pub' and len(args) != 2:
                 return 'Sala pública não requer senha'
 
             # A lista de clientes da sala recém-criada neste momento possui apenas o host da sala.
@@ -102,8 +101,10 @@ class Server:
             pass
 
         elif msg_type == 'LIST':
-            if args[0] not in ['priv', 'pub']:
+            if len(args) == 1 and args[0] not in ['priv', 'pub']:
                 return 'Tipo da sala inválido'
+            elif len(args) != 1:
+                return 'Número de argumentos inválido'
 
             contents = []
             type_room = ''
