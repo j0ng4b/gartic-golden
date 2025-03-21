@@ -32,8 +32,13 @@ class Client:
         if res != 'OK':
             logging.error(res)
 
-    def create_room(self, room_type, room_name, max_clients, room_password='No'):
-        res = self.send_message('ROOM', room_type, room_name, max_clients, room_password)
+    def create_room(self, room_type, room_name, room_password=None):
+        args = [room_type, room_name]
+        if room_password is not None:
+            args.append(room_password)
+
+        res = self.send_message('ROOM', *args)
+
         # Se for possível converter res em um inteiro quer dizer que a sala foi criada com sucesso.
         try:
             code = int(res)
@@ -44,8 +49,12 @@ class Client:
     def close_room(self, room_code):
         ...
 
-    def list_rooms(self, room_type):
-        res = self.send_message('LIST', room_type)
+    def list_rooms(self, room_type=None):
+        args = []
+        if room_type is not None:
+            args.append(room_type)
+
+        res = self.send_message('LIST', *args)
         logging.warning(f'{res}')
 
     def enter_room(self, room_code, room_password=None):
