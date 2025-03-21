@@ -133,8 +133,8 @@ class Server:
                 if len(args) == 1 and room_type != args[0]:
                     continue
 
-                res += f'{room_type},{room['name']},{room['code']},'
-                res += f'{str(len(room['clients']))},{room['max_clients']}\n'
+                res += f"{room_type},{room['name']},{room['code']},"
+                res += f"{str(len(room['clients']))},{room['max_clients']}\n"
 
             return res
 
