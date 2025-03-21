@@ -69,10 +69,9 @@ class Client:
         res = self.send_message('ROOM', *args)
 
         # Se for possível converter res em um inteiro quer dizer que a sala foi criada com sucesso.
-        try:
-            code = int(res)
-            logging.warning(f'Sala criada com sucesso, código: {code}')
-        except ValueError as ex:
+        if res.isdigit():
+            logging.warning(f'Sala criada com sucesso, código: {res}')
+        else:
             logging.warning(f'Sala não criada, motivo: {res}')
 
     def close_room(self, room_code):
@@ -87,5 +86,11 @@ class Client:
         logging.warning(f'{res}')
 
     def enter_room(self, room_code, room_password=None):
-        ...
+        args = [room_code]
+        if room_password is not None:
+            args.append(room_password)
+
+        res = self.send_message('ENTER', *args)
+        if res != 'OK':
+            logging.error(res)
 
