@@ -198,9 +198,19 @@ class Server:
             elif self.rooms[room]['password'] is not None and args[1] != self.rooms[room]['password']:
                 return 'Senha da sala está incorreta'
 
-            # TODO: Notifica os clientes da sala que um novo cliente entrou
-            # TODO: Adiciona o cliente na sala
+            # Notifica os clientes da sala que um novo cliente entrou
+            for room_client in self.rooms[room]['clients']:
+                # Envia uma mensagem para o cliente que está na sala para se
+                # conectar com o novo cliente
+                args = f'{address[0]};{str(address[1])}'
+                self.socket.sendto(f'CONNECT:{args}'.encode(), room_client)
 
+                # Envia uma mensagem para o cliente que está entrando para se
+                # conectar com o cliente que já está na sala
+                args = f'{room_client[0]};{str(room_client[1])}'
+                self.socket.sendto(f'CONNECT:{args}'.encode(), address)
+
+            self.rooms[room]['clients'].append(address)
             return 'OK'
 
         return 'Tipo de mensagem inválido'
