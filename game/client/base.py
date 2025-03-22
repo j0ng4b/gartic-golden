@@ -11,27 +11,32 @@ class BaseClient:
 
         if address is None or port is None:
             raise ValueError('server address and port must be set')
+        self.address = (socket.gethostbyname(address), int(port))
 
         self.name = 'Player'
+
         self.room = None
+        self.room_clients = []
 
         # Contexto de execução, armazena informações de execução de cada thread
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.socket.connect((address, int(port)))
+        self.socket.bind(('', 0))
 
         self.mutex = threading.Lock()
-        self.msgs = []
+        self.msgs = {
+            self.address: [],
+        }
 
     def start(self):
         # Inicia o a comunicação com o servidor, deve ser inciado antes de
         # qualquer coisa devido a pilha de mensagem
-        thread = threading.Thread(target=self.handle_messages, args=(self.parse_message,))
+        thread = threading.Thread(target=self.handle_messages)
         thread.daemon = True
         thread.start()
 
         self.server_register()
 
-    def handle_messages(self, parser):
+    def handle_messages(self):
         while True:
             # Essa função recebe toda e qualquer mensagem mesmo as que não são
             # comandos do servidor
@@ -46,39 +51,68 @@ class BaseClient:
                 if len(args) == 1 and args[0] == '':
                     args = []
 
-                response = parser(msg_type, args)
-                if response is not None:
-                    self.socket.sendto(response.encode(), address)
-
+                threading.Thread(
+                    target=self.parser_message,
+                    args=(msg_type, args, address)
+                ).start()
                 continue
 
             # Quando não é um comando do servidor apenas joga a mensagem na
             # pilha de mensagens para que seja analisada por outra parte do
             # código
             with self.mutex:
-                self.msgs.append(msg)
+                self.msgs[self.address].append(msg)
 
-    def parse_message(self, msg_type, args):
-        # Mensagens enviadas pelo servidor
+    def parser_message(self, msg_type, args, address):
+        response = None
 
-        # Mensagens enviadas por outros clientes
+        if address == self.address:
+            response = self.parse_server_message(msg_type, args)
+        else:
+            response = self.parse_client_message(msg_type, args)
+
+        if response is not None:
+            self.socket.sendto(response.encode(), address)
+
+    def parse_server_message(self, msg_type, args):
+        if msg_type == 'CONNECT':
+            with self.mutex:
+                self.msgs[(args[0], int(args[1]))] = []
+
+            self.room_clients.append({
+                'name': self.send_message('GREET', address=(args[0], int(args[1]))),
+                'address': (args[0], int(args[1])),
+            })
+
+        return None
+
+    def parse_client_message(self, msg_type, args):
+        if msg_type == 'GREET':
+            return self.name
+
         return None
 
 
     ###
     ### Métodos principais para comunicação
     ###
-    def get_message(self):
+    def get_message(self, address):
         while True:
             with self.mutex:
-                if len(self.msgs) == 0:
+                if len(self.msgs[address]) == 0:
                     continue
 
-                return self.msgs.pop(0)
+                return self.msgs[address].pop(0)
 
-    def send_message(self, type, *args):
-        self.socket.send(f"{type}:{';'.join(args)}".encode())
-        return self.get_message()
+    def send_message(self, type, *args, address=None, wait_response=True):
+        if address is None:
+            address = self.address
+
+        self.socket.sendto(f"{type}:{';'.join(args)}".encode(), address)
+
+        if not wait_response:
+            return None
+        return self.get_message(address)
 
 
     ###
@@ -95,7 +129,7 @@ class BaseClient:
 
         res = self.send_message('ROOM', *args)
 
-        if res.isdigit():
+        if res is not None and res.isdigit():
             self.room = res
             return True
 
@@ -112,7 +146,7 @@ class BaseClient:
         res = self.send_message('LIST', *args)
 
         rooms = None
-        if res.find('\n'):
+        if res is not None and res.find('\n'):
             rooms = res.split('\n')
 
         return rooms
