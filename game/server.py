@@ -140,14 +140,40 @@ class Server:
 
         elif msg_type == 'STATUS':
             index_client = self.get_client(address[0], address[1])
+            if client is None:
+                return 'Cliente não registrado'
             room_code = self.clients[index_client]['room']
             if room_code == '':
-                return 'Não possui sala'
+                return 'Não está em nenhuma sala'
             else:
                 index_room = self.get_room(room_code)
                 room = self.rooms[index_room]
                 room_type = 'priv' if room['password'] is not None else 'pub'
                 return f"{room_type},{room['name']},{room['code']},{room_code},{str(len(room['clients']))},{room['max_clients']}\n"
+
+        elif msg_type == 'LEAVE':
+            index_client = self.get_client(address[0], address[1])
+            if client is None:
+                return 'Cliente não registrado'
+            room_code = self.clients[index_client]['room']
+            if room_code == '':
+                return 'Não está em nenhuma sala'
+            else:
+                # Retira o código da sala do cliente registrado
+                self.clients[index_client]['room'] = ''
+                # Remove o cliente que deseja sair da lista de clientes daquela sala
+                index_room = self.get_room(room_code)
+                self.rooms[index_room]['clients'].remove((address[0], address[1]))
+                if len(self.rooms[index_room]['clients']) == 0:
+                    # Se não houver mais nenhum cliente na sala, apagar a sala
+                    self.rooms.pop(index_room)
+                else:
+                    # Se houver clientes na sala notifica a eles que o cliente atual saiu
+                    msg_leave = f"Saiu, {(address[0], address[1])}"
+                    for address in self.rooms[index_room]['clients']:
+                        self.socket.sendto(msg_leave.encode(), address)
+
+                return 'OK'
 
         elif msg_type == 'ENTER':
             if len(args) > 2:
