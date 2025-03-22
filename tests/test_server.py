@@ -179,7 +179,7 @@ def test_status_client_unregistred(server):
 def test_status_invalid_arguments(server):
     addr = ('127.0.0.1', 6001)
     server.parse_message('REGISTER', ['Big Smoke'], addr)
-    
+
     # Test if accepting any argument
     response = server.parse_message('STATUS', ['arg'], addr)
     assert response == 'Número de argumentos inválido'
@@ -256,6 +256,7 @@ def test_enter_already_in_room(server):
 
 def test_enter_no_password_provided(server):
     addr = ('127.0.0.1', 6003)
+    server.parse_message('REGISTER', ['Charlie Brown'], addr)
 
     room_code = '2'
     server.rooms = [{
@@ -273,6 +274,7 @@ def test_enter_no_password_provided(server):
 
 def test_enter_incorrect_password(server):
     addr = ('127.0.0.1', 6004)
+    server.parse_message('REGISTER', ['Snoopy'], addr)
 
     room_code = '3'
     server.rooms = [{
