@@ -76,11 +76,11 @@ class BaseClient:
         self.socket.sendall(f"{type}:{';'.join(args)}".encode())
         return self.get_message()
 
-    def register(self):
+    def server_register(self):
         res = self.send_message('REGISTER', self.name)
         return res == 'OK'
 
-    def create_room(self, room_type, room_name, room_password=None):
+    def server_create_room(self, room_type, room_name, room_password=None):
         args = [room_type, room_name]
         if room_password is not None:
             args.append(room_password)
@@ -96,7 +96,7 @@ class BaseClient:
     def close_room(self, room_code):
         ...
 
-    def list_rooms(self, room_type=None):
+    def server_list_rooms(self, room_type=None):
         args = []
         if room_type is not None:
             args.append(room_type)
@@ -109,7 +109,7 @@ class BaseClient:
 
         return rooms
 
-    def enter_room(self, room_code, room_password=None):
+    def server_enter_room(self, room_code, room_password=None):
         args = [room_code]
         if room_password is not None:
             args.append(room_password)
@@ -121,7 +121,7 @@ class BaseClient:
 
         return False
 
-    def status_room(self):
+    def server_status_room(self):
         res = self.send_message('STATUS')
         logging.warning(f'{res}')
 

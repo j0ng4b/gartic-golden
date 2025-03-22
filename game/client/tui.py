@@ -63,12 +63,12 @@ class TUIClient(BaseClient):
 
         elif opt == 1:
             name = input('Nome da sala: ')
-            ok = self.create_room('pub', name)
+            ok = self.server_create_room('pub', name)
 
         elif opt == 2:
             name = input('Nome da sala: ')
             password = input('Senha da sala: ')
-            ok = self.create_room('priv', name, password)
+            ok = self.server_create_room('priv', name, password)
 
         if ok:
             print(f'Código da sala criada: {self.room}')
@@ -99,13 +99,13 @@ class TUIClient(BaseClient):
             return
 
         elif opt == 1:
-            self.rooms = self.list_rooms()
+            self.rooms = self.server_list_rooms()
 
         elif opt == 2:
-            self.rooms = self.list_rooms('pub')
+            self.rooms = self.server_list_rooms('pub')
 
         elif opt == 3:
-            self.rooms = self.list_rooms('priv')
+            self.rooms = self.server_list_rooms('priv')
 
         if self.rooms is None:
             print('Não há salas')
@@ -128,7 +128,7 @@ class TUIClient(BaseClient):
                 room_password = input('Senha da sala privada: ')
                 break
 
-        if self.enter_room(room_code, room_password):
+        if self.server_enter_room(room_code, room_password):
             print('Entrou na sala')
         else:
             print('Não foi possível entrar na sala')
