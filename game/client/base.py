@@ -12,30 +12,41 @@ class BaseClient:
         if address is None or port is None:
             raise ValueError('server address and port must be set')
 
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.socket.connect((address, int(port)))
-
-        self.mutex = threading.Lock()
-        self.msgs = []
-
         self.name = 'Player'
 
         self.room = None
 
+        # Contexto de execução, armazena informações de execução de cada thread
+        server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        server_socket.connect((address, int(port)))
+
+        self.context = {
+            # Contexto de execução da padrão
+            0: {
+                'socket': server_socket,
+                'mutex': threading.Lock(),
+                'msgs': [],
+            }
+        }
+
     def start(self):
         # Inicia o a comunicação com o servidor, deve ser inciado antes de
         # qualquer coisa devido a pilha de mensagem
-        server_thrd = threading.Thread(target=self.handle_server_messages)
+        server_thrd = threading.Thread(target=self.handle_messages, args=(self.parse_server_message,))
         server_thrd.daemon = True
         server_thrd.start()
 
-        self.register()
+        self.server_register()
 
-    def handle_server_messages(self):
+    def handle_messages(self, parser):
         while True:
+            # Quando não acha o contexto para a thread usa o contexto padrão, ou
+            # seja, essa é a thread de comunicação com o servidor
+            context = self.get_context()
+
             # Essa função recebe toda e qualquer mensagem mesmo as que não são
             # comandos do servidor
-            msg = self.socket.recv(1024).decode()
+            msg = context['socket'].recv(1024).decode()
 
             # Quando há um ':' na message essa é uma mensagem de comando vinda
             # do servidor, faz análise da mensagem
@@ -45,35 +56,51 @@ class BaseClient:
                 if len(args) == 1 and args[0] == '':
                     args = []
 
-                response = self.parse_message(msg_type, args)
+                response = parser(msg_type, args)
                 if response is not None:
-                    self.socket.sendall(response.encode())
+                    context['socket'].sendall(response.encode())
 
                 continue
 
             # Quando não é um comando do servidor apenas joga a mensagem na
             # pilha de mensagens para que seja analisada por outra parte do
             # código
-            with self.mutex:
-                self.msgs.append(msg)
+            with context['mutex']:
+                context['msgs'].append(msg)
 
 
-    def parse_message(self, msg_type, args, address=None):
+    def parse_server_message(self, msg_type, args, address=None):
         return None
+
+    def get_context(self):
+        context_id = threading.current_thread().ident
+        if context_id is None:
+            return self.context[0]
+
+        context = self.context.get(context_id)
+        if context is None:
+            context = self.context[0]
+
+        return context
+
 
     ###
     ### Métodos de comunicação com o servidor
     ###
     def get_message(self):
+        context = self.get_context()
+
         while True:
-            with self.mutex:
-                if len(self.msgs) == 0:
+            with context['mutex']:
+                if len(context['msgs']) == 0:
                     continue
 
-                return self.msgs.pop(0)
+                return context['msgs'].pop(0)
 
     def send_message(self, type, *args):
-        self.socket.sendall(f"{type}:{';'.join(args)}".encode())
+        context = self.get_context()
+
+        context['socket'].send(f"{type}:{';'.join(args)}".encode())
         return self.get_message()
 
     def server_register(self):
@@ -93,7 +120,7 @@ class BaseClient:
 
         return False
 
-    def close_room(self, room_code):
+    def server_close_room(self, room_code):
         ...
 
     def server_list_rooms(self, room_type=None):
