@@ -140,7 +140,7 @@ class Server:
 
         elif msg_type == 'STATUS':
             index_client = self.get_client(address[0], address[1])
-            if client is None:
+            if index_client is None:
                 return 'Cliente não registrado'
             room_code = self.clients[index_client]['room']
             if room_code == '':
@@ -153,7 +153,7 @@ class Server:
 
         elif msg_type == 'LEAVE':
             index_client = self.get_client(address[0], address[1])
-            if client is None:
+            if index_client is None:
                 return 'Cliente não registrado'
             room_code = self.clients[index_client]['room']
             if room_code == '':
