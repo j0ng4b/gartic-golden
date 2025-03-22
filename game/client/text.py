@@ -5,6 +5,7 @@ class TextClient(BaseClient):
         super().__init__(address, port)
 
         self.menu = 0
+        self.rooms = None
 
     def start(self):
         super().start()
@@ -89,8 +90,6 @@ class TextClient(BaseClient):
             return
 
         opt = int(opt)
-        rooms = None
-
         if opt < 0 and opt > 3:
             print('=== opção inválida ===')
             return
@@ -100,22 +99,39 @@ class TextClient(BaseClient):
             return
 
         elif opt == 1:
-            rooms = self.list_rooms()
+            self.rooms = self.list_rooms()
 
         elif opt == 2:
-            rooms = self.list_rooms('pub')
+            self.rooms = self.list_rooms('pub')
 
         elif opt == 3:
-            rooms = self.list_rooms('priv')
+            self.rooms = self.list_rooms('priv')
 
-        if rooms is None:
+        if self.rooms is None:
             print('Não há salas')
             return
 
-        for room in rooms:
+        for room in self.rooms:
             print(room)
 
     def enter_room_menu(self):
-        # TODO: implementar entrar na sala
+        if self.rooms is None or len(self.rooms) == 0:
+            print('Não há salas, tente listá-las primeiro')
+
+            self.menu = 0
+            return
+
+        room_password = None
+        room_code = input('Código da sala: ')
+        for room in self.rooms:
+            if room.startswith('priv'):
+                room_password = input('Senha da sala privada: ')
+                break
+
+        if self.enter_room(room_code, room_password):
+            print('Entrou na sala')
+        else:
+            print('Não foi possível entrar na sala')
+
         self.menu = 0
 

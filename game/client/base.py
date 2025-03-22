@@ -59,7 +59,7 @@ class BaseClient:
 
 
     def parse_message(self, msg_type, args, address=None):
-        return 'Tipo de mensagem inválido'
+        return None
 
     ###
     ### Métodos de comunicação com o servidor

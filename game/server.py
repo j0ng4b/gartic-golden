@@ -48,7 +48,7 @@ class Server:
             # Parse message
             msg = msg.decode()
             if ':' not in msg:
-                self.socket.sendto('Mensagem inválida'.encode(), address)
+                self.socket.sendto(f'Mensagem inválida: {msg}'.encode(), address)
                 continue
 
             msg_type, args = msg.split(':')
