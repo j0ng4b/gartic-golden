@@ -1,6 +1,6 @@
 from game.client.base import BaseClient
 
-class TextClient(BaseClient):
+class TUIClient(BaseClient):
     def __init__(self, address, port):
         super().__init__(address, port)
 
