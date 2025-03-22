@@ -68,10 +68,39 @@ class BaseClient:
             with context['mutex']:
                 context['msgs'].append(msg)
 
+    def setup_client(self, address, port):
+        thread_id = threading.current_thread().ident
+        if thread_id is None:
+            raise Exception('No thread identifier')
 
-    def parse_server_message(self, msg_type, args, address=None):
+        client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        client_socket.connect((address, int(port)))
+
+        # Armazena informações do cliente conectados a sala
+        self.context[thread_id] = {
+            'socket': client_socket,
+            'mutex': threading.Lock(),
+            'msgs': [],
+
+            'name': None,
+        }
+
+        self.handle_messages(self.parser_client_message)
+
+    def parse_server_message(self, msg_type, args):
+        if msg_type == 'CONNECT':
+            client_thread = threading.Thread(target=self.setup_client, args=args)
+            client_thread.daemon = True
+            client_thread.start()
         return None
 
+    def parser_client_message(self, msg_type, args):
+        return None
+
+
+    ###
+    ### Métodos principais para comunicação
+    ###
     def get_context(self):
         context_id = threading.current_thread().ident
         if context_id is None:
@@ -83,10 +112,6 @@ class BaseClient:
 
         return context
 
-
-    ###
-    ### Métodos de comunicação com o servidor
-    ###
     def get_message(self):
         context = self.get_context()
 
@@ -103,6 +128,10 @@ class BaseClient:
         context['socket'].send(f"{type}:{';'.join(args)}".encode())
         return self.get_message()
 
+
+    ###
+    ### Métodos de comunicação com o servidor
+    ###
     def server_register(self):
         res = self.send_message('REGISTER', self.name)
         return res == 'OK'
