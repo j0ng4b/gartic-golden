@@ -176,6 +176,9 @@ class Server:
                 return 'OK'
 
         elif msg_type == 'ENTER':
+            if self.get_client(address[0], address[1]) is None:
+                return 'Cliente não registrado'
+
             if len(args) > 2:
                 return 'Número de argumentos inválido'
 
