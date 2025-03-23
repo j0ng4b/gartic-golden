@@ -236,13 +236,23 @@ class Server:
             client['room'] = room['code']
             room['clients'].append(address)
 
+            if len(room['clients']) == room['max_clients']:
+                self.close_room(room)
+
             return 'OK'
 
         return 'Tipo de mensagem inválido'
 
     def close_room(self, room):
-        # TODO: Implementar a lógica de fechamento da sala
-        ...
+        for client in room['clients']:
+            if client == room['clients'][0]:
+                continue
+
+            self.socket.sendto(f'PLAY:'.encode(), client)
+
+        # Notifica o cliente dono da sala que pode iniciar o jogo
+        self.socket.sendto(f'GAME:'.encode(), room['clients'][0])
+        self.rooms.remove(room)
 
     def get_client(self, address, port):
         for client in self.clients:

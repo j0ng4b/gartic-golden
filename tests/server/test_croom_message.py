@@ -41,4 +41,26 @@ def test_close_room(server):
 
     response = server.parse_message('CROOM', [], addr)
     assert response == 'OK'
+    assert len(server.rooms) == 0
+
+
+def test_send_play_and_game_messages_to_clients(server):
+    addr1 = ('127.0.0.1', 6001)
+    server.parse_message('REGISTER', ['Donkey'], addr1)
+    server.parse_message('ROOM', ['pub', 'RoomOne'], addr1)
+
+    addr2 = ('127.0.0.1', 6002)
+    server.parse_message('REGISTER', ['Kong'], addr2)
+    server.parse_message('ENTER', ['1'], addr2)
+    server.socket.sendto_calls.clear()
+
+    response = server.parse_message('CROOM', [], addr1)
+    assert response == 'OK'
+    assert len(server.rooms) == 0
+
+    expected_calls = [
+        (f'PLAY:'.encode(), addr2),
+        (f'GAME:'.encode(), addr1),
+    ]
+    assert server.socket.sendto_calls == expected_calls
 
