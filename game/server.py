@@ -147,10 +147,10 @@ class Server:
                 return 'Cliente não registrado'
 
             room_code = client['room']
-            if room_code == '':
+            room = self.get_room(room_code)
+            if room_code == '' or room is None:
                 return 'Cliente não está em nenhuma sala'
 
-            room = self.get_room(room_code)
             room_type = 'priv' if room['password'] is not None else 'pub'
             return f"{room_type},{room['name']},{room['code']},{str(len(room['clients']))},{room['max_clients']}"
 
@@ -160,14 +160,14 @@ class Server:
                 return 'Cliente não registrado'
 
             room_code = client['room']
-            if room_code == '':
+            room = self.get_room(room_code)
+            if room_code == '' or room is None:
                 return 'Não está em nenhuma sala'
 
             # Retira o código da sala do cliente registrado
             client['room'] = ''
 
             # Remove o cliente que deseja sair da lista de clientes daquela sala
-            room = self.get_room(room_code)
             room['clients'].remove((address[0], address[1]))
             if len(room['clients']) == 0:
                 # Se não houver mais nenhum cliente na sala, apagar a sala
@@ -193,9 +193,13 @@ class Server:
                 return 'Código da sala inválido'
 
             # Verifica se o cliente está na sala
-            for room_client in room['clients']:
-                if room_client == address:
-                    return 'Cliente já está na sala'
+            for room in self.rooms:
+                for room_client in room['clients']:
+                    if room_client == address:
+                        if room['code'] == args[0]:
+                            return 'Cliente já está na sala'
+
+                        return 'Cliente já está em outra sala'
 
             # Verifica a senha da sala
             if room['password'] is not None and len(args) != 2:
