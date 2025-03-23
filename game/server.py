@@ -117,9 +117,22 @@ class Server:
             return code
 
         elif msg_type == 'CROOM':
-            # TODO: implement fail condition
-            # TODO: implement success action
-            pass
+            if len(args) != 0:
+                return 'Número de argumentos inválido'
+
+            client = self.get_client(address[0], address[1])
+            if client is None:
+                return 'Cliente não registrado'
+
+            room = self.get_room(client['room'])
+            if client['room'] == '' or room is None:
+                return 'Cliente não está em nenhuma sala'
+
+            if room['clients'][0] != address:
+                return 'Somente o dono da sala pode fechá-la'
+
+            self.close_room(room)
+            return 'OK'
 
         elif msg_type == 'LIST':
             if len(args) == 1 and args[0] not in ['priv', 'pub']:
@@ -226,6 +239,10 @@ class Server:
             return 'OK'
 
         return 'Tipo de mensagem inválido'
+
+    def close_room(self, room):
+        # TODO: Implementar a lógica de fechamento da sala
+        ...
 
     def get_client(self, address, port):
         for client in self.clients:
