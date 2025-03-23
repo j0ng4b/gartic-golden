@@ -177,7 +177,7 @@ class Server:
                 self.rooms.remove(room)
             else:
                 # Se houver clientes na sala notifica a eles que o cliente atual saiu
-                msg_leave = f"Saiu, {(address[0], address[1])}"
+                msg_leave = f'DISCONNECT:{address[0]};{address[1]}'
                 for address in room['clients']:
                     self.socket.sendto(msg_leave.encode(), address)
 
