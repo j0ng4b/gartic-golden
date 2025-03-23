@@ -31,8 +31,9 @@ def test_client_already_on_the_room(server):
         'code': room_code,
         'password': None,
         'max_clients': 10,
-        'clients': [addr]
+        'clients': []
     }]
+    server.parse_message('ENTER', [room_code], addr)
 
     response = server.parse_message('ENTER', [room_code], addr)
     assert response == 'Cliente já está na sala'
@@ -54,8 +55,9 @@ def test_client_already_on_other_room(server):
         'code': '2',
         'password': None,
         'max_clients': 10,
-        'clients': [addr]
+        'clients': []
     }]
+    server.parse_message('ENTER', ['2'], addr)
 
     response = server.parse_message('ENTER', [room_code], addr)
     assert response == 'Cliente já está em outra sala'
@@ -111,6 +113,9 @@ def test_enter_private_room(server):
     response = server.parse_message('ENTER', [room_code, 'secret'], addr)
     assert response == 'OK'
 
+    client = server.clients[0]
+    assert client['room'] == room_code
+
 
 def test_enter_public_room(server):
     addr = ('127.0.0.1', 6004)
@@ -127,4 +132,7 @@ def test_enter_public_room(server):
 
     response = server.parse_message('ENTER', [room_code], addr)
     assert response == 'OK'
+
+    client = server.clients[0]
+    assert client['room'] == room_code
 

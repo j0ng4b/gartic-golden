@@ -155,6 +155,9 @@ class Server:
             return f"{room_type},{room['name']},{room['code']},{str(len(room['clients']))},{room['max_clients']}"
 
         elif msg_type == 'LEAVE':
+            if len(args) != 0:
+                return 'Número de argumentos inválido'
+
             client = self.get_client(address[0], address[1])
             if client is None:
                 return 'Cliente não registrado'
@@ -162,7 +165,7 @@ class Server:
             room_code = client['room']
             room = self.get_room(room_code)
             if room_code == '' or room is None:
-                return 'Não está em nenhuma sala'
+                return 'Cliente não está em nenhuma sala'
 
             # Retira o código da sala do cliente registrado
             client['room'] = ''
@@ -181,7 +184,8 @@ class Server:
             return 'OK'
 
         elif msg_type == 'ENTER':
-            if self.get_client(address[0], address[1]) is None:
+            client = self.get_client(address[0], address[1])
+            if client is None:
                 return 'Cliente não registrado'
 
             if len(args) > 2:
@@ -193,13 +197,10 @@ class Server:
                 return 'Código da sala inválido'
 
             # Verifica se o cliente está na sala
-            for room in self.rooms:
-                for room_client in room['clients']:
-                    if room_client == address:
-                        if room['code'] == args[0]:
-                            return 'Cliente já está na sala'
-
-                        return 'Cliente já está em outra sala'
+            if client['room'] != '':
+                if client['room'] == args[0]:
+                    return 'Cliente já está na sala'
+                return 'Cliente já está em outra sala'
 
             # Verifica a senha da sala
             if room['password'] is not None and len(args) != 2:
@@ -219,7 +220,9 @@ class Server:
                 args = f'{room_client[0]};{str(room_client[1])}'
                 self.socket.sendto(f'CONNECT:{args}'.encode(), address)
 
+            client['room'] = room['code']
             room['clients'].append(address)
+
             return 'OK'
 
         return 'Tipo de mensagem inválido'
