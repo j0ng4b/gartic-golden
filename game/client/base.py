@@ -16,7 +16,7 @@ class BaseClient:
         self.name = 'Player'
 
         self.room = None
-        self.room_clients = []
+        self.room_clients = {}
 
         # Contexto de execução, armazena informações de execução de cada thread
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -79,10 +79,10 @@ class BaseClient:
             with self.mutex:
                 self.msgs[(args[0], int(args[1]))] = []
 
-            self.room_clients.append({
+            self.room_clients[(args[0], int(args[1]))] = {
                 'name': self.send_message('GREET', address=(args[0], int(args[1]))),
                 'address': (args[0], int(args[1])),
-            })
+            }
 
         return None
 
@@ -120,6 +120,10 @@ class BaseClient:
     ###
     def server_register(self):
         res = self.send_message('REGISTER', self.name)
+        return res == 'OK'
+
+    def server_unregister(self):
+        res = self.send_message('UNREGISTER', self.name)
         return res == 'OK'
 
     def server_create_room(self, room_type, room_name, room_password=None):

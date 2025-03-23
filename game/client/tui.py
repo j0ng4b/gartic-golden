@@ -25,6 +25,7 @@ class TUIClient(BaseClient):
         print('1. Criar sala')
         print('2. Listar sala')
         print('3. Entrar em uma sala')
+        print('0. Sair')
         opt = input('> ')
 
         if not opt.isdigit():
@@ -32,9 +33,12 @@ class TUIClient(BaseClient):
             return
 
         opt = int(opt)
-        if opt < 1 and opt > 3:
+        if opt < 0 or opt > 3:
             print('=== opção inválida ===')
             return
+        elif opt == 0:
+            self.server_unregister()
+            exit(0)
         else:
             self.menu = opt
             return
@@ -53,7 +57,7 @@ class TUIClient(BaseClient):
         opt = int(opt)
         ok = False
 
-        if opt < 0 and opt > 2:
+        if opt < 0 or opt > 2:
             print('=== opção inválida ===')
             return
 
@@ -90,7 +94,7 @@ class TUIClient(BaseClient):
             return
 
         opt = int(opt)
-        if opt < 0 and opt > 3:
+        if opt < 0 or opt > 3:
             print('=== opção inválida ===')
             return
 
@@ -114,6 +118,8 @@ class TUIClient(BaseClient):
         for room in self.rooms:
             print(room)
 
+        self.menu = 0
+
     def enter_room_menu(self):
         if self.rooms is None or len(self.rooms) == 0:
             print('Não há salas, tente listá-las primeiro')
@@ -130,8 +136,8 @@ class TUIClient(BaseClient):
 
         if self.server_enter_room(room_code, room_password):
             print('Entrou na sala')
+            self.menu = 1
         else:
             print('Não foi possível entrar na sala')
-
-        self.menu = 0
+            self.menu = 0
 
