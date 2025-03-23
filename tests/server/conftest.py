@@ -17,7 +17,7 @@ from game.server import Server
 def patch_socket(monkeypatch):
     class DummySocket:
         def __init__(self, *args, **kwargs):
-            pass
+            self.sendto_calls = []
 
         def bind(self, address):
             pass
@@ -26,7 +26,7 @@ def patch_socket(monkeypatch):
             return (b'', ('127.0.0.1', 5000))
 
         def sendto(self, data, address):
-            pass
+            self.sendto_calls.append((data, address))
 
     monkeypatch.setattr(socket, 'socket', lambda *args, **kwargs: DummySocket(*args, **kwargs))
 

@@ -136,3 +136,21 @@ def test_enter_public_room(server):
     client = server.clients[0]
     assert client['room'] == room_code
 
+
+def test_send_connect_message_to_clients(server):
+    addr1 = ('127.0.0.1', 6004)
+    server.parse_message('REGISTER', ['Snoopy'], addr1)
+    room_code = server.parse_message('ROOM', ['pub', 'Room'], addr1)
+
+    addr2 = ('127.0.0.1', 6003)
+    server.parse_message('REGISTER', ['Charlie Brown'], addr2)
+
+    response = server.parse_message('ENTER', [room_code], addr2)
+    assert response == 'OK'
+
+    expected_calls = [
+        (f'CONNECT:{addr2[0]};{addr2[1]}'.encode(), addr1),
+        (f'CONNECT:{addr1[0]};{addr1[1]}'.encode(), addr2)
+    ]
+    assert server.socket.sendto_calls == expected_calls
+
