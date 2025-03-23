@@ -78,6 +78,17 @@ class Server:
 
             return 'OK'
 
+        elif msg_type == 'UNREGISTER':
+            if len(args) != 0:
+                return 'Número de argumentos inválido'
+
+            client = self.get_client(address[0], address[1])
+            if client is None:
+                return 'Cliente não registrado'
+
+            self.clients.remove(client)
+            return 'OK'
+
         elif msg_type == 'ROOM':
             if len(args) < 2 or len(args) > 3:
                 return 'Número de argumentos inválido'
