@@ -94,7 +94,7 @@ class Server:
             if client is None:
                 return 'Cliente não registrado'
 
-            if self.clients[client]['room'] != '':
+            if client['room'] != '':
                 return 'Cliente já está em uma sala'
 
             # A lista de clientes da sala recém-criada neste momento possui apenas o host da sala.
@@ -113,7 +113,7 @@ class Server:
             })
 
             # Associa o cliente com a sala criada
-            self.clients[client]['room'] = code
+            client['room'] = code
             return code
 
         elif msg_type == 'CROOM':
@@ -142,42 +142,43 @@ class Server:
             if len(args) != 0:
                 return 'Número de argumentos inválido'
 
-            index_client = self.get_client(address[0], address[1])
-            if index_client is None:
+            client = self.get_client(address[0], address[1])
+            if client is None:
                 return 'Cliente não registrado'
 
-            room_code = self.clients[index_client]['room']
+            room_code = client['room']
             if room_code == '':
                 return 'Cliente não está em nenhuma sala'
-            else:
-                index_room = self.get_room(room_code)
-                room = self.rooms[index_room]
-                room_type = 'priv' if room['password'] is not None else 'pub'
-                return f"{room_type},{room['name']},{room['code']},{str(len(room['clients']))},{room['max_clients']}"
+
+            room = self.get_room(room_code)
+            room_type = 'priv' if room['password'] is not None else 'pub'
+            return f"{room_type},{room['name']},{room['code']},{str(len(room['clients']))},{room['max_clients']}"
 
         elif msg_type == 'LEAVE':
-            index_client = self.get_client(address[0], address[1])
-            if index_client is None:
+            client = self.get_client(address[0], address[1])
+            if client is None:
                 return 'Cliente não registrado'
-            room_code = self.clients[index_client]['room']
+
+            room_code = client['room']
             if room_code == '':
                 return 'Não está em nenhuma sala'
-            else:
-                # Retira o código da sala do cliente registrado
-                self.clients[index_client]['room'] = ''
-                # Remove o cliente que deseja sair da lista de clientes daquela sala
-                index_room = self.get_room(room_code)
-                self.rooms[index_room]['clients'].remove((address[0], address[1]))
-                if len(self.rooms[index_room]['clients']) == 0:
-                    # Se não houver mais nenhum cliente na sala, apagar a sala
-                    self.rooms.pop(index_room)
-                else:
-                    # Se houver clientes na sala notifica a eles que o cliente atual saiu
-                    msg_leave = f"Saiu, {(address[0], address[1])}"
-                    for address in self.rooms[index_room]['clients']:
-                        self.socket.sendto(msg_leave.encode(), address)
 
-                return 'OK'
+            # Retira o código da sala do cliente registrado
+            client['room'] = ''
+
+            # Remove o cliente que deseja sair da lista de clientes daquela sala
+            room = self.get_room(room_code)
+            room['clients'].remove((address[0], address[1]))
+            if len(room['clients']) == 0:
+                # Se não houver mais nenhum cliente na sala, apagar a sala
+                self.rooms.remove(room)
+            else:
+                # Se houver clientes na sala notifica a eles que o cliente atual saiu
+                msg_leave = f"Saiu, {(address[0], address[1])}"
+                for address in room['clients']:
+                    self.socket.sendto(msg_leave.encode(), address)
+
+            return 'OK'
 
         elif msg_type == 'ENTER':
             if self.get_client(address[0], address[1]) is None:
@@ -192,18 +193,18 @@ class Server:
                 return 'Código da sala inválido'
 
             # Verifica se o cliente está na sala
-            for room_client in self.rooms[room]['clients']:
+            for room_client in room['clients']:
                 if room_client == address:
                     return 'Cliente já está na sala'
 
             # Verifica a senha da sala
-            if self.rooms[room]['password'] is not None and len(args) != 2:
+            if room['password'] is not None and len(args) != 2:
                 return 'Senha não fornecida'
-            elif self.rooms[room]['password'] is not None and args[1] != self.rooms[room]['password']:
+            elif room['password'] is not None and args[1] != room['password']:
                 return 'Senha da sala está incorreta'
 
             # Notifica os clientes da sala que um novo cliente entrou
-            for room_client in self.rooms[room]['clients']:
+            for room_client in room['clients']:
                 # Envia uma mensagem para o cliente que está na sala para se
                 # conectar com o novo cliente
                 args = f'{address[0]};{str(address[1])}'
@@ -214,22 +215,22 @@ class Server:
                 args = f'{room_client[0]};{str(room_client[1])}'
                 self.socket.sendto(f'CONNECT:{args}'.encode(), address)
 
-            self.rooms[room]['clients'].append(address)
+            room['clients'].append(address)
             return 'OK'
 
         return 'Tipo de mensagem inválido'
 
     def get_client(self, address, port):
-        for i in range(len(self.clients)):
-            if self.clients[i]['address'] == address and self.clients[i]['port'] == port:
-                return i
+        for client in self.clients:
+            if client['address'] == address and client['port'] == port:
+                return client
 
         return None
 
     def get_room(self, code):
-        for i in range(len(self.rooms)):
-            if self.rooms[i]['code'] == code:
-                return i
+        for room in self.rooms:
+            if room['code'] == code:
+                return room
 
         return None
 

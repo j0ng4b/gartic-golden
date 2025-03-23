@@ -35,7 +35,7 @@ def test_output_format(server):
     }]
 
     client = server.get_client(addr[0], addr[1])
-    server.clients[client]['room'] = room_code
+    client['room'] = room_code
 
     response = server.parse_message('STATUS', [], addr)
     assert response == f'pub,TestRoom,{room_code},1,10'

@@ -59,9 +59,9 @@ def test_create_public_room(server):
     assert room['max_clients'] == 10
     assert addr in room['clients']
 
-    client_index = server.get_client(addr[0], addr[1])
-    assert client_index is not None
-    assert server.clients[client_index]['room'] == '1'
+    client = server.get_client(addr[0], addr[1])
+    assert client is not None
+    assert client['room'] == '1'
 
 
 def test_create_private_room(server):
@@ -76,5 +76,6 @@ def test_create_private_room(server):
     assert room['password'] == 'mypassword'
     assert addr in room['clients']
 
-    client_index = server.get_client(addr[0], addr[1])
-    assert server.clients[client_index]['room'] == '1'
+    client = server.get_client(addr[0], addr[1])
+    assert client['room'] == '1'
+
