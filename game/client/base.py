@@ -137,7 +137,7 @@ class BaseClient:
         return res == 'OK'
 
     def server_unregister(self):
-        res = self.send_message('UNREGISTER', self.name)
+        res = self.send_message('UNREGISTER')
         return res == 'OK'
 
     def server_create_room(self, room_type, room_name, room_password=None):
