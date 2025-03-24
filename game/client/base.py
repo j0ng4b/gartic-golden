@@ -189,6 +189,7 @@ class BaseClient:
         res = self.send_message('LEAVE')
         if res == 'OK':
             self.room = None
+            self.room_clients = {}
             return True
 
         return False
