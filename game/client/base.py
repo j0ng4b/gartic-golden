@@ -1,14 +1,11 @@
+from abc import ABC, abstractmethod
 import logging
 import socket
 import threading
 
 
-class BaseClient:
+class BaseClient(ABC):
     def __init__(self, address, port):
-        if self.__class__ is BaseClient:
-            raise TypeError("BaseClient class cannot be instantiated")
-
-
         if address is None or port is None:
             raise ValueError('server address and port must be set')
         self.address = (socket.gethostbyname(address), int(port))
@@ -72,7 +69,7 @@ class BaseClient:
             # Verifica se o endereço é de um cliente na sala
             for client in self.room_clients.values():
                 if client['address'] == address:
-                    response = self.parse_client_message(msg_type, args)
+                    response = self.parse_client_message(msg_type, args, address)
                     break
 
         if response is not None:
@@ -89,6 +86,7 @@ class BaseClient:
             self.room_clients[(args[0], int(args[1]))] = {
                 'name': None,
                 'address': (args[0], int(args[1])),
+                'msgs': [],
             }
 
             self.room_clients[(args[0], int(args[1]))]['name'] = self.send_message('GREET', address=(args[0], int(args[1])))
@@ -100,11 +98,20 @@ class BaseClient:
 
         return None
 
-    def parse_client_message(self, msg_type, args):
+    def parse_client_message(self, msg_type, args, address):
         if msg_type == 'GREET':
             return self.name
+        elif msg_type == 'CHAT':
+            with self.mutex:
+                self.room_clients[address]['msgs'].append(args[0])
+
+            self.handle_chat(self.room_clients[address], args[0])
 
         return None
+
+    @abstractmethod
+    def handle_chat(self, client, message):
+        raise NotImplementedError('handle_chat must be implemented')
 
 
     ###
@@ -198,4 +205,12 @@ class BaseClient:
             return True
 
         return False
+
+
+    ###
+    ### Métodos de comunicação com outros clientes
+    ###
+    def client_chat(self, message):
+        for client in self.room_clients.values():
+            self.send_message('CHAT', message, address=client['address'], wait_response=False)
 
