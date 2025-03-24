@@ -12,7 +12,10 @@ class TUIClient(BaseClient):
 
         while True:
             if self.menu == 0:
-                self.main_menu()
+                if self.room is None:
+                    self.main_menu()
+                else:
+                    self.room_menu()
             elif self.menu == 1:
                 self.create_room_menu()
             elif self.menu == 2:
@@ -42,6 +45,32 @@ class TUIClient(BaseClient):
         else:
             self.menu = opt
             return
+
+    def room_menu(self):
+        print('Opções da sala:')
+        print('1. Sair da sala')
+        print('2. Enviar mensagem')
+        print('3. Fechar sala')
+        opt = input('> ')
+
+        if not opt.isdigit():
+            print('=== opção inválida ===')
+            return
+
+        opt = int(opt)
+        if opt < 1 or opt > 3:
+            print('=== opção inválida ===')
+            return
+
+        if opt == 1:
+            self.server_leave_room()
+            self.menu = 0
+        elif opt == 2:
+            message = input('Mensagem: ')
+            self.client_chat(message)
+        elif opt == 3:
+            self.server_close_room()
+            self.menu = 0
 
     def create_room_menu(self):
         print('Criação de sala:')
@@ -136,8 +165,11 @@ class TUIClient(BaseClient):
 
         if self.server_enter_room(room_code, room_password):
             print('Entrou na sala')
-            self.menu = 1
         else:
             print('Não foi possível entrar na sala')
-            self.menu = 0
+
+        self.menu = 0
+
+    def handle_chat(self, client, message):
+        print(f'~{client["name"]}: {message}')
 
