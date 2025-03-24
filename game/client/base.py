@@ -139,8 +139,13 @@ class BaseClient:
 
         return False
 
-    def server_close_room(self, room_code):
-        ...
+    def server_close_room(self):
+        res = self.send_message('CROOM')
+        if res == 'OK':
+            self.room = None
+            return True
+
+        return False
 
     def server_list_rooms(self, room_type=None):
         args = []
