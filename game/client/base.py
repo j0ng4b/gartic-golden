@@ -69,7 +69,11 @@ class BaseClient:
         if address == self.address:
             response = self.parse_server_message(msg_type, args)
         else:
-            response = self.parse_client_message(msg_type, args)
+            # Verifica se o endereço é de um cliente na sala
+            for client in self.room_clients.values():
+                if client['address'] == address:
+                    response = self.parse_client_message(msg_type, args)
+                    break
 
         if response is not None:
             self.socket.sendto(response.encode(), address)
