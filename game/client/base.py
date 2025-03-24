@@ -171,3 +171,11 @@ class BaseClient:
         res = self.send_message('STATUS')
         logging.warning(f'{res}')
 
+    def server_leave_room(self):
+        res = self.send_message('LEAVE')
+        if res == 'OK':
+            self.room = None
+            return True
+
+        return False
+
