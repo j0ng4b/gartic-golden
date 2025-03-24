@@ -87,6 +87,11 @@ class BaseClient:
                 'name': self.send_message('GREET', address=(args[0], int(args[1]))),
                 'address': (args[0], int(args[1])),
             }
+        elif msg_type == 'DISCONNECT':
+            with self.mutex:
+                del self.msgs[(args[0], int(args[1]))]
+
+            del self.room_clients[(args[0], int(args[1]))]
 
         return None
 
