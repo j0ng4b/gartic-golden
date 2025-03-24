@@ -126,6 +126,6 @@ def test_status_room(client, caplog):
         return 'STATUS'
     client.send_message = dummy_send_message
 
-    client.server_status_room()
-    assert 'STATUS' in caplog.text
+    response = client.server_status_room()
+    assert response == 'STATUS'
 

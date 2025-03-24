@@ -34,6 +34,9 @@ class DummyClient(BaseClient):
     def handle_chat(self, client, message):
         client.setdefault('handled_chats', []).append(message)
 
+    def handle_canvas(self, canvas):
+        pass
+
     def get_message(self, address):
         if self.msgs.get(address):
             return self.msgs[address].pop(0)

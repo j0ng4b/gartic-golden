@@ -173,3 +173,6 @@ class TUIClient(BaseClient):
     def handle_chat(self, client, message):
         print(f'~{client["name"]}: {message}')
 
+    def handle_canvas(self, canvas):
+        print(f'canvas: {canvas}')
+
