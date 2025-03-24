@@ -52,5 +52,5 @@ class DummyClient(BaseClient):
 
 @pytest.fixture
 def client():
-    return DummyClient('localhost', 8080)
+    return DummyClient('127.0.0.1', 8080)
 
