@@ -1,9 +1,11 @@
-from abc import ABC, abstractmethod
+import abc
+import base64
 import socket
 import threading
+import zlib
 
 
-class BaseClient(ABC):
+class BaseClient(abc.ABC):
     def __init__(self, address, port):
         if address is None or port is None:
             raise ValueError('server address and port must be set')
@@ -133,13 +135,20 @@ class BaseClient(ABC):
             pass
 
         elif msg_type == 'CANVAS':
-            pass
+            # Decodifica a imagem e envia para o método de tratamento
+            canvas_data = base64.b64decode(args[0])
+            canvas_data = zlib.decompress(canvas_data)
+            self.handle_canvas(canvas_data)
 
         return None
 
-    @abstractmethod
+    @abc.abstractmethod
     def handle_chat(self, client, message):
         raise NotImplementedError('handle_chat must be implemented')
+
+    @abc.abstractmethod
+    def handle_canvas(self, canvas):
+        raise NotImplementedError('handle_canvas must be implemented')
 
 
     ###
@@ -260,6 +269,12 @@ class BaseClient(ABC):
             self.send_message('GTRA', client[0], client[1],
                               address=client['address'], wait_response=False)
 
-    def client_canvas(self):
-        ...
+    def client_canvas(self, canvas_data):
+        # Comprime a imagem e envia para todos os clientes
+        canvas_data = zlib.compress(canvas_data)
+        canvas_data = base64.b64encode(canvas_data).decode()
+
+        for client in self.room_clients.values():
+            self.send_message('CANVAS', canvas_data,
+                              address=client['address'], wait_response=False)
 
