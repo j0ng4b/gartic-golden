@@ -15,6 +15,9 @@ class BaseClient(ABC):
         self.room = None
         self.room_clients = {}
 
+        # Estado do jogo
+        self.game_hoster = None
+
         # Contexto de execução, armazena informações de execução de cada thread
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.socket.bind(('', 0))
@@ -33,6 +36,10 @@ class BaseClient(ABC):
 
         self.server_register()
 
+
+    ###
+    ### Métodos de comunicação: manipulação e análise de mensagens
+    ###
     def handle_messages(self):
         while True:
             # Essa função recebe toda e qualquer mensagem mesmo as que não são
@@ -95,6 +102,8 @@ class BaseClient(ABC):
                 del self.msgs[(args[0], int(args[1]))]
 
             del self.room_clients[(args[0], int(args[1]))]
+        elif msg_type == 'PLAY':
+            self.game_hoster = (args[0], int(args[1]))
 
         return None
 
