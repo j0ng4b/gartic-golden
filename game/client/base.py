@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-import logging
 import socket
 import threading
 
@@ -10,13 +9,13 @@ class BaseClient(ABC):
             raise ValueError('server address and port must be set')
         self.address = (socket.gethostbyname(address), int(port))
 
-        self.name = 'Player'
-
         self.room = None
         self.room_clients = {}
 
         # Estado do jogo
-        self.game_hoster = None
+        self.name = 'Player'
+
+        self.client_host = None
 
         # Contexto de execução, armazena informações de execução de cada thread
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -97,24 +96,44 @@ class BaseClient(ABC):
             }
 
             self.room_clients[(args[0], int(args[1]))]['name'] = self.send_message('GREET', address=(args[0], int(args[1])))
+
         elif msg_type == 'DISCONNECT':
             with self.mutex:
                 del self.msgs[(args[0], int(args[1]))]
 
             del self.room_clients[(args[0], int(args[1]))]
         elif msg_type == 'PLAY':
-            self.game_hoster = (args[0], int(args[1]))
+            self.client_host = (args[0], int(args[1]))
 
         return None
 
     def parse_client_message(self, msg_type, args, address):
         if msg_type == 'GREET':
             return self.name
+
         elif msg_type == 'CHAT':
             with self.mutex:
                 self.room_clients[address]['msgs'].append(args[0])
 
             self.handle_chat(self.room_clients[address], args[0])
+
+        elif msg_type == 'GUESS':
+            pass
+
+        elif msg_type == 'GTRA':
+            pass
+
+        elif msg_type == 'SKIP':
+            pass
+
+        elif msg_type == 'DRAW':
+            pass
+
+        elif msg_type == 'FDRAW':
+            pass
+
+        elif msg_type == 'CANVAS':
+            pass
 
         return None
 
@@ -203,8 +222,7 @@ class BaseClient(ABC):
         return False
 
     def server_status_room(self):
-        res = self.send_message('STATUS')
-        logging.warning(f'{res}')
+        return self.send_message('STATUS')
 
     def server_leave_room(self):
         res = self.send_message('LEAVE')
@@ -222,4 +240,26 @@ class BaseClient(ABC):
     def client_chat(self, message):
         for client in self.room_clients.values():
             self.send_message('CHAT', message, address=client['address'], wait_response=False)
+
+    def client_guess(self, guess):
+        ...
+
+    def client_draw(self):
+        ...
+
+    def client_finish_draw(self):
+        ...
+
+    def client_skip(self):
+        ...
+
+    def client_got_the_right_answer(self):
+        # Envia a mensagem de acerto para todos os clientes informando quem
+        # acertou
+        for client in self.room_clients.values():
+            self.send_message('GTRA', client[0], client[1],
+                              address=client['address'], wait_response=False)
+
+    def client_canvas(self):
+        ...
 
