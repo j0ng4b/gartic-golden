@@ -61,7 +61,7 @@ class BaseClient:
             # pilha de mensagens para que seja analisada por outra parte do
             # código
             with self.mutex:
-                self.msgs[self.address].append(msg)
+                self.msgs[address].append(msg)
 
     def parser_message(self, msg_type, args, address):
         response = None
@@ -83,10 +83,15 @@ class BaseClient:
             with self.mutex:
                 self.msgs[(args[0], int(args[1]))] = []
 
+            # Antes de enviar a mensagem de saudação, adiciona o cliente na
+            # lista porque o cliente só aceita mensagens de clientes que ele
+            # conhece, ou seja, os que estão na lista de clientes da sala
             self.room_clients[(args[0], int(args[1]))] = {
-                'name': self.send_message('GREET', address=(args[0], int(args[1]))),
+                'name': None,
                 'address': (args[0], int(args[1])),
             }
+
+            self.room_clients[(args[0], int(args[1]))]['name'] = self.send_message('GREET', address=(args[0], int(args[1])))
         elif msg_type == 'DISCONNECT':
             with self.mutex:
                 del self.msgs[(args[0], int(args[1]))]
