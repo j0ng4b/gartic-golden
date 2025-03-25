@@ -71,7 +71,7 @@ class Server:
         # Verifica se a mensagem é para o servidor
         if dest == '':
             response = self.parse_server_message(msg_type, args, address)
-            self.send_server_response(response.encode(), address)
+            self.send_server_response(response, address)
             return
 
         # Repassa a mensagens para o cliente destino
