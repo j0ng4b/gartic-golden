@@ -147,10 +147,12 @@ def test_send_connect_message_to_clients(server):
 
     response = server.parse_server_message('ENTER', [room_code], addr2)
     assert response == 'OK'
+    assert len(server.rooms[0]['clients']) == 2
 
-    expected_calls = [
-        (f'CONNECT:{addr2[0]};{addr2[1]}'.encode(), addr1),
-        (f'CONNECT:{addr1[0]};{addr1[1]}'.encode(), addr2)
-    ]
-    assert server.socket.sendto_calls == expected_calls
+    message_0, addr_0 = server.socket.sendto_calls[0]
+    message_1, addr_1 = server.socket.sendto_calls[1]
+    assert message_0.startswith(b'/CONNECT:')
+    assert addr_0 == addr1
 
+    assert message_1.startswith(b'/CONNECT:')
+    assert addr_1 == addr2

@@ -1,5 +1,5 @@
 def test_register_success(client):
-    def dummy_send_message(type, *args, address=None, wait_response=True):
+    def dummy_send_message(type, *args, dest='', wait_response=True):
         return 'OK'
     client.send_message = dummy_send_message
 
@@ -8,7 +8,7 @@ def test_register_success(client):
 
 
 def test_register_failure(client):
-    def dummy_send_message(type, *args, address=None, wait_response=True):
+    def dummy_send_message(type, *args, dest='', wait_response=True):
         return 'ERROR'
     client.send_message = dummy_send_message
 
@@ -17,7 +17,7 @@ def test_register_failure(client):
 
 
 def test_unregister_success(client):
-    def dummy_send_message(type, *args, address=None, wait_response=True):
+    def dummy_send_message(type, *args, dest='', wait_response=True):
         return 'OK'
     client.send_message = dummy_send_message
 
@@ -26,7 +26,7 @@ def test_unregister_success(client):
 
 
 def test_unregister_failure(client):
-    def dummy_send_message(type, *args, address=None, wait_response=True):
+    def dummy_send_message(type, *args, dest='', wait_response=True):
         return 'ERROR'
     client.send_message = dummy_send_message
 
@@ -35,7 +35,7 @@ def test_unregister_failure(client):
 
 
 def test_create_room_success(client):
-    def dummy_send_message(type, *args, address=None, wait_response=True):
+    def dummy_send_message(type, *args, dest='', wait_response=True):
         return '123'
     client.send_message = dummy_send_message
 
@@ -45,7 +45,7 @@ def test_create_room_success(client):
 
 
 def test_create_room_failure(client):
-    def dummy_send_message(type, *args, address=None, wait_response=True):
+    def dummy_send_message(type, *args, dest='', wait_response=True):
         return 'ERROR'
     client.send_message = dummy_send_message
 
@@ -57,7 +57,7 @@ def test_create_room_failure(client):
 def test_close_room_success(client):
     client.room = '123'
 
-    def dummy_send_message(type, *args, address=None, wait_response=True):
+    def dummy_send_message(type, *args, dest='', wait_response=True):
         return 'OK'
     client.send_message = dummy_send_message
 
@@ -69,7 +69,7 @@ def test_close_room_success(client):
 def test_close_room_failure(client):
     client.room = '123'
 
-    def dummy_send_message(type, *args, address=None, wait_response=True):
+    def dummy_send_message(type, *args, dest='', wait_response=True):
         return 'ERROR'
     client.send_message = dummy_send_message
 
@@ -82,7 +82,7 @@ def test_leave_room_success(client):
     client.room = '123'
     client.room_clients = {('127.0.0.1', 8000): {'name': 'Client', 'address': ('127.0.0.1', 8000), 'msgs': []}}
 
-    def dummy_send_message(type, *args, address=None, wait_response=True):
+    def dummy_send_message(type, *args, dest='', wait_response=True):
         return 'OK'
     client.send_message = dummy_send_message
 
@@ -93,7 +93,7 @@ def test_leave_room_success(client):
 
 
 def test_enter_room_success(client):
-    def dummy_send_message(type, *args, address=None, wait_response=True):
+    def dummy_send_message(type, *args, dest='', wait_response=True):
         return 'OK'
     client.send_message = dummy_send_message
 
@@ -103,7 +103,7 @@ def test_enter_room_success(client):
 
 
 def test_enter_room_failure(client):
-    def dummy_send_message(type, *args, address=None, wait_response=True):
+    def dummy_send_message(type, *args, dest='', wait_response=True):
         return 'FAILED'
     client.send_message = dummy_send_message
 
@@ -113,7 +113,7 @@ def test_enter_room_failure(client):
 
 
 def test_list_rooms(client):
-    def dummy_send_message(type, *args, address=None, wait_response=True):
+    def dummy_send_message(type, *args, dest='', wait_response=True):
         return 'room1\nroom2\nroom3'
     client.send_message = dummy_send_message
 
@@ -122,7 +122,7 @@ def test_list_rooms(client):
 
 
 def test_status_room(client, caplog):
-    def dummy_send_message(type, *args, address=None, wait_response=True):
+    def dummy_send_message(type, *args, dest='', wait_response=True):
         return 'STATUS'
     client.send_message = dummy_send_message
 

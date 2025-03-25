@@ -49,9 +49,8 @@ def test_send_disconnect_message_to_clients(server):
 
     response = server.parse_server_message('LEAVE', [], addr2)
     assert response == 'OK'
+    assert len(server.rooms[0]['clients']) == 1
 
-    expected_calls = [
-        (f'DISCONNECT:{addr2[0]};{addr2[1]}'.encode(), addr1),
-    ]
-    assert server.socket.sendto_calls == expected_calls
-
+    message, addr = server.socket.sendto_calls[0]
+    assert message.startswith(b'/DISCONNECT:')
+    assert addr == addr1

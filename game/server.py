@@ -52,8 +52,8 @@ class Server:
 
             # Parse message
             msg = msg.decode()
-            if ':' not in msg:
-                self.socket.sendto(f'Mensagem inválida: {msg}'.encode(), address)
+            if '/' not in msg or ':' not in msg:
+                self.send_message(address, 'RESP', f'Mensagem inválida: {msg}')
                 continue
 
             threading.Thread(
@@ -62,29 +62,21 @@ class Server:
             ).start()
 
     def parse_message(self, msg, address):
+        dest, msg = msg.split('/')
         msg_type, args = msg.split(':')
         args = args.split(';')
         if len(args) == 1 and args[0] == '':
             args = []
 
-
-        # Processa e responde mensagens direcionadas ao servidor
-        response = self.parse_server_message(msg_type, args, address)
-        if response is not None:
-            self.socket.sendto(response.encode(), address)
+        # Verifica se a mensagem é para o servidor
+        if dest == '':
+            response = self.parse_server_message(msg_type, args, address)
+            self.send_message(address, 'RESP', f'{response}')
             return
 
-
-        # Repassa mensagens direcionadas a outros clientes
-        client = self.get_client(address[0], address[1])
-        if client is not None:
-            room = self.get_room(client['room'])
-            if room is not None:
-                for client in room['clients']:
-                    if client == address:
-                        continue
-
-                    self.socket.sendto(msg.encode(), client)
+        # Repassa a mensagens para o cliente destino
+        response = self.routes_client_message(dest, msg_type, args, address)
+        self.socket.sendto(response.encode(), address)
 
 
     def parse_server_message(self, msg_type, args, address):
@@ -163,7 +155,7 @@ class Server:
             if client['room'] == '' or room is None:
                 return 'Cliente não está em nenhuma sala'
 
-            if room['clients'][0] != address:
+            if room['clients'][0][0] != client['id']:
                 return 'Somente o dono da sala pode fechá-la'
 
             self.close_room(room)
@@ -225,9 +217,9 @@ class Server:
                 self.rooms.remove(room)
             else:
                 # Se houver clientes na sala notifica a eles que o cliente atual saiu
-                msg_leave = f'DISCONNECT:{address[0]};{address[1]}'
                 for address in room['clients']:
-                    self.socket.sendto(msg_leave.encode(), address)
+                    address = (address[1], address[2])
+                    self.send_message(address, 'DISCONNECT', client['id'])
 
             return 'OK'
 
@@ -262,11 +254,11 @@ class Server:
 
                 # Envia uma mensagem para o cliente que está na sala para se
                 # conectar com o novo cliente
-                self.socket.sendto(f'CONNECT:{client["id"]}'.encode(), room_client_address)
+                self.send_message(room_client_address, 'CONNECT', client['id'])
 
                 # Envia uma mensagem para o cliente que está entrando para se
                 # conectar com o cliente que já está na sala
-                self.socket.sendto(f'CONNECT:{room_client[0]}'.encode(), address)
+                self.send_message(address, 'CONNECT', room_client[0])
 
             client['room'] = room['code']
             room['clients'].append(address)
@@ -276,17 +268,41 @@ class Server:
 
             return 'OK'
 
-        return None
+        return 'Tipo de mensagem inválido'
+
+    def routes_client_message(self, dest, msg_type, args, address):
+        client = self.get_client(address[0], address[1])
+        if client is None:
+            return 'Cliente não registrado'
+
+        if client['id'] == dest:
+            return 'Cliente destino é o próprio cliente'
+
+        room = self.get_room(client['room'])
+        if room is None:
+            return 'Cliente não está em nenhuma sala'
+
+        msg = f'{client['id']}/{msg_type}:{";".join(args)}'.encode()
+        for room_client in room['clients']:
+            if room_client[0] == dest:
+                self.socket.sendto(msg, (room_client[1], room_client[2]))
+                return 'OK'
+
+        return 'Cliente destino não encontrado'
+
+    def send_message(self, address, type, *args):
+        self.socket.sendto(f"/{type}:{';'.join(args)}".encode(), address)
 
     def close_room(self, room):
         for client in room['clients']:
             if client == room['clients'][0]:
                 continue
 
-            self.socket.sendto(f'PLAY:'.encode(), client)
+            self.send_message((client[0], client[1]), 'PLAY')
 
         # Notifica o cliente dono da sala que pode iniciar o jogo
-        self.socket.sendto(f'GAME:'.encode(), room['clients'][0])
+        address = (room['clients'][0][1], room['clients'][0][2])
+        self.send_message(address, 'GAME')
         self.rooms.remove(room)
 
     def get_client(self, address, port):
@@ -302,4 +318,3 @@ class Server:
                 return room
 
         return None
-
