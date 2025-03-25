@@ -52,5 +52,5 @@ def test_send_disconnect_message_to_clients(server):
     assert len(server.rooms[0]['clients']) == 1
 
     message, addr = server.socket.sendto_calls[0]
-    assert message.startswith(b'DISCONNECT:')
+    assert message.startswith(b'/DISCONNECT:')
     assert addr == addr1

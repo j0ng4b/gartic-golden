@@ -59,8 +59,8 @@ def test_send_play_and_game_messages_to_clients(server):
     assert len(server.rooms) == 0
 
     expected_calls = [
-        (f'PLAY:'.encode(), addr2),
-        (f'GAME:'.encode(), addr1),
+        (f'/PLAY:'.encode(), addr2),
+        (f'/GAME:'.encode(), addr1),
     ]
     assert server.socket.sendto_calls == expected_calls
 

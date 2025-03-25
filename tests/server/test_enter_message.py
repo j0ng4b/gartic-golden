@@ -151,8 +151,8 @@ def test_send_connect_message_to_clients(server):
 
     message_0, addr_0 = server.socket.sendto_calls[0]
     message_1, addr_1 = server.socket.sendto_calls[1]
-    assert message_0.startswith(b'CONNECT:')
+    assert message_0.startswith(b'/CONNECT:')
     assert addr_0 == addr1
 
-    assert message_1.startswith(b'CONNECT:')
+    assert message_1.startswith(b'/CONNECT:')
     assert addr_1 == addr2
