@@ -25,16 +25,18 @@ class InputField():
             self.active = self.rect.collidepoint(event.pos)
             self.time = pygame.time.get_ticks()
             self.cursor_visible = True
-        
+
         if self.active:
             if event.type == pygame.KEYDOWN:
                 self.time = pygame.time.get_ticks()
                 self.cursor_visible = True
                 if event.key == pygame.K_BACKSPACE and self.cursor_pos > 0:
-                    self.text = self.text[:self.cursor_pos-1] + self.text[self.cursor_pos:]
+                    self.text = self.text[:self.cursor_pos -
+                                          1] + self.text[self.cursor_pos:]
                     self.cursor_pos -= 1
                 elif event.key == pygame.K_DELETE and self.cursor_pos < len(self.text):
-                    self.text = self.text[:self.cursor_pos] + self.text[self.cursor_pos+1:]
+                    self.text = self.text[:self.cursor_pos] + \
+                        self.text[self.cursor_pos+1:]
                 elif event.key == pygame.K_LEFT:
                     self.cursor_pos = max(0, self.cursor_pos - 1)
                 elif event.key == pygame.K_RIGHT:
@@ -46,7 +48,8 @@ class InputField():
                 elif event.key == pygame.K_RETURN:
                     self.return_pressed = True
                 else:
-                    self.text = self.text[:self.cursor_pos] + event.unicode + self.text[self.cursor_pos:]
+                    self.text = self.text[:self.cursor_pos] + \
+                        event.unicode + self.text[self.cursor_pos:]
                     self.cursor_pos += 1
                 self.update_text_offset()
 
@@ -54,30 +57,30 @@ class InputField():
         max_width = self.rect.width - 2 * self.padding
         cursor_pixel_pos = self.font.size(self.text[:self.cursor_pos])[0]
         text_width = self.font.size(self.text)[0]
-        self.text_offset = max(0, min(cursor_pixel_pos, text_width - max_width, cursor_pixel_pos - max_width))
+        self.text_offset = max(
+            0, min(cursor_pixel_pos, text_width - max_width, cursor_pixel_pos - max_width))
 
     def draw(self, screen):
-        pygame.draw.rect(screen, (255, 255, 255), self.rect, border_radius=8)
-        pygame.draw.rect(screen, (0, 0, 0), self.rect, 2, border_radius=8)
-        display_text = self.text if self.text else self.placeholder
-        text_color = (0, 0, 0) if self.text else (169, 169, 169)
-        text = self.font.render(display_text, True, text_color)
+        pygame.draw.rect(screen, Color.WHITE, self.rect, border_radius=8)
+        pygame.draw.rect(screen, Color.BLACK, self.rect, 2, border_radius=8)
 
+        display_text = self.text if self.text else self.placeholder
+        text_color = Color.BLACK if self.text else Color.LIGHT_GRAY
+        text = self.font.render(display_text, True, text_color)
         text_clip_rect = pygame.Rect(
             self.rect.x + self.padding,
             self.rect.y + self.padding,
             self.rect.width - 2 * self.padding,
             self.rect.height - 2 * self.padding
         )
-
         old_clip = screen.get_clip()
         screen.set_clip(text_clip_rect)
         text_rect = text.get_rect(
-            midleft=(self.rect.x + self.padding - self.text_offset, 
-                    self.rect.y + self.rect.height // 2))
+            midleft=(self.rect.x + self.padding - self.text_offset,
+                     self.rect.y + self.rect.height // 2))
         screen.blit(text, text_rect)
-
         screen.set_clip(old_clip)
+
         current_time = pygame.time.get_ticks()
         if current_time - self.time > self.cursor_interval:
             self.cursor_visible = not self.cursor_visible
@@ -86,7 +89,7 @@ class InputField():
             cursor_pixel_pos = self.font.size(self.text[:self.cursor_pos])[0]
             cursor_x = self.rect.x + self.padding + cursor_pixel_pos - self.text_offset
             cursor_x = max(self.rect.x + self.padding,
-                        min(cursor_x, self.rect.x + self.rect.width - self.padding))
+                           min(cursor_x, self.rect.x + self.rect.width - self.padding))
             cursor_top = self.rect.y + self.padding
             cursor_height = self.rect.height - 2 * self.padding
             pygame.draw.line(
@@ -112,11 +115,14 @@ class Screen(BaseClient):
             os.path.dirname(__file__), 'font', 'Acme-Regular.ttf'), 40)
         self.font_input_name = pygame.font.Font(os.path.join(
             os.path.dirname(__file__), 'font', 'Acme-Regular.ttf'), 26)
+        self.image_logo = pygame.image.load(os.path.join(
+            os.path.dirname(__file__), 'assets', 'logo.png'))
+        self.image_logo_small = pygame.image.load(os.path.join(
+            os.path.dirname(__file__), 'assets', 'logo_small.png'))
         self.running = True
 
         # Controlador - Page
-        self.current_page = 'Register'  # Primeira página para registrar o nome
-        self.button_jogar = False
+        self.current_page = 'Test'  # Primeira página para registrar o nome
 
         # Lista de inputs
         self.inputs = [
@@ -145,13 +151,13 @@ class Screen(BaseClient):
                     self.current_input.handle_event(event)
 
             self.screen.fill(Color.GOLDEN)
-            self.draw_page()
+            self.draw()
             pygame.display.update()
             self.clock.tick(60)
 
         pygame.quit()
 
-    def draw_page(self):
+    def draw(self):
         if self.current_page == 'Register':
             self.register_page()
         elif self.current_page == 'Rooms':
@@ -160,15 +166,13 @@ class Screen(BaseClient):
             ...
         elif self.current_page == 'Play':
             ...
-        elif self.current_page == 'Teste':
-            self.test_page()
+        elif self.current_page == 'Test':
+            self.play_page()
 
     def register_page(self):
         prox_page = False
         # Logo
-        image_logo = pygame.image.load(os.path.join(
-            os.path.dirname(__file__), 'assets', 'logo.png'))
-        image_rect = image_logo.get_rect(
+        image_rect = self.image_logo.get_rect(
             center=(Size.SCREEN_WIDTH // 2, Size.SCREEN_HEIGHT // 2 - 200))
         # Label
         text = self.font_label.render('Digite seu nick', True, Color.BLACK)
@@ -202,9 +206,8 @@ class Screen(BaseClient):
         elif self.inputs[0].return_pressed and self.inputs[0].text != '':
             prox_page = True
 
-        self.button_jogar = False
         self.screen.blit(text, text_rect)
-        self.screen.blit(image_logo, image_rect)
+        self.screen.blit(self.image_logo, image_rect)
         self.screen.blit(button_text, button_text_rect)
 
         if prox_page:
@@ -216,12 +219,22 @@ class Screen(BaseClient):
                 self.current_input.active = False
                 self.current_input = None
 
-    def test_page(self):
-        '''Página de testes, favor apagar depois'''
-        text = self.font_label.render(self.name, True, Color.BLACK)
-        text_rect = text.get_rect(
-            center=(Size.SCREEN_WIDTH // 2, Size.SCREEN_HEIGHT // 2 - 50))
-        self.screen.blit(text, text_rect)
+    def play_page(self):
+        # Área do desenho
+        draw_rect = pygame.Rect(
+            Size.SCREEN_WIDTH // 4 - 40,
+            Size.SCREEN_HEIGHT // 4 - 55,
+            Size.SCREEN_WIDTH - 175,
+            Size.SCREEN_HEIGHT // 2 + 30
+        )
+        pygame.draw.rect(self.screen, Color.WHITE, draw_rect, border_radius=20)
+
+        # Logo
+        image_rect = self.image_logo_small.get_rect(
+            center=(Size.SCREEN_WIDTH // 2 - 50, Size.SCREEN_HEIGHT // 2 - 250)
+        )
+
+        self.screen.blit(self.image_logo_small, image_rect)
 
     def handle_chat(self, client, message):
         print(f'~{client["name"]}: {message}')
@@ -231,6 +244,4 @@ class Screen(BaseClient):
 
 
 if __name__ == '__main__':
-    # Só pra fazer aquele teste maroto
-    screen = Screen('localhost', 7001)
-    screen.start()
+    ...
