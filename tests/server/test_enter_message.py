@@ -156,4 +156,3 @@ def test_send_connect_message_to_clients(server):
 
     assert message_1.startswith(b'CONNECT:')
     assert addr_1 == addr2
-

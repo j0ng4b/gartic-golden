@@ -52,7 +52,7 @@ class Server:
 
             # Parse message
             msg = msg.decode()
-            if ':' not in msg:
+            if '/' not in msg or ':' not in msg:
                 self.socket.sendto(f'Mensagem inválida: {msg}'.encode(), address)
                 continue
 
@@ -62,29 +62,21 @@ class Server:
             ).start()
 
     def parse_message(self, msg, address):
+        dest, msg = msg.split('/')
         msg_type, args = msg.split(':')
         args = args.split(';')
         if len(args) == 1 and args[0] == '':
             args = []
 
-
-        # Processa e responde mensagens direcionadas ao servidor
-        response = self.parse_server_message(msg_type, args, address)
-        if response is not None:
+        # Verifica se a mensagem é para o servidor
+        if dest == '':
+            response = self.parse_server_message(msg_type, args, address)
             self.socket.sendto(response.encode(), address)
             return
 
-
-        # Repassa mensagens direcionadas a outros clientes
-        client = self.get_client(address[0], address[1])
-        if client is not None:
-            room = self.get_room(client['room'])
-            if room is not None:
-                for client in room['clients']:
-                    if client == address:
-                        continue
-
-                    self.socket.sendto(msg.encode(), client)
+        # Repassa a mensagens para o cliente destino
+        response = self.routes_client_message(dest, msg_type, args, address)
+        self.socket.sendto(response.encode(), address)
 
 
     def parse_server_message(self, msg_type, args, address):
@@ -277,7 +269,24 @@ class Server:
 
             return 'OK'
 
-        return None
+        return 'Tipo de mensagem inválido'
+
+    def routes_client_message(self, dest, msg_type, args, address):
+        client = self.get_client(address[0], address[1])
+        if client is None:
+            return 'Cliente não registrado'
+
+        room = self.get_room(client['room'])
+        if room is None:
+            return 'Cliente não está em nenhuma sala'
+
+        msg = f'{client['id']}/{msg_type}:{";".join(args)}'.encode()
+        for room_client in room['clients']:
+            if room_client[0] == dest:
+                self.socket.sendto(msg, (room_client[1], room_client[2]))
+                return 'OK'
+
+        return 'Cliente destino não encontrado'
 
     def close_room(self, room):
         for client in room['clients']:
