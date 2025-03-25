@@ -163,7 +163,7 @@ class Server:
             if client['room'] == '' or room is None:
                 return 'Cliente não está em nenhuma sala'
 
-            if room['clients'][0] != address:
+            if room['clients'][0][0] != client['id']:
                 return 'Somente o dono da sala pode fechá-la'
 
             self.close_room(room)
