@@ -1,4 +1,5 @@
 import socket
+import threading
 
 
 class Server:
@@ -44,6 +45,7 @@ class Server:
     def start(self):
         while True:
             msg, address = self.socket.recvfrom(1024)
+            print(f'Mensagem {msg} recebida de {address}')
 
             # Parse message
             msg = msg.decode()
@@ -51,29 +53,38 @@ class Server:
                 self.socket.sendto(f'Mensagem inválida: {msg}'.encode(), address)
                 continue
 
-            msg_type, args = msg.split(':')
-            args = args.split(';')
-            if len(args) == 1 and args[0] == '':
-                args = []
+            threading.Thread(
+                target=self.parse_message,
+                args=(msg, address)
+            ).start()
 
-            response = self.parse_message(msg_type, args, address)
-            if response is None:
-                client = self.get_client(address[0], address[1])
-                if client is not None:
-                    room = self.get_room(client['room'])
-                    if room is not None:
-                        for client in room['clients']:
-                            if client == address:
-                                continue
+    def parse_message(self, msg, address):
+        msg_type, args = msg.split(':')
+        args = args.split(';')
+        if len(args) == 1 and args[0] == '':
+            args = []
 
-                            self.socket.sendto(msg.encode(), client)
 
-                continue
-
-            # Sends response to client
+        # Processa e responde mensagens direcionadas ao servidor
+        response = self.parse_server_message(msg_type, args, address)
+        if response is not None:
             self.socket.sendto(response.encode(), address)
+            return
 
-    def parse_message(self, msg_type, args, address):
+
+        # Repassa mensagens direcionadas a outros clientes
+        client = self.get_client(address[0], address[1])
+        if client is not None:
+            room = self.get_room(client['room'])
+            if room is not None:
+                for client in room['clients']:
+                    if client == address:
+                        continue
+
+                    self.socket.sendto(msg.encode(), client)
+
+
+    def parse_server_message(self, msg_type, args, address):
         if msg_type == 'REGISTER':
             if len(args) != 1:
                 return 'Número de argumentos inválido'
@@ -263,7 +274,7 @@ class Server:
 
             return 'OK'
 
-        return 'Tipo de mensagem inválido'
+        return None
 
     def close_room(self, room):
         for client in room['clients']:
