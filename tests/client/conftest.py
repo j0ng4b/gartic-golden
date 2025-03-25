@@ -14,7 +14,7 @@ from game.client.base import BaseClient
 
 class DummySocket:
     def __init__(self, *args, **kwargs):
-        self.sendto_calls = []
+        self.send_calls = []
 
     def bind(self, address):
         pass
@@ -22,8 +22,8 @@ class DummySocket:
     def recvfrom(self, bufsize):
         return (b'', ('127.0.0.1', 5000))
 
-    def sendto(self, data, address):
-        self.sendto_calls.append((data, address))
+    def send(self, data):
+        self.send_calls.append(data)
 
 
 class DummyClient(BaseClient):
@@ -32,28 +32,21 @@ class DummyClient(BaseClient):
         self.socket = DummySocket()
 
     def handle_chat(self, client, message):
-        client.setdefault('handled_chats', []).append(message)
+        pass
 
     def handle_canvas(self, canvas):
         pass
 
-    def get_message(self, address):
-        if self.msgs.get(address):
-            return self.msgs[address].pop(0)
-        return ''
+    def get_message(self):
+        return self.msgs.pop(0)
 
-    def send_message(self, type, *args, address=None, wait_response=True):
-        if address is None:
-            address = self.address
-
-        msg = f"{type}:{';'.join(args)}"
-        self.socket.sendto(msg.encode(), address)
+    def send_message(self, type, *args, dest='', wait_response=True):
+        self.socket.send(f"{dest}/{type}:{';'.join(args)}".encode())
 
         if wait_response:
-            return "OK"
+            return 'OK'
         return None
 
 @pytest.fixture
 def client():
     return DummyClient('127.0.0.1', 8080)
-

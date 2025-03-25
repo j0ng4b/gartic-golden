@@ -1,17 +1,13 @@
 def test_parse_client_message_greet(client):
-    key = ('127.0.0.1', 8083)
-    client.room_clients[key] = {'name': None, 'address': key, 'msgs': []}
+    client.room_clients['client1'] = {'name': None, 'msgs': []}
 
-    result = client.parse_client_message('GREET', [], key)
+    result = client.parse_client_message('client2', 'GREET', [])
     assert result == client.name
 
 
 def test_parse_client_message_chat(client):
-    key = ('127.0.0.1', 8084)
-    client.room_clients[key] = {'name': 'TestClient', 'address': key, 'msgs': []}
+    dest = 'client2'
+    client.room_clients[dest] = {'name': 'TestClient', 'msgs': []}
 
-    client.parse_client_message('CHAT', ['Hello'], key)
-
-    assert 'Hello' in client.room_clients[key]['msgs']
-    assert 'Hello' in client.room_clients[key].get('handled_chats', [])
-
+    client.parse_client_message(dest, 'CHAT', ['Hello'])
+    assert 'Hello' in client.room_clients[dest]['msgs']
