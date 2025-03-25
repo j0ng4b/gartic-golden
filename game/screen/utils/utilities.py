@@ -12,4 +12,6 @@ class Color():
     BLACK = (0, 0, 0)
     WHITE = (255, 255, 255)
     LIGHT_GRAY = (169, 169, 169)
-
+    HONEY = (251,189,0)
+    RED = (218,41,44)
+    LIGHT_GOLD = (254,214,91)
