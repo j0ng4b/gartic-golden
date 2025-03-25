@@ -9,7 +9,6 @@ class BaseClient(abc.ABC):
     def __init__(self, address, port):
         if address is None or port is None:
             raise ValueError('server address and port must be set')
-        self.address = (socket.gethostbyname(address), int(port))
 
         self.room = None
         self.room_clients = {}
@@ -21,12 +20,12 @@ class BaseClient(abc.ABC):
 
         # Contexto de execução, armazena informações de execução de cada thread
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.socket.bind(('', 0))
+        self.socket.connect((socket.gethostbyname(address), int(port)))
 
         self.mutex = threading.Lock()
-        self.msgs = {
-            self.address: [],
-        }
+        self.msgs = []
+
+        self.server_error = None
 
     def start(self):
         # Inicia o a comunicação com o servidor, deve ser inciado antes de
@@ -43,81 +42,68 @@ class BaseClient(abc.ABC):
     ###
     def handle_messages(self):
         while True:
-            # Essa função recebe toda e qualquer mensagem mesmo as que não são
-            # comandos do servidor
-            msg, address = self.socket.recvfrom(1024)
+            msg = self.socket.recv(1024).decode()
+            print('Recebido:', msg)
 
-            # Quando há um ':' na message essa é uma mensagem de comando vinda
-            # do servidor, faz análise da mensagem
-            msg = msg.decode()
-            if ':' in msg:
-                msg_type, args = msg.split(':')
-                args = args.split(';')
-                if len(args) == 1 and args[0] == '':
-                    args = []
-
-                threading.Thread(
-                    target=self.parser_message,
-                    args=(msg_type, args, address)
-                ).start()
+            # Verifica se a mensagem está no formato correto
+            if '/' not in msg or ':' not in msg:
+                print('Mensagem inválida:', msg)
                 continue
 
-            # Quando não é um comando do servidor apenas joga a mensagem na
-            # pilha de mensagens para que seja analisada por outra parte do
-            # código
+
+            threading.Thread(
+                target=self.parser_message,
+                args=(msg,)
+            ).start()
+
+    def parser_message(self, msg):
+        dest, msg = msg.split('/')
+        msg_type, args = msg.split(':')
+        args = args.split(';')
+        if len(args) == 1 and args[0] == '':
+            args = []
+
+
+        # Verifica se a mensagem é uma resposta
+        if msg_type == 'RESP':
             with self.mutex:
-                self.msgs[address].append(msg)
+                self.msgs.append(args[0])
 
-    def parser_message(self, msg_type, args, address):
-        response = None
+            return
 
-        if address == self.address:
-            response = self.parse_server_message(msg_type, args)
-        else:
-            # Verifica se o endereço é de um cliente na sala
-            for client in self.room_clients.values():
-                if client['address'] == address:
-                    response = self.parse_client_message(msg_type, args, address)
-                    break
+        # Verifica se a mensagem veio do servidor
+        if dest == '':
+            self.parse_server_message(msg_type, args)
 
-        if response is not None:
-            self.socket.sendto(response.encode(), address)
+        # Verifica se a mensagem veio de um cliente
+        if dest in self.room_clients:
+            response = self.parse_client_message(dest, msg_type, args)
+            if response is not None:
+                self.send_message(response, dest=dest)
 
     def parse_server_message(self, msg_type, args):
         if msg_type == 'CONNECT':
-            with self.mutex:
-                self.msgs[(args[0], int(args[1]))] = []
-
-            # Antes de enviar a mensagem de saudação, adiciona o cliente na
-            # lista porque o cliente só aceita mensagens de clientes que ele
-            # conhece, ou seja, os que estão na lista de clientes da sala
-            self.room_clients[(args[0], int(args[1]))] = {
-                'name': None,
-                'address': (args[0], int(args[1])),
+            self.room_clients[args[0]] = {
+                'name': self.send_message('GREET', dest=args[0]),
                 'msgs': [],
             }
 
-            self.room_clients[(args[0], int(args[1]))]['name'] = self.send_message('GREET', address=(args[0], int(args[1])))
-
         elif msg_type == 'DISCONNECT':
-            with self.mutex:
-                del self.msgs[(args[0], int(args[1]))]
-
-            del self.room_clients[(args[0], int(args[1]))]
+            del self.room_clients[args[0]]
         elif msg_type == 'PLAY':
             self.client_host = (args[0], int(args[1]))
 
         return None
 
-    def parse_client_message(self, msg_type, args, address):
+    def parse_client_message(self, dest, msg_type, args):
         if msg_type == 'GREET':
             return self.name
 
         elif msg_type == 'CHAT':
             with self.mutex:
-                self.room_clients[address]['msgs'].append(args[0])
+                self.room_clients[dest]['msgs'].append(args[0])
 
-            self.handle_chat(self.room_clients[address], args[0])
+            self.handle_chat(self.room_clients[dest], args[0])
 
         elif msg_type == 'GUESS':
             pass
@@ -154,23 +140,27 @@ class BaseClient(abc.ABC):
     ###
     ### Métodos principais para comunicação
     ###
-    def get_message(self, address):
+    def get_message(self):
         while True:
             with self.mutex:
-                if len(self.msgs[address]) == 0:
+                if len(self.msgs) == 0:
                     continue
 
-                return self.msgs[address].pop(0)
+                return self.msgs.pop(0)
 
-    def send_message(self, type, *args, address=None, wait_response=True):
-        if address is None:
-            address = self.address
-
-        self.socket.sendto(f"{type}:{';'.join(args)}".encode(), address)
+    def send_message(self, type, *args, dest='', wait_response=True):
+        print('Enviando:', f"{dest}/{type}:{';'.join(args)}")
+        self.socket.send(f"{dest}/{type}:{';'.join(args)}".encode())
 
         if not wait_response:
             return None
-        return self.get_message(address)
+        return self.get_message()
+
+    def get_server_error(self):
+        error = self.server_error
+        self.server_error = None
+
+        return error
 
 
     ###
@@ -178,11 +168,19 @@ class BaseClient(abc.ABC):
     ###
     def server_register(self):
         res = self.send_message('REGISTER', self.name)
-        return res == 'OK'
+        if res == 'OK':
+            return True
+
+        self.server_error = res
+        return False
 
     def server_unregister(self):
         res = self.send_message('UNREGISTER')
-        return res == 'OK'
+        if res == 'OK':
+            return True
+
+        self.server_error = res
+        return False
 
     def server_create_room(self, room_type, room_name, room_password=None):
         args = [room_type, room_name]
@@ -195,6 +193,7 @@ class BaseClient(abc.ABC):
             self.room = res
             return True
 
+        self.server_error = res
         return False
 
     def server_close_room(self):
@@ -203,6 +202,7 @@ class BaseClient(abc.ABC):
             self.room = None
             return True
 
+        self.server_error = res
         return False
 
     def server_list_rooms(self, room_type=None):
@@ -228,6 +228,7 @@ class BaseClient(abc.ABC):
             self.room = room_code
             return True
 
+        self.server_error = res
         return False
 
     def server_status_room(self):
@@ -240,6 +241,7 @@ class BaseClient(abc.ABC):
             self.room_clients = {}
             return True
 
+        self.server_error = res
         return False
 
 
@@ -247,8 +249,8 @@ class BaseClient(abc.ABC):
     ### Métodos de comunicação com outros clientes
     ###
     def client_chat(self, message):
-        for client in self.room_clients.values():
-            self.send_message('CHAT', message, address=client['address'], wait_response=False)
+        # TODO: Implementar o envio de mensagem para outros clientes
+        ...
 
     def client_guess(self, guess):
         ...
@@ -263,18 +265,14 @@ class BaseClient(abc.ABC):
         ...
 
     def client_got_the_right_answer(self):
-        # Envia a mensagem de acerto para todos os clientes informando quem
-        # acertou
-        for client in self.room_clients.values():
-            self.send_message('GTRA', client[0], client[1],
-                              address=client['address'], wait_response=False)
+        # TODO: Implementar o envio de mensagem para outros clientes informando
+        # que o cliente que acertou a palavra
+        ...
 
     def client_canvas(self, canvas_data):
         # Comprime a imagem e envia para todos os clientes
         canvas_data = zlib.compress(canvas_data)
         canvas_data = base64.b64encode(canvas_data).decode()
 
-        for client in self.room_clients.values():
-            self.send_message('CANVAS', canvas_data,
-                              address=client['address'], wait_response=False)
-
+        # TODO: Implementar o envio do canvas para todos os clientes
+        ...
