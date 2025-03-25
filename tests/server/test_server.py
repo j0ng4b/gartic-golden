@@ -5,7 +5,7 @@ def test_get_invalid_client(server):
 
 def test_get_valid_client(server):
     addr = ('127.0.0.1', 5008)
-    server.parse_message('REGISTER', ['Grace'], addr)
+    server.parse_server_message('REGISTER', ['Grace'], addr)
 
     client = server.get_client(addr[0], addr[1])
     assert client is not None
