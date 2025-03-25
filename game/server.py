@@ -75,7 +75,6 @@ class Server:
                 'address': address[0],
                 'port': address[1],
             })
-
             return 'OK'
 
         elif msg_type == 'UNREGISTER':
