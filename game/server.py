@@ -276,6 +276,9 @@ class Server:
         if client is None:
             return 'Cliente não registrado'
 
+        if client['id'] == dest:
+            return 'Cliente destino é o próprio cliente'
+
         room = self.get_room(client['room'])
         if room is None:
             return 'Cliente não está em nenhuma sala'
