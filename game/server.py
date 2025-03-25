@@ -53,7 +53,7 @@ class Server:
             # Parse message
             msg = msg.decode()
             if '/' not in msg or ':' not in msg:
-                self.socket.sendto(f'Mensagem inválida: {msg}'.encode(), address)
+                self.send_server_response(f'Mensagem inválida: {msg}', address)
                 continue
 
             threading.Thread(
@@ -71,7 +71,7 @@ class Server:
         # Verifica se a mensagem é para o servidor
         if dest == '':
             response = self.parse_server_message(msg_type, args, address)
-            self.socket.sendto(response.encode(), address)
+            self.send_server_response(response.encode(), address)
             return
 
         # Repassa a mensagens para o cliente destino
@@ -291,6 +291,9 @@ class Server:
 
         return 'Cliente destino não encontrado'
 
+    def send_server_response(self, response, address):
+        self.socket.sendto(f'/RESP:{response}'.encode(), address)
+
     def close_room(self, room):
         for client in room['clients']:
             if client == room['clients'][0]:
@@ -316,4 +319,3 @@ class Server:
                 return room
 
         return None
-
