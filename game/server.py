@@ -57,6 +57,18 @@ class Server:
                 args = []
 
             response = self.parse_message(msg_type, args, address)
+            if response is None:
+                client = self.get_client(address[0], address[1])
+                if client is not None:
+                    room = self.get_room(client['room'])
+                    if room is not None:
+                        for client in room['clients']:
+                            if client == address:
+                                continue
+
+                            self.socket.sendto(msg.encode(), client)
+
+                continue
 
             # Sends response to client
             self.socket.sendto(response.encode(), address)
