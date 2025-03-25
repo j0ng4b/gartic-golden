@@ -1,5 +1,6 @@
 import socket
 import threading
+import uuid
 
 
 class Server:
@@ -25,6 +26,7 @@ class Server:
         #
         # Client
         # (
+        #   'id',
         #   'address',
         #    port
         # )
@@ -34,6 +36,7 @@ class Server:
         #
         # Client
         # {
+        #   'id': 'client id',
         #   'name': 'client name',
         #   'room': 'room code',
         #
@@ -92,6 +95,7 @@ class Server:
                 return 'Nome de jogador inválido'
 
             self.clients.append({
+                'id': str(uuid.uuid4()),
                 'name': args[0],
                 'room': '',
 
@@ -139,9 +143,7 @@ class Server:
                 'password': args[2] if len(args) == 3 else None,
                 'max_clients': 10,  # Por enquanto é um valor fixo
                 'clients': [
-                    # address é uma tupla, com o primeiro elemento sendo o
-                    # endereço IP e o segundo sendo a porta do cliente
-                    address,
+                    (client['id'], client['address'], client['port']),
                 ]
             })
 
@@ -256,15 +258,15 @@ class Server:
 
             # Notifica os clientes da sala que um novo cliente entrou
             for room_client in room['clients']:
+                room_client_address = (room_client[1], room_client[2])
+
                 # Envia uma mensagem para o cliente que está na sala para se
                 # conectar com o novo cliente
-                args = f'{address[0]};{str(address[1])}'
-                self.socket.sendto(f'CONNECT:{args}'.encode(), room_client)
+                self.socket.sendto(f'CONNECT:{client["id"]}'.encode(), room_client_address)
 
                 # Envia uma mensagem para o cliente que está entrando para se
                 # conectar com o cliente que já está na sala
-                args = f'{room_client[0]};{str(room_client[1])}'
-                self.socket.sendto(f'CONNECT:{args}'.encode(), address)
+                self.socket.sendto(f'CONNECT:{room_client[0]}'.encode(), address)
 
             client['room'] = room['code']
             room['clients'].append(address)
