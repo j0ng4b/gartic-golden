@@ -225,8 +225,9 @@ class Server:
                 self.rooms.remove(room)
             else:
                 # Se houver clientes na sala notifica a eles que o cliente atual saiu
-                msg_leave = f'DISCONNECT:{address[0]};{address[1]}'
+                msg_leave = f'DISCONNECT:{client["id"]}'
                 for address in room['clients']:
+                    address = (address[1], address[2])
                     self.socket.sendto(msg_leave.encode(), address)
 
             return 'OK'
@@ -286,7 +287,8 @@ class Server:
             self.socket.sendto(f'PLAY:'.encode(), client)
 
         # Notifica o cliente dono da sala que pode iniciar o jogo
-        self.socket.sendto(f'GAME:'.encode(), room['clients'][0])
+        address = (room['clients'][0][1], room['clients'][0][2])
+        self.socket.sendto(f'GAME:'.encode(), address)
         self.rooms.remove(room)
 
     def get_client(self, address, port):
