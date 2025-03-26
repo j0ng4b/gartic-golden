@@ -210,7 +210,6 @@ class BaseClient(abc.ABC):
         # TODO: Corrigir o fechamento da sala
         res = self.send_message('CROOM')
         if res == 'OK':
-            self.room = None
             return True
 
         self.server_error = res
