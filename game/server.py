@@ -17,6 +17,7 @@ class Server:
         # {
         #   'name': 'room name',
         #   'code': 'room code',
+        #   'state': 'room state',
         #   'password': 'room password',
         #   'max_clients': number maximum clients,
         #   'clients': [
@@ -89,7 +90,7 @@ class Server:
             self.clients.append({
                 'id': str(uuid.uuid4()),
                 'name': args[0],
-                'room': '',
+                'room': None,
 
                 'address': address[0],
                 'port': address[1],
@@ -123,7 +124,7 @@ class Server:
             if client is None:
                 return 'Cliente não registrado'
 
-            if client['room'] != '':
+            if client['room'] is not None:
                 return 'Cliente já está em uma sala'
 
             # A lista de clientes da sala recém-criada neste momento possui apenas o host da sala.
@@ -132,6 +133,7 @@ class Server:
             self.rooms.append({
                 'name': args[1],
                 'code': code,
+                'state': 'lobby',
                 'password': args[2] if len(args) == 3 else None,
                 'max_clients': 10,  # Por enquanto é um valor fixo
                 'clients': [
@@ -170,7 +172,7 @@ class Server:
             res = ''
             for room in self.rooms:
                 room_type = 'priv' if room['password'] is not None else 'pub'
-                if len(args) == 1 and room_type != args[0]:
+                if (len(args) == 1 and room_type != args[0]) or room['state'] != 'lobby':
                     continue
 
                 res += f"{room_type},{room['name']},{room['code']},"
@@ -208,7 +210,7 @@ class Server:
                 return 'Cliente não está em nenhuma sala'
 
             # Retira o código da sala do cliente registrado
-            client['room'] = ''
+            client['room'] = None
 
             # Remove o cliente que deseja sair da lista de clientes daquela sala
             room['clients'].remove((client['id'], address[0], address[1]))
@@ -236,8 +238,11 @@ class Server:
             if room is None:
                 return 'Código da sala inválido'
 
+            if room['state'] != 'lobby':
+                return 'A sala não está disponível'
+
             # Verifica se o cliente está na sala
-            if client['room'] != '':
+            if client['room'] is not None:
                 if client['room'] == args[0]:
                     return 'Cliente já está na sala'
                 return 'Cliente já está em outra sala'
@@ -306,7 +311,7 @@ class Server:
         # Notifica o cliente dono da sala que pode iniciar o jogo
         address = (room['clients'][0][1], room['clients'][0][2])
         self.send_message(address, 'GAME')
-        self.rooms.remove(room)
+        room['state'] = 'game'
 
     def get_client(self, address, port):
         for client in self.clients:
