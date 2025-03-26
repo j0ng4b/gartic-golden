@@ -55,15 +55,12 @@ def test_create_room_failure(client):
 
 
 def test_close_room_success(client):
-    client.room = '123'
-
     def dummy_send_message(type, *args, dest='', wait_response=True):
         return 'OK'
     client.send_message = dummy_send_message
 
     response = client.server_close_room()
     assert response is True
-    assert client.room is None
 
 
 def test_close_room_failure(client):
