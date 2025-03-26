@@ -249,20 +249,23 @@ class Server:
             elif room['password'] is not None and args[1] != room['password']:
                 return 'Senha da sala está incorreta'
 
+            # Adiciona o cliente na sala
+            client['room'] = room['code']
+            room['clients'].append((client['id'], address[0], address[1]))
+
             # Notifica os clientes da sala que um novo cliente entrou
             for room_client in room['clients']:
-                room_client_address = (room_client[1], room_client[2])
+                if room_client[0] == client['id']:
+                    continue
 
                 # Envia uma mensagem para o cliente que está na sala para se
                 # conectar com o novo cliente
+                room_client_address = (room_client[1], room_client[2])
                 self.send_message(room_client_address, 'CONNECT', client['id'])
 
                 # Envia uma mensagem para o cliente que está entrando para se
                 # conectar com o cliente que já está na sala
                 self.send_message(address, 'CONNECT', room_client[0])
-
-            client['room'] = room['code']
-            room['clients'].append((client['id'], address[0], address[1]))
 
             if len(room['clients']) == room['max_clients']:
                 self.close_room(room)
