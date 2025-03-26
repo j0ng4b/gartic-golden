@@ -17,6 +17,8 @@ jobs:
     steps:
     - name: Clone the repository
       uses: actions/checkout@v4
+      with:
+        fetch-tags: true
 
     - name: Get tag from commit (if any)
       if: "contains(github.event.head_commit.message, 'dump: v')"
