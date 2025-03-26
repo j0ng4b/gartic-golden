@@ -302,7 +302,7 @@ class Server:
             if client == room['clients'][0]:
                 continue
 
-            self.send_message((client[0], client[1]), 'PLAY')
+            self.send_message((client[1], client[2]), 'PLAY')
 
         # Notifica o cliente dono da sala que pode iniciar o jogo
         address = (room['clients'][0][1], room['clients'][0][2])
