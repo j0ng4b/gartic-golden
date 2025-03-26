@@ -1,181 +1,79 @@
-import pygame
 import os
-
-import pygame.freetype
 from game.client.base import BaseClient
-from .utils.utilities import *
-
-
-class InputField():
-    def __init__(self, rect: pygame.rect, font: pygame.font.Font, placeholder=''):
-        self.rect = rect
-        self.font = font
-        self.text = ''
-        self.active = False
-        self.placeholder = placeholder
-        self.return_pressed = False
-        self.text_offset = 0
-        self.padding = 6
-        self.cursor_width = 2
-        self.cursor_pos = 0
-        self.cursor_visible = True
-        self.cursor_interval = 500
-        self.time = pygame.time.get_ticks()
-
-    def handle_event(self, event):
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            self.active = self.rect.collidepoint(event.pos)
-            self.time = pygame.time.get_ticks()
-            self.cursor_visible = True
-
-        if self.active and event.type == pygame.KEYDOWN:
-            self.time = pygame.time.get_ticks()
-            self.cursor_visible = True
-            if event.key == pygame.K_BACKSPACE:
-                if self.cursor_pos > 0 and len(self.text) > 0:
-                    self.text = self.text[:self.cursor_pos -
-                                          1] + self.text[self.cursor_pos:]
-                    self.cursor_pos -= 1
-            elif event.key == pygame.K_DELETE and self.cursor_pos < len(self.text):
-                self.text = self.text[:self.cursor_pos] + \
-                    self.text[self.cursor_pos+1:]
-            elif event.key == pygame.K_LEFT:
-                self.cursor_pos = max(0, self.cursor_pos - 1)
-            elif event.key == pygame.K_RIGHT:
-                self.cursor_pos = min(len(self.text), self.cursor_pos + 1)
-            elif event.key == pygame.K_HOME:
-                self.cursor_pos = 0
-            elif event.key == pygame.K_END:
-                self.cursor_pos = len(self.text)
-            elif event.key == pygame.K_RETURN:
-                if self.text:
-                    self.return_pressed = True
-            else:
-                self.text = self.text[:self.cursor_pos] + \
-                    event.unicode + self.text[self.cursor_pos:]
-                self.cursor_pos += 1
-            self.update_text_offset()
-
-    def update_text_offset(self):
-        max_width = self.rect.width - 2 * self.padding
-        cursor_pixel_pos = self.font.size(self.text[:self.cursor_pos])[0]
-        text_width = self.font.size(self.text)[0]
-        self.text_offset = max(
-            0, min(cursor_pixel_pos, text_width - max_width, cursor_pixel_pos - max_width))
-
-    def draw(self, screen):
-        pygame.draw.rect(screen, Color.WHITE, self.rect, border_radius=8)
-        pygame.draw.rect(screen, Color.BLACK, self.rect, 2, border_radius=8)
-
-        display_text = self.text if self.text else self.placeholder
-        text_color = Color.BLACK if self.text else Color.LIGHT_GRAY
-        text = self.font.render(display_text, True, text_color)
-        text_clip_rect = pygame.Rect(
-            self.rect.x + self.padding,
-            self.rect.y + self.padding,
-            self.rect.width - 2 * self.padding,
-            self.rect.height - 2 * self.padding
-        )
-        old_clip = screen.get_clip()
-        screen.set_clip(text_clip_rect)
-        text_rect = text.get_rect(
-            midleft=(self.rect.x + self.padding - self.text_offset,
-                     self.rect.y + self.rect.height // 2))
-        screen.blit(text, text_rect)
-        screen.set_clip(old_clip)
-
-        current_time = pygame.time.get_ticks()
-        if current_time - self.time > self.cursor_interval:
-            self.cursor_visible = not self.cursor_visible
-            self.time = current_time
-        if self.active and self.cursor_visible:
-            cursor_pixel_pos = self.font.size(self.text[:self.cursor_pos])[0]
-            cursor_x = self.rect.x + self.padding + cursor_pixel_pos - self.text_offset
-            cursor_x = max(self.rect.x + self.padding,
-                           min(cursor_x, self.rect.x + self.rect.width - self.padding))
-            cursor_top = self.rect.y + self.padding
-            cursor_height = self.rect.height - 2 * self.padding
-            pygame.draw.line(
-                screen, (0, 0, 0),
-                (cursor_x, cursor_top),
-                (cursor_x, cursor_top + cursor_height),
-                self.cursor_width
-            )
-
+from game.screen.utils.utilities import *
 
 class Screen(BaseClient):
     def __init__(self, address, port):
         super().__init__(address, port)
         pygame.init()
         pygame.freetype.init()
-        base_path = os.path.dirname(__file__)
-
+        path = os.path.dirname(__file__)
         # Janela
-        pygame.display.set_icon(pygame.image.load(os.path.join(
-            os.path.dirname(__file__), 'assets', 'ico.png')))
+        pygame.display.set_icon(pygame.image.load(os.path.join(path, 'assets', 'ico.png')))
         pygame.display.set_caption('Gartic Golden')
-        self.screen = pygame.display.set_mode(
-            (Size.SCREEN_WIDTH, Size.SCREEN_HEIGHT))
+        self.screen = pygame.display.set_mode((Size.SCREEN_WIDTH, Size.SCREEN_HEIGHT))
         self.clock = pygame.time.Clock()
-
         # Fontes
-        self.font_label = pygame.font.Font(os.path.join(
-            base_path, 'font', 'Acme-Regular.ttf'), 40)
-        self.font_button = pygame.font.Font(os.path.join(
-            base_path, 'font', 'Acme-Regular.ttf'), 30)
-        self.font_input_name = pygame.font.Font(
-            os.path.join(base_path, 'font', 'Acme-Regular.ttf'), 26)
-        self.font_title_rooms = pygame.freetype.Font(
-            os.path.join(base_path, 'font', 'Acme-Regular.ttf'), 19)
+        self.font_label = pygame.font.Font(os.path.join(path, 'font', 'Acme-Regular.ttf'), 40)
+        self.font_button = pygame.font.Font(os.path.join(path, 'font', 'Acme-Regular.ttf'), 30)
+        self.font_input_name = pygame.font.Font(os.path.join(path, 'font', 'Acme-Regular.ttf'), 26)
+        self.font_title_rooms = pygame.freetype.Font(os.path.join(path, 'font', 'Acme-Regular.ttf'), 19)
         self.font_title_rooms.strong = True
-        self.font_input_chat = pygame.font.Font(
-            os.path.join(base_path, 'font', 'Acme-Regular.ttf'), 18)
-
+        self.font_input_chat = pygame.font.Font(os.path.join(path, 'font', 'Acme-Regular.ttf'), 18)
         # Imagens
-        self.image_logo = pygame.image.load(
-            os.path.join(base_path, 'assets', 'logo.png'))
-        self.image_logo_small = pygame.image.load(
-            os.path.join(base_path, 'assets', 'logo_small.png'))
-        self.icon_user = pygame.image.load(
-            os.path.join(base_path, 'assets', 'user.png'))
+        self.image_logo_big = pygame.image.load(os.path.join(path, 'assets', 'logo.png'))
+        self.image_logo_small = pygame.image.load(os.path.join(path, 'assets', 'logo_small.png'))
+        self.icon_user = pygame.image.load(os.path.join(path, 'assets', 'user.png'))
         self.user_icon = pygame.transform.scale(self.icon_user, (30, 30))
-        self.pencil = pygame.image.load(
-            os.path.join(base_path, 'assets', 'pencil.png'))
+        self.pencil = pygame.image.load(os.path.join(path, 'assets', 'pencil.png'))
         self.pencil_icon = pygame.transform.scale(self.pencil, (20, 20))
-
         # Estado do jogo
         self.running = True
-        self.current_page = 'Create'  # Página inicial - 'Register'
+        self.current_page = 'Register'  # Página inicial - 'Register'
         self.current_input = None
-
-        # Configs
+        self.mouse_pos = pygame.mouse.get_pos()
+        self.mouse_click = pygame.mouse.get_pressed()
+        # Configuração do carrossel
         self.carousel_config = {
-            'current_page': 0, 'target_page': 0, 'offset': 0, 'animation_speed': 0.1}
-
+            'current_page': 0, 'target_page': 0, 'offset': 0, 'animation_speed': 0.1
+        }
         # Painel lateral de jogadores
-        self.left_panel = pygame.Rect(
-            0, 50, Size.SCREEN_WIDTH // 5 - 5, Size.SCREEN_HEIGHT)
-
+        self.left_panel = pygame.Rect(0, 50, Size.SCREEN_WIDTH // 5 - 5, Size.SCREEN_HEIGHT)
         # Campos de entrada
         self.inputs = [
             InputField(pygame.Rect(Size.SCREEN_WIDTH // 2 - 150, Size.SCREEN_HEIGHT // 2, 300, 40),
-                       self.font_input_name, "Digite seu nick"),
+                    self.font_input_name, "Digite seu nick"),
             InputField(pygame.Rect(Size.SCREEN_WIDTH // 2 - 185, Size.SCREEN_HEIGHT - 85, 250, 35),
-                       self.font_input_chat, "Digite sua resposta"),
+                    self.font_input_chat, "Digite sua resposta"),
             InputField(pygame.Rect(Size.SCREEN_WIDTH // 2 + 95, Size.SCREEN_HEIGHT - 85, 250, 35),
-                       self.font_input_chat, "Converse no Chat"),
+                    self.font_input_chat, "Converse no Chat"),
             InputField(pygame.Rect(Size.SCREEN_WIDTH // 2 - 315, Size.SCREEN_HEIGHT // 2 - 50, 270, 40),
-                       self.font_input_chat, "Digite o nome da sala"),
+                    self.font_input_chat, "Digite o nome da sala"),
             InputField(pygame.Rect(Size.SCREEN_WIDTH // 2 + 80, Size.SCREEN_HEIGHT // 2 - 50, 270, 40),
-                       self.font_input_chat, "Escolha o tema da sala"),
+                    self.font_input_chat, "Escolha o tema da sala"),
             InputField(pygame.Rect(Size.SCREEN_WIDTH // 2 - 315, Size.SCREEN_HEIGHT // 2 + 85, 270, 40),
-                       self.font_input_chat, "Escolha o máximo de jogadores"),
+                    self.font_input_chat, "Escolha o máximo de jogadores"),
             InputField(pygame.Rect(Size.SCREEN_WIDTH // 2 + 80, Size.SCREEN_HEIGHT // 2 + 85, 270, 40),
-                       self.font_input_chat, "Digite a senha da sala")
+                    self.font_input_chat, "Digite a senha da sala")
         ]
-
+        # Jogadores e salas
         self.players = []
         self.rooms = []
+        # Logo grande
+        self.image_logo_big_rect = self.image_logo_big.get_rect(
+            center=(Size.SCREEN_WIDTH // 2, Size.SCREEN_HEIGHT // 2 - 200)
+        )
+        # Página de registro
+        self.text_label_nick = self.font_label.render('DIGITE SEU NICK', True, Color.BLACK)
+        self.text_label_nick_rect = self.text_label_nick.get_rect(
+            center=(Size.SCREEN_WIDTH // 2, Size.SCREEN_HEIGHT // 2 - 50)
+        )
+        self.button_play_rect = pygame.Rect(
+            Size.SCREEN_WIDTH // 2 - 100, Size.SCREEN_HEIGHT // 2 + 100, 200, 50
+        )
+        self.button_play_border = self.button_play_rect.inflate(2, 2)
+        self.button_play_text = self.font_button.render('JOGAR', True, Color.WHITE)
+        self.button_play_text_rect = self.button_play_text.get_rect(center=self.button_play_rect.center)
 
     def start(self):
         while self.running:
@@ -212,55 +110,17 @@ class Screen(BaseClient):
             self.play_page()
         elif self.current_page == 'Test':
             self.play_page()
+        self.handle_colision_cursor()
+        self.handle_prox_page()
 
     def register_page(self):
-        prox_page = False
-
-        image_rect = self.image_logo.get_rect(
-            center=(Size.SCREEN_WIDTH // 2, Size.SCREEN_HEIGHT // 2 - 200))
-
-        text = self.font_label.render('DIGITE SEU NICK', True, Color.BLACK)
-        text_rect = text.get_rect(
-            center=(Size.SCREEN_WIDTH // 2, Size.SCREEN_HEIGHT // 2 - 50))
-
+        '''Exibe a tela de registro onde o jogador pode inserir um apelido.'''
         self.inputs[0].draw(self.screen)
-
-        button = pygame.Rect(Size.SCREEN_WIDTH // 2 - 100,
-                             Size.SCREEN_HEIGHT // 2 + 100, 200, 50)
-        pygame.draw.rect(self.screen, Color.BLACK,
-                         button.inflate(2, 2), border_radius=20)
-        pygame.draw.rect(self.screen, Color.GREEN, button, border_radius=20)
-        button_text = self.font_button.render('JOGAR', True, Color.WHITE)
-        button_text_rect = button_text.get_rect(center=button.center)
-
-        mouse_pos = pygame.mouse.get_pos()
-        mouse_click = pygame.mouse.get_pressed()
-        # Cursor diferente para o mouse colidindo com o botão ou input
-        if button.collidepoint(mouse_pos):
-            pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
-        elif self.inputs[0].rect.collidepoint(mouse_pos):
-            pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_IBEAM)
-        else:
-            pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
-
-        # Casos para ir para próxima página
-        if button.collidepoint(mouse_pos) and mouse_click[0] and self.inputs[0].text != '':
-            prox_page = True
-        elif self.inputs[0].return_pressed and self.inputs[0].text != '':
-            prox_page = True
-
-        self.screen.blit(text, text_rect)
-        self.screen.blit(self.image_logo, image_rect)
-        self.screen.blit(button_text, button_text_rect)
-
-        if prox_page:
-            self.name = self.inputs[0].text
-            super().start()
-            self.current_page = ''  # Colocar próxima página que seria a de salas
-            pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
-            if self.current_input is not None:
-                self.current_input.active = False
-                self.current_input = None
+        pygame.draw.rect(self.screen, Color.BLACK, self.button_play_border, border_radius=20)
+        pygame.draw.rect(self.screen, Color.GREEN, self.button_play_rect, border_radius=20)
+        self.screen.blit(self.text_label_nick, self.text_label_nick_rect)
+        self.screen.blit(self.image_logo_big, self.image_logo_big_rect)
+        self.screen.blit(self.button_play_text, self.button_play_text_rect)
 
     def rooms_page(self):
         # Aqui onde eu preparo as salas
@@ -366,7 +226,7 @@ class Screen(BaseClient):
         button_text = self.font_button.render('CRIAR SALA', True, Color.WHITE)
         self.screen.blit(button_text, button_text.get_rect(
             center=button_create.center))
-        self.screen.blit(self.image_logo, self.image_logo.get_rect(
+        self.screen.blit(self.image_logo_big, self.image_logo_big.get_rect(
             center=(Size.SCREEN_WIDTH // 2, Size.SCREEN_HEIGHT // 2 - 200)))
         self.screen.blit(self.font_label.render('SALAS DISPONÍVEIS', True, Color.BLACK),
                          (Size.SCREEN_WIDTH // 2 - 150, Size.SCREEN_HEIGHT // 2 - 110))
@@ -477,7 +337,7 @@ class Screen(BaseClient):
         self.screen.blit(self.image_logo_small, image_rect)
 
     def create_room_page(self):
-        image_rect = self.image_logo.get_rect(
+        image_rect = self.image_logo_big.get_rect(
             center=(Size.SCREEN_WIDTH // 2, Size.SCREEN_HEIGHT // 2 - 225))
 
         labels = ['Nome da Sala', 'Tema', 'Max Jogadores', 'Senha']
@@ -538,9 +398,34 @@ class Screen(BaseClient):
                 input_field.text = ''
                 input_field.active = False
 
-        self.screen.blit(self.image_logo, image_rect)
+        self.screen.blit(self.image_logo_big, image_rect)
         self.screen.blit(button_create_text, button_create_rect)
         self.screen.blit(button_back_text, button_back_rect)
+
+    def handle_colision_cursor(self):
+        '''Atualiza o cursor do mouse com base na posição sobre os elementos.'''
+        self.mouse_pos = pygame.mouse.get_pos()
+        self.mouse_click = pygame.mouse.get_pressed()
+        if self.current_page == 'Register':
+            if self.button_play_rect.collidepoint(self.mouse_pos):
+                pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
+            elif self.inputs[0].rect.collidepoint(self.mouse_pos):
+                pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_IBEAM)
+            else:
+                pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
+
+    def handle_prox_page(self):
+        '''Verifica se o jogador deve mudar de página.'''
+        if self.current_page == 'Register':
+            if (self.button_play_rect.collidepoint(self.mouse_pos) and self.mouse_click[0] and self.inputs[0].text != '') or \
+            (self.inputs[0].return_pressed and self.inputs[0].text != ''):
+                self.name = self.inputs[0].text
+                super().start()
+                self.current_page = 'Rooms'
+                pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
+                if self.current_input is not None:
+                    self.current_input.active = False
+                    self.current_input = None
 
     def handle_chat(self, client, message):
         print(f'~{client["name"]}: {message}')
