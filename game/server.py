@@ -72,10 +72,6 @@ class Server:
         if dest == '':
             response = self.parse_server_message(msg_type, args, address)
             self.send_message(address, 'RESP', f'{response}')
-            print('*****************')
-            print(self.clients)
-            print(self.rooms)
-            print('*****************')
             return
 
         # Repassa a mensagens para o cliente destino
