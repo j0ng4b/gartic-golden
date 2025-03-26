@@ -160,6 +160,9 @@ class Server:
             if room['clients'][0][0] != client['id']:
                 return 'Somente o dono da sala pode fechá-la'
 
+            if len(room['clients']) == 1:
+                return 'Poucos clientes na sala'
+
             self.close_room(room)
             return 'OK'
 
