@@ -23,7 +23,9 @@ class BaseClient(abc.ABC):
         self.socket.connect((socket.gethostbyname(address), int(port)))
 
         self.mutex = threading.Lock()
-        self.msgs = []
+        self.msgs = {
+            '': [],
+        }
 
         self.server_error = None
 
@@ -67,7 +69,7 @@ class BaseClient(abc.ABC):
         # Verifica se a mensagem é uma resposta
         if msg_type == 'RESP':
             with self.mutex:
-                self.msgs.append(args[0])
+                self.msgs[dest].append(args[0])
 
             return
 
@@ -83,12 +85,18 @@ class BaseClient(abc.ABC):
 
     def parse_server_message(self, msg_type, args):
         if msg_type == 'CONNECT':
+            with self.mutex:
+                self.msgs[args[0]] = []
+
             self.room_clients[args[0]] = {
                 'name': self.send_message('GREET', dest=args[0]),
                 'msgs': [],
             }
 
         elif msg_type == 'DISCONNECT':
+            with self.mutex:
+                del self.msgs[args[0]]
+
             del self.room_clients[args[0]]
         elif msg_type == 'PLAY':
             self.client_host = (args[0], int(args[1]))
@@ -140,21 +148,20 @@ class BaseClient(abc.ABC):
     ###
     ### Métodos principais para comunicação
     ###
-    def get_message(self):
+    def get_message(self, dest):
         while True:
             with self.mutex:
-                if len(self.msgs) == 0:
+                if len(self.msgs[dest]) == 0:
                     continue
 
-                return self.msgs.pop(0)
+                return self.msgs[dest].pop(0)
 
     def send_message(self, type, *args, dest='', wait_response=True):
-        print('Enviando:', f"{dest}/{type}:{';'.join(args)}")
         self.socket.send(f"{dest}/{type}:{';'.join(args)}".encode())
 
         if not wait_response:
             return None
-        return self.get_message()
+        return self.get_message(dest)
 
     def get_server_error(self):
         error = self.server_error
