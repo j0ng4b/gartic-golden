@@ -170,7 +170,7 @@ class Screen(BaseClient):
                             self.scroll_offset - event.y * 20, self.scroll_area.height - self.left_panel.height))
                 if self.current_input:
                     self.current_input.handle_event(event)
-            
+
             self.screen.fill(Color.GOLDEN)
             self.draw()
             pygame.display.update()
@@ -245,11 +245,12 @@ class Screen(BaseClient):
             # Uma lista de dicionários que serão os jogadores, com chaves como 'name', 'score', 'draw' e 'active'
             self.players = []
 
-        if not self.players: # Proteção para caso entre aqui sem nenhum jogador, o que não será possível
+        if not self.players:  # Proteção para caso entre aqui sem nenhum jogador, o que não será possível
             return
 
         if not hasattr(self, 'scroll_area'):
-            total_height = 50 + len(self.players) * 70 + 10
+            total_height = Size.SCREEN_HEIGHT if len(
+                self.players) < 8 else len(self.players) * 70 + 60
             self.scroll_area = pygame.Rect(
                 self.left_panel.x,
                 self.left_panel.y,
@@ -267,8 +268,6 @@ class Screen(BaseClient):
             (self.left_panel.width, self.scroll_area.height))
         scroll_surface.fill(Color.LIGHT_GOLD)
 
-        # Remover jogadores que em algum momento saiu da partida
-        self.players = [player for player in self.players if player.get('active', True)]
         for i, player in enumerate(self.players):
             y_pos = 60 + i * 70 - self.scroll_offset
             pygame.draw.rect(scroll_surface, Color.GOLDEN, (10, y_pos,
@@ -295,7 +294,8 @@ class Screen(BaseClient):
             Size.SCREEN_WIDTH - 110, Size.SCREEN_HEIGHT - 35, 100, 30)
         pygame.draw.rect(self.screen, Color.BLACK,
                          button_leave.inflate(2, 2), border_radius=20)
-        pygame.draw.rect(self.screen, Color.RED, button_leave, border_radius=20)
+        pygame.draw.rect(self.screen, Color.RED,
+                         button_leave, border_radius=20)
 
         button_text = self.font_input_chat.render('Sair', True, Color.WHITE)
         button_text_rect = button_text.get_rect(center=button_leave.center)
@@ -321,14 +321,13 @@ class Screen(BaseClient):
         image_rect = self.image_logo_small.get_rect(
             center=(Size.SCREEN_WIDTH // 2 - 50, Size.SCREEN_HEIGHT // 2 - 250))
 
-
         mouse_pos = pygame.mouse.get_pos()
         mouse_click = pygame.mouse.get_pressed()
         # Caso para sair da sala
         if button_leave.collidepoint(mouse_pos) and mouse_click[0]:
             res = super().server_leave_room()
             if res:
-                self.current_page = 'Rooms' # Página de listar as salas - Voltar
+                self.current_page = 'Rooms'  # Página de listar as salas - Voltar
 
         self.screen.blit(scroll_surface, (self.left_panel.x,
                          self.left_panel.y), self.left_panel)
@@ -346,4 +345,4 @@ class Screen(BaseClient):
 
 
 if __name__ == '__main__':
-    ...
+    Screen('gg.nengue.xyz', 2611).start()
