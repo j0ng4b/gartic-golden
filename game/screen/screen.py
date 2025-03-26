@@ -145,7 +145,7 @@ class Screen(BaseClient):
 
         # Estado do jogo
         self.running = True
-        self.current_page = 'Register'  # Página inicial - 'Register'
+        self.current_page = 'Create'  # Página inicial - 'Register'
         self.current_input = None
 
         # Configs
@@ -163,7 +163,15 @@ class Screen(BaseClient):
             InputField(pygame.Rect(Size.SCREEN_WIDTH // 2 - 185, Size.SCREEN_HEIGHT - 85, 250, 35),
                        self.font_input_chat, "Digite sua resposta"),
             InputField(pygame.Rect(Size.SCREEN_WIDTH // 2 + 95, Size.SCREEN_HEIGHT - 85, 250, 35),
-                       self.font_input_chat, "Converse no Chat")
+                       self.font_input_chat, "Converse no Chat"),
+            InputField(pygame.Rect(Size.SCREEN_WIDTH // 2 - 315, Size.SCREEN_HEIGHT // 2 - 50, 270, 40),
+                       self.font_input_chat, "Digite o nome da sala"),
+            InputField(pygame.Rect(Size.SCREEN_WIDTH // 2 + 80, Size.SCREEN_HEIGHT // 2 - 50, 270, 40),
+                       self.font_input_chat, "Escolha o tema da sala"),
+            InputField(pygame.Rect(Size.SCREEN_WIDTH // 2 - 315, Size.SCREEN_HEIGHT // 2 + 85, 270, 40),
+                       self.font_input_chat, "Escolha o máximo de jogadores"),
+            InputField(pygame.Rect(Size.SCREEN_WIDTH // 2 + 80, Size.SCREEN_HEIGHT // 2 + 85, 270, 40),
+                       self.font_input_chat, "Digite a senha da sala")
         ]
 
         self.players = []
@@ -198,7 +206,7 @@ class Screen(BaseClient):
             self.register_page()
         elif self.current_page == 'Rooms':
             self.rooms_page()
-        elif self.current_page == 'Create Room':
+        elif self.current_page == 'Create':
             self.create_room_page()
         elif self.current_page == 'Play':
             self.play_page()
@@ -272,7 +280,7 @@ class Screen(BaseClient):
         arrow_left = pygame.Rect(60, Size.SCREEN_HEIGHT - 140, 35, 35)
         arrow_right = pygame.Rect(
             Size.SCREEN_WIDTH - 110, Size.SCREEN_HEIGHT - 140, 35, 35)
-        
+
         page_text = f"Salas {0 if total_pages == 0 else self.carousel_config['current_page'] + 1}/{total_pages}"
         text_page = self.font_input_chat.render(page_text, True, Color.BLACK)
         text_rect = text_page.get_rect(
@@ -350,7 +358,7 @@ class Screen(BaseClient):
 
         self.screen.blit(text_page, text_rect)
         button_create = pygame.Rect(
-            Size.SCREEN_WIDTH // 2 - 114, Size.SCREEN_HEIGHT // 2 + 210, 220, 50)
+            Size.SCREEN_WIDTH // 2 - 94, Size.SCREEN_HEIGHT // 2 + 210, 185, 50)
         pygame.draw.rect(self.screen, Color.BLACK,
                          button_create.inflate(2, 2), border_radius=20)
         pygame.draw.rect(self.screen, Color.GREEN,
@@ -362,9 +370,11 @@ class Screen(BaseClient):
             center=(Size.SCREEN_WIDTH // 2, Size.SCREEN_HEIGHT // 2 - 200)))
         self.screen.blit(self.font_label.render('SALAS DISPONÍVEIS', True, Color.BLACK),
                          (Size.SCREEN_WIDTH // 2 - 150, Size.SCREEN_HEIGHT // 2 - 110))
-        
-        if button_create.collidepoint(mouse_pos) and mouse_click[0]: 
-            self.current_page = 'Create Room'
+
+        if button_create.collidepoint(mouse_pos):
+            cursor_room = True
+            if mouse_click[0]:
+                self.current_page = 'Create'
 
         pygame.mouse.set_cursor(
             pygame.SYSTEM_CURSOR_HAND if cursor_room else pygame.SYSTEM_CURSOR_ARROW)
@@ -466,15 +476,74 @@ class Screen(BaseClient):
         self.screen.blit(button_text, button_text_rect)
         self.screen.blit(self.image_logo_small, image_rect)
 
-    def create_room_page():
-        ...
+    def create_room_page(self):
+        image_rect = self.image_logo.get_rect(
+            center=(Size.SCREEN_WIDTH // 2, Size.SCREEN_HEIGHT // 2 - 225))
+
+        labels = ['Nome da Sala', 'Tema', 'Max Jogadores', 'Senha']
+        for i, label in enumerate(labels):
+            row = 0 if i < 2 else 1
+            col = i % 2
+            x_pos = Size.SCREEN_WIDTH // 2 - 180 + \
+                (col * 380)  # 250 é o espaçamento entre colunas
+            y_pos = Size.SCREEN_HEIGHT // 2 - 90 + \
+                (row * 130)  # 110 é o espaçamento entre linhas
+
+            text = self.font_label.render(label, True, Color.BLACK)
+            text_rect = text.get_rect(center=(x_pos, y_pos))
+            self.screen.blit(text, text_rect)
+            self.inputs[i + 3].draw(self.screen)
+
+        button_back = pygame.Rect(Size.SCREEN_WIDTH // 2 - 272,
+                                  Size.SCREEN_HEIGHT // 2 + 225, 170, 50)
+        pygame.draw.rect(self.screen, Color.BLACK,
+                         button_back.inflate(2, 2), border_radius=20)
+        pygame.draw.rect(self.screen, Color.RED, button_back, border_radius=20)
+
+        button_create = pygame.Rect(Size.SCREEN_WIDTH // 2 + 130,
+                                    Size.SCREEN_HEIGHT // 2 + 225, 170, 50)
+        pygame.draw.rect(self.screen, Color.BLACK,
+                         button_create.inflate(2, 2), border_radius=20)
+        pygame.draw.rect(self.screen, Color.GREEN,
+                         button_create, border_radius=20)
+
+        button_create_text = self.font_button.render(
+            'CRIAR SALA', True, Color.WHITE)
+        button_create_rect = button_create_text.get_rect(
+            center=button_create.center)
+
+        button_back_text = self.font_button.render('VOLTAR', True, Color.WHITE)
+        button_back_rect = button_back_text.get_rect(center=button_back.center)
+
+        mouse_pos = pygame.mouse.get_pos()
+        mouse_click = pygame.mouse.get_pressed()
+        # Cursor diferente para o mouse colidindo com o botão ou input
+        if button_create.collidepoint(mouse_pos) or button_back.collidepoint(mouse_pos):
+            pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
+        elif any(input.rect.collidepoint(mouse_pos) for input in self.inputs[3:7]):
+            pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_IBEAM)
+        else:
+            pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
+
+        data_room = [input_field.text for input_field in self.inputs[3:6]]
+        if all(data_room) and button_create.collidepoint(mouse_pos) and mouse_click[0]:
+            name, theme, max_clients = data_room
+            password = self.inputs[6].text
+            type_room = 'pub' if password == '' else 'priv'
+            # Lógica para criar a sala aqui
+            print(f"Criando sala: (Nome: {name} |Tipo: {type_room})")
+        elif button_back.collidepoint(mouse_pos) and mouse_click[0]:
+            self.current_page = 'Rooms'
+            for input_field in self.inputs[3:7]:
+                input_field.text = ''
+                input_field.active = False
+
+        self.screen.blit(self.image_logo, image_rect)
+        self.screen.blit(button_create_text, button_create_rect)
+        self.screen.blit(button_back_text, button_back_rect)
 
     def handle_chat(self, client, message):
         print(f'~{client["name"]}: {message}')
 
     def handle_canvas(self, canvas):
         print(f'canvas: {canvas}')
-
-
-if __name__ == '__main__':
-    Screen('gg.nengue.xyz', 2611).start()
