@@ -7,6 +7,7 @@ class Size():
 class Color():
     # Cores
     GOLDEN = (243, 202, 76)
+    DARK_GOLDEN = (184, 134, 11)
     LIGHT_YELLOW = (254, 214, 91)
     GREEN = (128, 225, 99)
     BLACK = (0, 0, 0)
