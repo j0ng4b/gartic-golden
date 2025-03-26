@@ -48,7 +48,6 @@ class Server:
     def start(self):
         while True:
             msg, address = self.socket.recvfrom(1024)
-            print(f'Mensagem {msg} recebida de {address}')
 
             # Parse message
             msg = msg.decode()

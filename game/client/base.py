@@ -45,7 +45,6 @@ class BaseClient(abc.ABC):
     def handle_messages(self):
         while True:
             msg = self.socket.recv(1024).decode()
-            print('Recebido:', msg)
 
             # Verifica se a mensagem está no formato correto
             if '/' not in msg or ':' not in msg:
@@ -81,7 +80,7 @@ class BaseClient(abc.ABC):
         if dest in self.room_clients:
             response = self.parse_client_message(dest, msg_type, args)
             if response is not None:
-                self.send_message('RESP', response, dest=dest)
+                self.send_message('RESP', response, dest=dest, wait_response=False)
 
     def parse_server_message(self, msg_type, args):
         if msg_type == 'CONNECT':
@@ -101,7 +100,9 @@ class BaseClient(abc.ABC):
 
             del self.room_clients[args[0]]
         elif msg_type == 'PLAY':
-            self.client_host = (args[0], int(args[1]))
+            pass
+        elif msg_type == 'GAME':
+            pass
 
         return None
 
@@ -206,6 +207,7 @@ class BaseClient(abc.ABC):
         return False
 
     def server_close_room(self):
+        # TODO: Corrigir o fechamento da sala
         res = self.send_message('CROOM')
         if res == 'OK':
             self.room = None
