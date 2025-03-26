@@ -76,7 +76,8 @@ class Server:
 
         # Repassa a mensagens para o cliente destino
         response = self.routes_client_message(dest, msg_type, args, address)
-        self.send_message(address, 'RESP', response)
+        if response is not None:
+            self.send_message(address, 'RESP', response)
 
 
     def parse_server_message(self, msg_type, args, address):
@@ -286,7 +287,7 @@ class Server:
         for room_client in room['clients']:
             if room_client[0] == dest:
                 self.socket.sendto(msg, (room_client[1], room_client[2]))
-                return 'OK'
+                return None
 
         return 'Cliente destino não encontrado'
 

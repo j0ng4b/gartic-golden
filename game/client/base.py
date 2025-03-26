@@ -79,7 +79,7 @@ class BaseClient(abc.ABC):
         if dest in self.room_clients:
             response = self.parse_client_message(dest, msg_type, args)
             if response is not None:
-                self.send_message(response, dest=dest)
+                self.send_message('RESP', response, dest=dest)
 
     def parse_server_message(self, msg_type, args):
         if msg_type == 'CONNECT':
