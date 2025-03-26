@@ -89,9 +89,11 @@ class BaseClient(abc.ABC):
                 self.msgs[args[0]] = []
 
             self.room_clients[args[0]] = {
-                'name': self.send_message('GREET', dest=args[0]),
+                'name': None,
                 'msgs': [],
             }
+
+            self.room_clients[args[0]]['name'] = self.send_message('GREET', dest=args[0])
 
         elif msg_type == 'DISCONNECT':
             with self.mutex:
