@@ -28,7 +28,7 @@ jobs:
         if [ -n "$COMMIT_TAG" ]; then
           NEW_TAG=$COMMIT_TAG
         else
-          latest_tag=$(git tag --list "v*" --sort=-version:refname | head -n 1')
+          latest_tag=$(git tag --list "v*" --sort=-version:refname | head -n 1)
           [ -z "$latest_tag" ] && latest_tag=v0.0.0
 
           major_minor=$(echo "$latest_tag" | cut -d'.' -f-2)
