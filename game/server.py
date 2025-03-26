@@ -76,7 +76,7 @@ class Server:
 
         # Repassa a mensagens para o cliente destino
         response = self.routes_client_message(dest, msg_type, args, address)
-        self.socket.sendto(response.encode(), address)
+        self.send_message(address, 'RESP', response)
 
 
     def parse_server_message(self, msg_type, args, address):
@@ -211,7 +211,7 @@ class Server:
             client['room'] = ''
 
             # Remove o cliente que deseja sair da lista de clientes daquela sala
-            room['clients'].remove((address[0], address[1]))
+            room['clients'].remove((client['id'], address[0], address[1]))
             if len(room['clients']) == 0:
                 # Se não houver mais nenhum cliente na sala, apagar a sala
                 self.rooms.remove(room)
@@ -261,7 +261,7 @@ class Server:
                 self.send_message(address, 'CONNECT', room_client[0])
 
             client['room'] = room['code']
-            room['clients'].append(address)
+            room['clients'].append((client['id'], address[0], address[1]))
 
             if len(room['clients']) == room['max_clients']:
                 self.close_room(room)
