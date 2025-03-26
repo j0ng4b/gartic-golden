@@ -2,23 +2,37 @@
 ---
 
 - Definir como a comunicação e o cliente e o servidor deve acontecer.
+- Ser um túnel/proxy de comunicação entre os clientes.
 
 > [!NOTE]
-> a arquitetura desejada é uma Peer-to-Peer híbrida, porém para que seja híbrida o servidor serve apenas
+> ~a arquitetura desejada é uma Peer-to-Peer híbrida, porém para que seja híbrida o servidor serve apenas
 > para auxiliar que clientes conectem entre si, mas isso pode resultar em erros por conta do NAT(?)
-> Necessita investigação.
+> Necessita investigação.~
+> 
+> usando o servidor como túnel porque não é possível ser híbrido, não um híbrido onde o servidor so server
+> para a primeira etapa da comunicação que é idetificar outros clientes.
 <br>
 
 ### Mensagens
 ---
 A comunicação com o servidor é feita através de mensagens no formato:
 
-    tipo:arg1;argN
+    cliente/tipo:arg1;argN
 
 Onde:
-`tipo` é o tipo da mensagem, ver tabela abaixo.
-`arg1` é o primeiro argumento da lista de argumentos.
-`argN` é o último argumento da lista de argumentos.
+- `cliente` é o cliente para qual a mensagem deve ser repassada.
+- `tipo` é o tipo da mensagem, ver tabela abaixo.
+- `arg1` é o primeiro argumento da lista de argumentos.
+- `argN` é o último argumento da lista de argumentos.
+
+> [!NOTE]
+> o campo `cliente` pode ser vazio o que faz com que o servidor interprete a mensagem como sendo direcionada
+> para ele.
+> >
+> exemplo:
+> ```
+> /REGISTER:Shrek
+> ```
 
 
 #### Mensagens aceitas
@@ -31,7 +45,7 @@ Onde:
 | `LIST` | `<priv\|pub>` | lista as salas (`priv`: apenas privadas, `pub`: apenas públicas) |
 | `ENTER` | `código da sala`;`<senha>` | entra em uma sala |
 | `LEAVE` | `nenhum` | sai da sala |
-| `STATUS` | `nenhum` | estado atual da sala qual o cliente está |
+| `END` | `nenhum` | apaga a sala ao qual o cliente está |
 
 > [!NOTE]
 > * argumentos entre os sinais `<` e `>` são argumentos opcionais.
@@ -40,22 +54,25 @@ Onde:
 
 ### Respostas
 ---
+#### Respostas padrão para todas mensagens
+**Falha**
+1. Cliente não registrado  
+   *(exceto para `REGISTER`)*
+
+2. Número de argumento inválido
+<br>
+
 #### `REGISTER`
 **Sucesso**
 - OK
 
 **Falha**
 1. Nome de jogador inválido
-2. Número de argumentos inválido
-3. Jogador já registrado
+2. Jogador já registrado
 
 #### `UNREGISTER`
 **Sucesso**
 - OK
-
-**Falha**
-1. Cliente não registrado
-2. Número de argumentos inválido
 
 #### `ROOM`
 **Sucesso**
@@ -66,8 +83,6 @@ Onde:
 2. Senha não fornecida para sala privada
 4. Sala pública não requer senha
 5. Nome da sala inválido
-6. Cliente não registrado
-7. Número de argumentos inválido
 
 #### `CROOM`
 **Sucesso**
@@ -75,10 +90,9 @@ Onde:
 
 **Falha**
 1. Cliente não está em nenhuma sala
-2. Cliente não registrado
-3. Número de argumentos inválido
-4. Somente o dono da sala pode fechá-la
-5. Número de clientes insuficiente na sala
+2. Somente o dono da sala pode fechá-la
+3. Número de clientes insuficiente na sala
+4. Poucos clientes na sala
 
 #### `LIST`
 **Sucesso**
@@ -91,8 +105,6 @@ Onde:
 
 **Falha**
 1. Tipo da sala inválido
-2. Cliente não registrado
-3. Número de argumentos inválido
 
 #### `ENTER`
 **Sucesso**
@@ -104,8 +116,7 @@ Onde:
 3. Senha não fornecida
 5. Cliente já está na sala
 6. Cliente já está em outra sala
-8. Cliente não registrado
-9. Número de argumentos inválido
+7. A sala não está disponível
 
 #### `LEAVE`
 **Sucesso**
@@ -113,22 +124,15 @@ Onde:
 
 **Falha**
 1. Cliente não está em nenhuma sala
-2. Cliente não registrado
-3. Número de argumentos inválido
 
-#### `STATUS`
+#### `END`
 **Sucesso**
-- Os valores abaixo separados por vírgula:
-  - tipo da sala
-  - nome da sala
-  - código da sala
-  - número de jogadores
-  - número máximo de jogadores
+- OK
 
 **Falha**
 1. Cliente não está em nenhuma sala
-2. Cliente não registrado
-3. Número de argumentos inválido
+2. Somente o dono da sala pode exluí-la
+
 <br>
 
 ### Comportamento
@@ -186,4 +190,15 @@ Um cliente solicita ao servidor que seja removido da sala
 **Ação**
 - remover o cliente da sala
 - notificar os outros clientes da sala que um cliente saiu enviado a mensagem `DISCONNECT`
+<br>
 
+#### Finalizar sala (Excluir)
+Ao termino da partida o cliente dono da sala deve informar ao servidor que ele pode excluir a sala, fazendo
+isso, o servidor remove todos os dados da sala e notifica outros clientes da sala.
+
+**Gatilho**
+- receber do cliente a mensagem `END`
+
+**Ação**
+- notificar os clientes que a sala está sendo exluída (`END`)
+- efetivamente exluir a sala
