@@ -13,6 +13,7 @@ permissions:
 jobs:
   tagging:
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     steps:
     - name: Clone the repository
