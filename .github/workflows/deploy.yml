@@ -19,7 +19,6 @@ jobs:
       uses: actions/checkout@v4
       with:
         fetch-tags: true
-        fetch-depth: 0
 
     - name: Get tag from commit (if any)
       if: "contains(github.event.head_commit.message, 'dump: v')"
