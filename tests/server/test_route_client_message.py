@@ -21,7 +21,7 @@ def test_valid_destination(server):
 
 
     response = server.routes_client_message(dest, msg_type, args, address)
-    assert response == 'OK'
+    assert response is None
 
     expected_calls = [
         (
