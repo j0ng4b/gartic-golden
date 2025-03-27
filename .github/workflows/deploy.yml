@@ -55,7 +55,11 @@ jobs:
         changelog=$(git log $latest_tag..HEAD --pretty=format:"- %s")
         echo "Changelog between $latest_tag and $NEW_TAG:"
         echo "$changelog"
-        echo "CHANGELOG=$changelog" >> $GITHUB_ENV
+        {
+          echo 'CHANGELOG<<EOF'
+          echo "$changelog"
+          echo 'EOF'
+        } >> $GITHUB_ENV
 
     - name: Push Git Tag
       run: |
