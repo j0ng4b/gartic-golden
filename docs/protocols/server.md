@@ -39,28 +39,29 @@ Onde:
 | Tipo | Argumentos | Descrição |
 | :-: | :-: | :-- |
 | `REGISTER` | `nome do jogador` | registra o cliente no servidor |
-| `UNREGISTER` | `nome do jogador` | remove o cliente do servidor |
+| `UNREGISTER` |  | remove o cliente do servidor |
 | `ROOM` | `priv\|pub`;`nome da sala`;`<senha>` | cria uma sala (`priv`: privada onde nesse caso requer a senha, `pub`: pública erro se receber senha) |
-| `CROOM` | `nenhum` | o cliente, dono da sala, informa que não aceita mais clientes pois começará a partida (sala fechada) |
+| `CROOM` |  | o cliente, dono da sala, informa que não aceita mais clientes pois começará a partida (sala fechada) |
 | `LIST` | `<priv\|pub>` | lista as salas (`priv`: apenas privadas, `pub`: apenas públicas) |
 | `ENTER` | `código da sala`;`<senha>` | entra em uma sala |
-| `LEAVE` | `nenhum` | sai da sala |
-| `END` | `nenhum` | apaga a sala ao qual o cliente está |
+| `LEAVE` |  | sai da sala |
+| `END` |  | apaga a sala ao qual o cliente está |
 
-> [!NOTE]
+> [!TIP]
 > * argumentos entre os sinais `<` e `>` são argumentos opcionais.
 > * o sinal `|` quer dizer que é um valor ou o outro valor
 <br>
 
 ### Respostas
 ---
-#### Respostas padrão para todas mensagens
-**Falha**
-1. Cliente não registrado  
-   *(exceto para `REGISTER`)*
-
-2. Número de argumento inválido
-<br>
+> [!IMPORTANT]
+> *Respostas padrão para todas mensagens*
+> 
+> **Falha**
+> 1. Cliente não registrado  
+>    *(exceto para `REGISTER`)*
+> 
+> 2. Número de argumento inválido
 
 #### `REGISTER`
 **Sucesso**
