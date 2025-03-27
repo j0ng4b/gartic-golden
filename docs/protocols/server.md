@@ -10,7 +10,7 @@
 > Necessita investigação.~
 > 
 > usando o servidor como túnel porque não é possível ser híbrido, não um híbrido onde o servidor so server
-> para a primeira etapa da comunicação que é idetificar outros clientes.
+> para a primeira etapa da comunicação que é identificar outros clientes.
 <br>
 
 ### Mensagens
@@ -132,7 +132,8 @@ Onde:
 
 **Falha**
 1. Cliente não está em nenhuma sala
-2. Somente o dono da sala pode exluí-la
+2. Somente o dono da sala pode excluí-la
+3. A sala não está em partida
 
 <br>
 
@@ -201,5 +202,5 @@ isso, o servidor remove todos os dados da sala e notifica outros clientes da sal
 - receber do cliente a mensagem `END`
 
 **Ação**
-- notificar os clientes que a sala está sendo exluída (`END`)
-- efetivamente exluir a sala
+- notificar os clientes que a sala está sendo excluída (`END`)
+- efetivamente excluir a sala
