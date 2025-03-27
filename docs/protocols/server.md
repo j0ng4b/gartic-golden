@@ -42,7 +42,7 @@ Onde:
 | `UNREGISTER` | `nome do jogador` | remove o cliente do servidor |
 | `ROOM` | `priv\|pub`;`nome da sala`;`<senha>` | cria uma sala (`priv`: privada onde nesse caso requer a senha, `pub`: pública erro se receber senha) |
 | `CROOM` | `nenhum` | o cliente, dono da sala, informa que não aceita mais clientes pois começará a partida (sala fechada) |
-| `LIST` | `<priv\|pub\|all>` | lista as salas (`priv`: apenas privadas, `pub`: apenas públicas, `all`: todas) |
+| `LIST` | `<priv\|pub>` | lista as salas (`priv`: apenas privadas, `pub`: apenas públicas) |
 | `ENTER` | `código da sala`;`<senha>` | entra em uma sala |
 | `LEAVE` | `nenhum` | sai da sala |
 | `END` | `nenhum` | apaga a sala ao qual o cliente está |
@@ -105,7 +105,6 @@ Onde:
 
 **Falha**
 1. Tipo da sala inválido
-2. Não há salas
 
 #### `ENTER`
 **Sucesso**
