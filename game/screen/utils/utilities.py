@@ -1,5 +1,8 @@
+import os
+import random
 import pygame
 import pygame.freetype
+
 
 class Size():
     # Tamanho da tela
@@ -16,9 +19,10 @@ class Color():
     BLACK = (0, 0, 0)
     WHITE = (255, 255, 255)
     LIGHT_GRAY = (169, 169, 169)
-    HONEY = (251,189,0)
-    RED = (218,41,44)
-    LIGHT_GOLD = (254,214,91)
+    HONEY = (251, 189, 0)
+    RED = (218, 41, 44)
+    LIGHT_GOLD = (254, 214, 91)
+
 
 class InputField():
     def __init__(self, rect: pygame.rect, font: pygame.font.Font, placeholder=''):
@@ -115,3 +119,15 @@ class InputField():
                 (cursor_x, cursor_top + cursor_height),
                 self.cursor_width
             )
+
+
+def load_words():
+    '''Retorna um tema e 10 palavras aleatórias para as rodas da sala.'''
+    path_file = os.path.join(os.path.dirname(os.path.dirname(
+        os.path.dirname(__file__))), 'data', 'words.txt')
+    with open(path_file, 'r', encoding='utf-8') as file:
+        lines = file.readlines()
+    line = random.choice(lines).strip().split(',')
+    theme = line[0]
+    words = random.sample(line[1:], 10)
+    return [theme] + words

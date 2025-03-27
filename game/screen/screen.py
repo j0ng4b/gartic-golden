@@ -1,4 +1,3 @@
-import os
 from game.client.base import BaseClient
 from game.screen.utils.utilities import *
 
