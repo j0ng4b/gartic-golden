@@ -205,7 +205,6 @@ class BaseClient(abc.ABC):
         return False
 
     def server_close_room(self):
-        # TODO: Corrigir o fechamento da sala
         res = self.send_message('CROOM')
         if res == 'OK':
             return True
@@ -257,30 +256,34 @@ class BaseClient(abc.ABC):
     ### Métodos de comunicação com outros clientes
     ###
     def client_chat(self, message):
-        for client in self.room_clients:
+        for client in self.room_clients.keys():
             self.send_message('CHAT', message, dest=client, wait_response=False)
 
     def client_guess(self, guess):
+        # Somente envia para o cliente que está desenhando
         ...
 
     def client_draw(self):
+        # Notifica os clientes o cliente que fará o desenho
         ...
 
     def client_finish_draw(self):
+        # Somente envia para o cliente que está desenhando para parar de desenhar
         ...
 
     def client_skip(self):
-        ...
+        for client in self.room_clients.keys():
+            self.send_message('SKIP', dest=client, wait_response=False)
 
     def client_got_the_right_answer(self):
-        # TODO: Implementar o envio de mensagem para outros clientes informando
-        # que o cliente que acertou a palavra
-        ...
+        for client in self.room_clients.keys():
+            self.send_message('GTRA', dest=client, wait_response=False)
 
     def client_canvas(self, canvas_data):
         # Comprime a imagem e envia para todos os clientes
         canvas_data = zlib.compress(canvas_data)
         canvas_data = base64.b64encode(canvas_data).decode()
 
-        # TODO: Implementar o envio do canvas para todos os clientes
-        ...
+        for client in self.room_clients.keys():
+            self.send_message('CANVAS', canvas_data, dest=client, wait_response=False)
+
