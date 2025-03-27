@@ -33,6 +33,7 @@ class Screen(BaseClient):
         self.current_input = None
         self.mouse_pos = pygame.mouse.get_pos()
         self.mouse_click = pygame.mouse.get_pressed()
+        self.last_click_time = 0
         # Configuração do carrossel
         self.carousel_config = {
             'current_page': 0, 'target_page': 0, 'offset': 0, 'animation_speed': 0.1
@@ -76,6 +77,20 @@ class Screen(BaseClient):
         self.button_play_text_rect = self.button_play_text.get_rect(center=self.button_play_rect.center)
         # Página de listar salas
         self.load_rooms = False
+        self.rooms_start_x = Size.SCREEN_WIDTH // 2 - 330
+        self.rooms_start_y = Size.SCREEN_HEIGHT // 2 - 30
+        self.arrow_left_rect = pygame.Rect(60, Size.SCREEN_HEIGHT - 140, 35, 35)
+        self.arrow_right_rect = pygame.Rect(Size.SCREEN_WIDTH - 110, Size.SCREEN_HEIGHT - 140, 35, 35)
+        self.quant_rooms_text_pos = (Size.SCREEN_WIDTH // 2, Size.SCREEN_HEIGHT - 123)
+        self.button_create_rect = pygame.Rect(
+            Size.SCREEN_WIDTH // 2 - 94, Size.SCREEN_HEIGHT // 2 + 210, 185, 50
+        )
+        self.button_create_border = self.button_create_rect.inflate(2, 2)
+        self.button_create_text = self.font_button.render('CRIAR SALA', True, Color.WHITE)
+        self.button_create_text_rect = self.button_create_text.get_rect(center=self.button_create_rect.center)
+        self.available_rooms_text = self.font_label.render('SALAS DISPONÍVEIS', True, Color.BLACK)
+        self.available_rooms_pos = (Size.SCREEN_WIDTH // 2 - 150, Size.SCREEN_HEIGHT // 2 - 110)
+        self.elements_cur = []
 
     def start(self):
         while self.running:
@@ -102,6 +117,7 @@ class Screen(BaseClient):
         pygame.quit()
 
     def draw(self):
+        '''Filtra a sala que deve ser exibida.'''
         if self.current_page == 'Register':
             self.register_page()
         elif self.current_page == 'Rooms':
@@ -113,7 +129,7 @@ class Screen(BaseClient):
         elif self.current_page == 'Test':
             self.play_page()
         self.handle_colision_cursor()
-        self.handle_prox_page()
+        self.handle_click_cursor()
 
     def register_page(self):
         '''Exibe a tela de registro onde o jogador pode inserir um apelido.'''
@@ -125,121 +141,24 @@ class Screen(BaseClient):
         self.screen.blit(self.button_play_text, self.button_play_text_rect)
 
     def rooms_page(self):
-        if self.rooms == [] and not self.load_rooms:
+        '''Exibe a tela de salas onde o jogador pode entrar ou criar uma sala.'''
+        self.elements_cur.clear()
+        if not self.load_rooms:
             self.get_rooms()
             self.load_rooms = True
-
-        total_pages = (len(self.rooms) + 6 - 1) // 6
-        if self.carousel_config['current_page'] != self.carousel_config['target_page']:
-            direction = 1 if self.carousel_config['target_page'] > self.carousel_config['current_page'] else -1
-            self.carousel_config['offset'] += direction * \
-                self.carousel_config['animation_speed'] * Size.SCREEN_WIDTH
-            if abs(self.carousel_config['offset']) >= Size.SCREEN_WIDTH:
-                self.carousel_config['current_page'] += direction
-                self.carousel_config['offset'] = 0
-        else:
-            self.carousel_config['offset'] = 0
-        arrow_left = pygame.Rect(60, Size.SCREEN_HEIGHT - 140, 35, 35)
-        arrow_right = pygame.Rect(
-            Size.SCREEN_WIDTH - 110, Size.SCREEN_HEIGHT - 140, 35, 35)
-
-        page_text = f"Salas {0 if total_pages == 0 else self.carousel_config['current_page'] + 1}/{total_pages}"
-        text_page = self.font_input_chat.render(page_text, True, Color.BLACK)
-        text_rect = text_page.get_rect(
-            center=(Size.SCREEN_WIDTH // 2, Size.SCREEN_HEIGHT - 123))
-        mouse_pos = pygame.mouse.get_pos()
-        mouse_click = pygame.mouse.get_pressed()
-        cursor_room = False
-        start_x = Size.SCREEN_WIDTH // 2 - 330 + \
-            int(self.carousel_config['offset'])
-        start_y = Size.SCREEN_HEIGHT // 2 - 30
-        cursor_room = False
-        offset_direction = -1 if self.carousel_config['offset'] < 0 else 1
-
-        if total_pages > 1 and self.carousel_config['current_page'] == self.carousel_config['target_page']:
-            if arrow_left.collidepoint(mouse_pos) and mouse_click[0] and self.carousel_config['current_page'] > 0:
-                self.carousel_config['target_page'] -= 1
-            if arrow_right.collidepoint(mouse_pos) and mouse_click[0] and self.carousel_config['current_page'] < total_pages - 1:
-                self.carousel_config['target_page'] += 1
-        for page_offset in [0, offset_direction]:
-            current_page = self.carousel_config['current_page'] + page_offset
-            if not (0 <= current_page < total_pages):
-                continue
-            start_index, end_index = current_page * \
-                6, min((current_page + 1) * 6, len(self.rooms))
-            for i, room in enumerate(self.rooms[start_index:end_index]):
-                x = start_x + (i % 3) * 220 + (page_offset * Size.SCREEN_WIDTH)
-                y = start_y + (i // 3) * 100
-                room_rect = pygame.Rect(x, y, 200, 80)
-
-                if room_rect.collidepoint(mouse_pos):
-                    cursor_room = True
-                    if mouse_click[0]:
-                        # Aqui fica a lógica para entrar na sala
-                        # Terá algo como self.current_page = 'Play'
-                        print('ENTROU NA SALA')
-
-                pygame.draw.rect(self.screen, Color.WHITE,
-                                 room_rect, border_radius=10)
-                pygame.draw.rect(self.screen, Color.BLACK,
-                                 room_rect, 2, border_radius=10)
-                theme, _ = self.font_title_rooms.render(
-                    room['name'], fgcolor=Color.DARK_GOLDEN)
-                max_clients, _ = self.font_title_rooms.render(
-                    f'{room['max_clients']}/10', fgcolor=Color.BLACK)
-                info = pygame.Surface(
-                    (theme.get_width() + 10 + max_clients.get_width(),
-                     max(theme.get_height(), max_clients.get_height())),
-                    pygame.SRCALPHA
-                )
-                info.blit(theme, (0, 0))
-                info.blit(
-                    max_clients, (theme.get_width() + 10, 0))
-                self.screen.blit(info, info.get_rect(
-                    center=room_rect.center))
-
-        draw_arrow_left = self.carousel_config['current_page'] > 0
-        draw_arrow_right = self.carousel_config['current_page'] < total_pages - 1
-        if draw_arrow_left:
-            pygame.draw.polygon(self.screen, Color.BLACK, [
-                (arrow_left.left + 15, arrow_left.centery),
-                (arrow_left.right, arrow_left.top + 10),
-                (arrow_left.right, arrow_left.bottom - 10)
-            ])
-
-        if draw_arrow_right:
-            pygame.draw.polygon(self.screen, Color.BLACK, [
-                (arrow_right.right - 15, arrow_right.centery),
-                (arrow_right.left, arrow_right.top + 10),
-                (arrow_right.left, arrow_right.bottom - 10)
-            ])
-        if draw_arrow_left and arrow_left.collidepoint(mouse_pos):
-            cursor_room = True
-        if draw_arrow_right and arrow_right.collidepoint(mouse_pos):
-            cursor_room = True
-
-        self.screen.blit(text_page, text_rect)
-        button_create = pygame.Rect(
-            Size.SCREEN_WIDTH // 2 - 94, Size.SCREEN_HEIGHT // 2 + 210, 185, 50)
-        pygame.draw.rect(self.screen, Color.BLACK,
-                         button_create.inflate(2, 2), border_radius=20)
-        pygame.draw.rect(self.screen, Color.GREEN,
-                         button_create, border_radius=20)
-        button_text = self.font_button.render('CRIAR SALA', True, Color.WHITE)
-        self.screen.blit(button_text, button_text.get_rect(
-            center=button_create.center))
-        self.screen.blit(self.image_logo_big, self.image_logo_big.get_rect(
-            center=(Size.SCREEN_WIDTH // 2, Size.SCREEN_HEIGHT // 2 - 200)))
-        self.screen.blit(self.font_label.render('SALAS DISPONÍVEIS', True, Color.BLACK),
-                         (Size.SCREEN_WIDTH // 2 - 150, Size.SCREEN_HEIGHT // 2 - 110))
-
-        if button_create.collidepoint(mouse_pos):
-            cursor_room = True
-            if mouse_click[0]:
-                self.current_page = 'Create'
-
-        pygame.mouse.set_cursor(
-            pygame.SYSTEM_CURSOR_HAND if cursor_room else pygame.SYSTEM_CURSOR_ARROW)
+        total_pages = max(1, (len(self.rooms) + 5) // 6)
+        quant_rooms_text = 'Salas ' + (f'{self.carousel_config['current_page'] + 1}/{total_pages}' if self.rooms else f'0/0')
+        quant_rooms_surface = self.font_input_chat.render(quant_rooms_text, True, Color.BLACK)
+        quant_rooms_rect = quant_rooms_surface.get_rect(center=self.quant_rooms_text_pos)
+        self.elements_cur.append(('button_create', self.button_create_rect))
+        self.elements_cur.append(('quant_rooms_text', quant_rooms_rect))
+        self.draw_rooms(total_pages)
+        pygame.draw.rect(self.screen, Color.BLACK, self.button_create_border, border_radius=20)
+        pygame.draw.rect(self.screen, Color.GREEN, self.button_create_rect, border_radius=20)
+        self.screen.blit(self.button_create_text, self.button_create_text_rect)
+        self.screen.blit(self.image_logo_big, self.image_logo_big_rect)
+        self.screen.blit(self.available_rooms_text, self.available_rooms_pos)
+        self.screen.blit(quant_rooms_surface, quant_rooms_rect)
 
     def play_page(self):
         # Aqui onde eu preparo os jogadores da sala
@@ -347,9 +266,9 @@ class Screen(BaseClient):
             row = 0 if i < 2 else 1
             col = i % 2
             x_pos = Size.SCREEN_WIDTH // 2 - 180 + \
-                (col * 380)  # 250 é o espaçamento entre colunas
+                (col * 380)
             y_pos = Size.SCREEN_HEIGHT // 2 - 90 + \
-                (row * 130)  # 110 é o espaçamento entre linhas
+                (row * 130)
 
             text = self.font_label.render(label, True, Color.BLACK)
             text_rect = text.get_rect(center=(x_pos, y_pos))
@@ -396,7 +315,6 @@ class Screen(BaseClient):
             print(f"Criando sala: (Nome: {name} |Tipo: {type_room})")
         elif button_back.collidepoint(mouse_pos) and mouse_click[0]:
             self.current_page = 'Rooms'
-            self.load_rooms = False
             for input_field in self.inputs[3:7]:
                 input_field.text = ''
                 input_field.active = False
@@ -404,11 +322,59 @@ class Screen(BaseClient):
         self.screen.blit(self.image_logo_big, image_rect)
         self.screen.blit(button_create_text, button_create_rect)
         self.screen.blit(button_back_text, button_back_rect)
+    
+    def draw_rooms(self, total_pages):
+        '''Desenha as salas em um carrossel (6 por página).'''
+        if self.carousel_config['current_page'] != self.carousel_config['target_page']:
+            direction = 1 if self.carousel_config['target_page'] > self.carousel_config['current_page'] else -1
+            self.carousel_config['offset'] += direction * self.carousel_config['animation_speed'] * Size.SCREEN_WIDTH
+            if abs(self.carousel_config['offset']) >= Size.SCREEN_WIDTH:
+                self.carousel_config['current_page'] += direction
+                self.carousel_config['offset'] = 0
+        offset_direction = -1 if self.carousel_config['offset'] < 0 else 1
+        for page_offset in [0, offset_direction]:
+            current_page = self.carousel_config['current_page'] + page_offset
+            if not 0 <= current_page < total_pages:
+                continue
+            start_index = current_page * 6
+            end_index = min((current_page + 1) * 6, len(self.rooms))
+            for i, room in enumerate(self.rooms[start_index:end_index]):
+                x = self.rooms_start_x + (i % 3) * 220 + (page_offset * Size.SCREEN_WIDTH)
+                y = self.rooms_start_y + (i // 3) * 100
+                room_rect = pygame.Rect(x, y, 200, 80)
+                self.elements_cur.append(('room', room_rect, room))
+                pygame.draw.rect(self.screen, Color.WHITE, room_rect, border_radius=10)
+                pygame.draw.rect(self.screen, Color.BLACK, room_rect, 2, border_radius=10)
+                theme_text, _ = self.font_title_rooms.render(room['name'], fgcolor=Color.DARK_GOLDEN)
+                clients_text, _ = self.font_title_rooms.render(f"{room['current_clients']}/{room['max_clients']}", fgcolor=Color.BLACK)
+                info_surface = pygame.Surface(
+                    (theme_text.get_width() + 10 + clients_text.get_width(),
+                    max(theme_text.get_height(), clients_text.get_height())),
+                    pygame.SRCALPHA
+                )
+                info_surface.blit(theme_text, (0, 0))
+                info_surface.blit(clients_text, (theme_text.get_width() + 10, 0))
+                self.screen.blit(info_surface, info_surface.get_rect(center=room_rect.center))
+        if self.carousel_config['current_page'] > 0:
+            self.elements_cur.append(('arrow_left', self.arrow_left_rect))
+        if self.carousel_config['current_page'] < total_pages - 1:
+            self.elements_cur.append(('arrow_right', self.arrow_right_rect))
+        if self.carousel_config['current_page'] > 0:
+            pygame.draw.polygon(self.screen, Color.BLACK, [
+                (self.arrow_left_rect.left + 15, self.arrow_left_rect.centery),
+                (self.arrow_left_rect.right, self.arrow_left_rect.top + 10),
+                (self.arrow_left_rect.right, self.arrow_left_rect.bottom - 10)
+            ])
+        if self.carousel_config['current_page'] < total_pages - 1:
+            pygame.draw.polygon(self.screen, Color.BLACK, [
+                (self.arrow_right_rect.right - 15, self.arrow_right_rect.centery),
+                (self.arrow_right_rect.left, self.arrow_right_rect.top + 10),
+                (self.arrow_right_rect.left, self.arrow_right_rect.bottom - 10)
+            ])
 
     def handle_colision_cursor(self):
         '''Atualiza o cursor do mouse com base na posição sobre os elementos.'''
         self.mouse_pos = pygame.mouse.get_pos()
-        self.mouse_click = pygame.mouse.get_pressed()
         if self.current_page == 'Register':
             if self.button_play_rect.collidepoint(self.mouse_pos):
                 pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
@@ -416,12 +382,27 @@ class Screen(BaseClient):
                 pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_IBEAM)
             else:
                 pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
+        elif self.current_page == 'Rooms':
+            cursor_changed = False
+            for element in self.elements_cur:
+                elem_rect = element[1]
+                if elem_rect.collidepoint(self.mouse_pos):
+                    pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
+                    cursor_changed = True
+                    break
+            if not cursor_changed:
+                pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
 
-    def handle_prox_page(self):
-        '''Verifica se o jogador deve mudar de página.'''
+    def handle_click_cursor(self):
+        '''Verifica se o jogador clicou em algum elemento clicável.'''
+        current_time = pygame.time.get_ticks()
+        if current_time - self.last_click_time < 300:
+            return
+        mouse_click = pygame.mouse.get_pressed()[0]
         if self.current_page == 'Register':
-            if (self.button_play_rect.collidepoint(self.mouse_pos) and self.mouse_click[0] and self.inputs[0].text != '') or \
+            if (self.button_play_rect.collidepoint(self.mouse_pos) and mouse_click and self.inputs[0].text != '') or \
             (self.inputs[0].return_pressed and self.inputs[0].text != ''):
+                self.last_click_time = current_time
                 self.name = self.inputs[0].text
                 super().start()
                 self.current_page = 'Rooms'
@@ -429,16 +410,35 @@ class Screen(BaseClient):
                 if self.current_input is not None:
                     self.current_input.active = False
                     self.current_input = None
+        elif self.current_page == 'Rooms' and mouse_click:
+            for element in self.elements_cur:
+                elem_type, elem_rect = element[0], element[1]
+                if elem_rect.collidepoint(self.mouse_pos):
+                    self.last_click_time = current_time
+                    if elem_type == 'room':
+                        room = element[2]
+                        print(f'Entrando na sala: {room["name"]}')
+                    elif elem_type == 'arrow_left':
+                        self.carousel_config['target_page'] -= 1
+                    elif elem_type == 'arrow_right':
+                        self.carousel_config['target_page'] += 1
+                    elif elem_type == 'button_create':
+                        self.current_page = 'Create'
+                        self.load_rooms = False
+                    elif elem_type == 'quant_rooms_text':
+                        self.load_rooms = False
+                    break
 
     def handle_close_game(self):
         '''Finaliza o jogo, removendo o cliente da sala (se estiver em uma) e do servidor.'''
         self.running = False
         if self.room:
             super().server_leave_room()
-        super().server_unregister()
+        if self.current_page != 'Register':
+            super().server_unregister()
     
     def get_rooms(self, args=None):
-        """Carrega as sala."""
+        '''Carrega as sala.'''
         rooms = super().server_list_rooms(args)
         self.rooms = []
         if len(rooms) == 1 and rooms[0] == '':
