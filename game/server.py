@@ -263,6 +263,33 @@ class Server:
 
             return 'OK'
 
+        elif msg_type == 'END':
+            if len(args) != 0:
+                return 'Número de argumentos inválido'
+
+            client = self.get_client(address[0], address[1])
+            if client is None:
+                return 'Cliente não registrado'
+
+            room_code = client['room']
+            room = self.get_room(room_code)
+            if room_code == '' or room is None:
+                return 'Cliente não está em nenhuma sala'
+
+            if room['clients'][0][0] != client['id']:
+                return 'Somente o dono da sala pode excluí-la'
+
+            if room['state'] != 'game':
+                return 'A sala não está em partida'
+
+            for room_client in room['clients']:
+                if room_client[0] == client['id']:
+                    continue
+                self.send_message((room_client[1], room_client[2]), 'END')
+
+            self.rooms.remove(room)
+            return 'OK'
+
         return 'Tipo de mensagem inválido'
 
     def routes_client_message(self, dest, msg_type, args, address):
