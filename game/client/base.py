@@ -257,8 +257,8 @@ class BaseClient(abc.ABC):
     ### Métodos de comunicação com outros clientes
     ###
     def client_chat(self, message):
-        # TODO: Implementar o envio de mensagem para outros clientes
-        ...
+        for client in self.room_clients:
+            self.send_message('CHAT', message, dest=client, wait_response=False)
 
     def client_guess(self, guess):
         ...
