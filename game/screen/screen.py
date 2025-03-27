@@ -74,6 +74,8 @@ class Screen(BaseClient):
         self.button_play_border = self.button_play_rect.inflate(2, 2)
         self.button_play_text = self.font_button.render('JOGAR', True, Color.WHITE)
         self.button_play_text_rect = self.button_play_text.get_rect(center=self.button_play_rect.center)
+        # Página de listar salas
+        self.load_rooms = False
 
     def start(self):
         while self.running:
@@ -123,9 +125,9 @@ class Screen(BaseClient):
         self.screen.blit(self.button_play_text, self.button_play_text_rect)
 
     def rooms_page(self):
-        # Aqui onde eu preparo as salas
-        # Uma lista de salas, com chaves como 'theme', 'password', 'max_clients' e 'room_code'
-        self.rooms = []
+        if self.rooms == [] and not self.load_rooms:
+            self.get_rooms()
+            self.load_rooms = True
 
         total_pages = (len(self.rooms) + 6 - 1) // 6
         if self.carousel_config['current_page'] != self.carousel_config['target_page']:
@@ -182,9 +184,9 @@ class Screen(BaseClient):
                 pygame.draw.rect(self.screen, Color.BLACK,
                                  room_rect, 2, border_radius=10)
                 theme, _ = self.font_title_rooms.render(
-                    room['theme'], fgcolor=Color.DARK_GOLDEN)
+                    room['name'], fgcolor=Color.DARK_GOLDEN)
                 max_clients, _ = self.font_title_rooms.render(
-                    room['max_clients'], fgcolor=Color.BLACK)
+                    f'{room['max_clients']}/10', fgcolor=Color.BLACK)
                 info = pygame.Surface(
                     (theme.get_width() + 10 + max_clients.get_width(),
                      max(theme.get_height(), max_clients.get_height())),
@@ -394,6 +396,7 @@ class Screen(BaseClient):
             print(f"Criando sala: (Nome: {name} |Tipo: {type_room})")
         elif button_back.collidepoint(mouse_pos) and mouse_click[0]:
             self.current_page = 'Rooms'
+            self.load_rooms = False
             for input_field in self.inputs[3:7]:
                 input_field.text = ''
                 input_field.active = False
@@ -433,6 +436,23 @@ class Screen(BaseClient):
         if self.room:
             super().server_leave_room()
         super().server_unregister()
+    
+    def get_rooms(self, args=None):
+        """Carrega as sala."""
+        rooms = super().server_list_rooms(args)
+        self.rooms = []
+        if len(rooms) == 1 and rooms[0] == '':
+            return
+        for line in rooms[:-1]:
+            data = line.strip().split(",")
+            room_data = {
+                "type": data[0],
+                "name": data[1],
+                "code": data[2],
+                "current_clients": data[3],
+                "max_clients": data[4]
+            }
+            self.rooms.append(room_data)
 
     def handle_chat(self, client, message):
         print(f'~{client["name"]}: {message}')
