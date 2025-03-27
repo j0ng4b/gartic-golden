@@ -53,6 +53,15 @@ def test_provided_password_for_public_room(server):
     assert response == 'Sala pública não requer senha'
 
 
+def test_create_room_with_client_on_another_room(server):
+    addr = ('127.0.0.1', 6000)
+    server.parse_server_message('REGISTER', ['Tester'], addr)
+    server.parse_server_message('ROOM', ['pub', 'TestRoom'], addr)
+
+    response = server.parse_server_message('ROOM', ['pub', 'AnotherRoom'], addr)
+    assert response == 'Cliente já está em uma sala'
+
+
 def test_create_public_room(server):
     addr = ('127.0.0.1', 6000)
     server.parse_server_message('REGISTER', ['Tester'], addr)
