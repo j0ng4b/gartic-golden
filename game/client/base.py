@@ -61,8 +61,6 @@ class BaseClient(abc.ABC):
         dest, msg = msg.split('/')
         msg_type, args = msg.split(':')
         args = args.split(';')
-        if len(args) == 1 and args[0] == '':
-            args = []
 
 
         # Verifica se a mensagem é uma resposta
