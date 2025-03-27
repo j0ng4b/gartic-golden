@@ -29,7 +29,7 @@ class InputField():
         self.placeholder = placeholder
         self.return_pressed = False
         self.text_offset = 0
-        self.padding = 6
+        self.padding = 5
         self.cursor_width = 2
         self.cursor_pos = 0
         self.cursor_visible = True
