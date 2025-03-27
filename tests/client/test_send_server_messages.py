@@ -117,12 +117,3 @@ def test_list_rooms(client):
     rooms = client.server_list_rooms()
     assert rooms == ['room1', 'room2', 'room3']
 
-
-def test_status_room(client, caplog):
-    def dummy_send_message(type, *args, dest='', wait_response=True):
-        return 'STATUS'
-    client.send_message = dummy_send_message
-
-    response = client.server_status_room()
-    assert response == 'STATUS'
-

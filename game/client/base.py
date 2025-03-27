@@ -238,9 +238,6 @@ class BaseClient(abc.ABC):
         self.server_error = res
         return False
 
-    def server_status_room(self):
-        return self.send_message('STATUS')
-
     def server_leave_room(self):
         res = self.send_message('LEAVE')
         if res == 'OK':
