@@ -79,7 +79,7 @@ class Screen(BaseClient):
         while self.running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    self.running = False
+                    self.handle_close_game()
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     self.current_input = next(
                         (input_field for input_field in self.inputs if input_field.rect.collidepoint(event.pos)), None)
@@ -426,6 +426,13 @@ class Screen(BaseClient):
                 if self.current_input is not None:
                     self.current_input.active = False
                     self.current_input = None
+
+    def handle_close_game(self):
+        '''Finaliza o jogo, removendo o cliente da sala (se estiver em uma) e do servidor.'''
+        self.running = False
+        if self.room:
+            super().server_leave_room()
+        super().server_unregister()
 
     def handle_chat(self, client, message):
         print(f'~{client["name"]}: {message}')
