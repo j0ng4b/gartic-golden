@@ -183,22 +183,6 @@ class Server:
 
             return res if res != '' else 'Não há salas'
 
-        elif msg_type == 'STATUS':
-            if len(args) != 0:
-                return 'Número de argumentos inválido'
-
-            client = self.get_client(address[0], address[1])
-            if client is None:
-                return 'Cliente não registrado'
-
-            room_code = client['room']
-            room = self.get_room(room_code)
-            if room_code == '' or room is None:
-                return 'Cliente não está em nenhuma sala'
-
-            room_type = 'priv' if room['password'] is not None else 'pub'
-            return f"{room_type},{room['name']},{room['code']},{str(len(room['clients']))},{room['max_clients']}"
-
         elif msg_type == 'LEAVE':
             if len(args) != 0:
                 return 'Número de argumentos inválido'
