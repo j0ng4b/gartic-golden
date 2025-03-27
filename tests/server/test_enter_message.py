@@ -123,6 +123,17 @@ def test_enter_non_lobby_room(server):
     assert server.clients[1]['room'] is None
 
 
+@pytest.mark.usefixtures('public_room')
+def test_close_room_on_max_clients(server):
+    addr = ('127.0.0.1', 6000)
+    server.parse_server_message('REGISTER', ['Tester'], addr)
+
+    server.rooms[0]['max_clients'] = 2
+    
+    server.parse_server_message('ENTER', ['1'], addr)
+    assert server.rooms[0]['state'] == 'game'
+
+
 def test_send_connect_message_to_clients(server):
     room_code = '1'
 
