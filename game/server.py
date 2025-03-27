@@ -167,7 +167,7 @@ class Server:
             return 'OK'
 
         elif msg_type == 'LIST':
-            if len(args) == 1 and args[0] not in ['priv', 'pub', 'all']:
+            if len(args) == 1 and args[0] not in ['priv', 'pub']:
                 return 'Tipo da sala inválido'
             elif len(args) > 1:
                 return 'Número de argumentos inválido'
@@ -175,13 +175,13 @@ class Server:
             res = ''
             for room in self.rooms:
                 room_type = 'priv' if room['password'] is not None else 'pub'
-                if args[0] != 'all' and room_type != args[0] or room['state'] != 'lobby':
+                if (len(args) == 1 and room_type != args[0]) or room['state'] != 'lobby':
                     continue
 
                 res += f"{room_type},{room['name']},{room['code']},"
                 res += f"{str(len(room['clients']))},{room['max_clients']}\n"
 
-            return res if res != '' else 'Não há salas'
+            return res
 
         elif msg_type == 'LEAVE':
             if len(args) != 0:
