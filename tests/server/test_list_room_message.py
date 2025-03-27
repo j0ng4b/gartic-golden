@@ -19,6 +19,13 @@ def test_iniaially_empty_list(server):
     assert response == ''
 
 
+def test_complain_about_extra_arguments(server):
+    addr = ('127.0.0.1', 6000)
+
+    response = server.parse_server_message('LIST', ['pub', 'extra'], addr)
+    assert response == 'Número de argumentos inválido'
+
+
 @pytest.mark.usefixtures('rooms')
 def test_list_return_all_rooms(server):
     addr = ('127.0.0.1', 6000)
