@@ -97,10 +97,8 @@ Etapas:
 - manter o *timeout* de quem desenha (host)
 - manter a lista de clientes que acertaram o desenho ou que não vão dar mais palpites.  
   *(manter o estado do cliente)*
-- quando atingir o *timeout* informar ao cliente que está desenhando que ele deve parar de
-  desenhar `FDRAW` (host)
-- quando todos clientes tiverem dado palpite ou pulado, informar ao cliente que está desenhando
-  que ele deve parar de desenhar `FDRAW` (host)
+- quando atingir o *timeout* informar o fim da rodada de desenho com `FDRAW` a todos clientes (host)
+- quando todos clientes tiverem dado palpite ou pulado, informar o fim da rodada de desenho com `FDRAW` a todos clientes (host)
 
 **Gatilho**
 - receber do servidor ou `GAME` ou `PLAY`
@@ -171,7 +169,7 @@ economizar na quantidade de dados transmitidos:
 
 #### Pontuação
 ##### Requisitar pontuação
-Um cliente sempre ao início de cada rodada solicita sua pontuação enviando a mensagem `SCORE`.
+Um cliente sempre ao final de cada rodada solicita sua pontuação enviando a mensagem `SCORE`.
 
 ##### Pontuação do cliente
 O cliente apenas mantem (modifica, visualiza) a pontuação de outros clientes, a sua própria
@@ -200,7 +198,7 @@ desenhando e quem não está.
 
 O primeiro cenário é para quem está desenhando, esse só recebe pontuação ao final do desenho, seguindo a
 seguinte regra:
-- Todos acertaram o desenho: 5 pontos
+- Todos acertaram o desenho: 8 pontos
 - Tempo esgotado: 0 pontos
 
 Para os demais clientes, as regras são:
