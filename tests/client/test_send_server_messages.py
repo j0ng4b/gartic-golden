@@ -1,6 +1,6 @@
 def test_register_success(client):
     def dummy_send_message(type, *args, dest='', wait_response=True):
-        return 'OK'
+        return 'OK:123'
     client.send_message = dummy_send_message
 
     response = client.server_register()

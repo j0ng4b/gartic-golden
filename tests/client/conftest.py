@@ -34,6 +34,9 @@ class DummyClient(BaseClient):
     def handle_chat(self, client, message):
         pass
 
+    def handle_draw(self):
+        pass
+
     def handle_canvas(self, canvas):
         pass
 
