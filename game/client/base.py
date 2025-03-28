@@ -261,7 +261,7 @@ class BaseClient(abc.ABC):
         res = self.send_message('REGISTER', self.name)
         if res is not None and res.startswith('OK'):
             self.room_clients[res.split('&')[1]] = {
-                'name': None,
+                'name': self.name,
                 'msgs': [],
                 'state': None,
                 'score': 0,
