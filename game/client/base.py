@@ -18,6 +18,7 @@ class BaseClient(abc.ABC):
 
         self.draw_theme = None
         self.draw_object = None
+        self.words = []
 
         # Contexto de execução, armazena informações de execução de cada thread
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -281,8 +282,8 @@ class BaseClient(abc.ABC):
         self.error = res
         return False
 
-    def server_create_room(self, room_type, room_name, room_password=None):
-        args = [room_type, room_name]
+    def server_create_room(self, room_type, room_name, theme, max_rouds, room_password=None):
+        args = [room_type, room_name, theme, max_rouds]
         if room_password is not None:
             args.append(room_password)
 
@@ -313,7 +314,6 @@ class BaseClient(abc.ABC):
         rooms = None
         if res is not None and res.find('\n'):
             rooms = res.split('\n')
-
         return rooms
 
     def server_enter_room(self, room_code, room_password=None):
@@ -333,7 +333,7 @@ class BaseClient(abc.ABC):
         res = self.send_message('LEAVE')
         if res == 'OK':
             self.room = None
-            self.room_clients = {}
+            self.room_clients = dict(list(self.room_clients.items())[:1])
             return True
 
         self.error = res

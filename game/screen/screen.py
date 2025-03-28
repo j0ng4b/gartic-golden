@@ -45,9 +45,6 @@ class Screen(BaseClient):
             'Lugares'
         ]
         self.theme = random.choice(self.themes)
-        # Dados da sala que o cliente criou
-        self.words = []
-        self.data_room = {}
         # Configuração do carrossel
         self.carousel_config = {
             'current_page': 0, 'target_page': 0, 'offset': 0, 'animation_speed': 0.1
@@ -57,29 +54,19 @@ class Screen(BaseClient):
         # Campos de entrada
         self.inputs = [
             InputField(pygame.Rect(Size.SCREEN_WIDTH // 2 - 150, Size.SCREEN_HEIGHT // 2, 300, 40),
-                    self.font_input_name, "Digite seu nick"),
+                    self.font_input_name, "Entre 1 e 7 caracteres"),
             InputField(pygame.Rect(Size.SCREEN_WIDTH // 2 - 185, Size.SCREEN_HEIGHT - 85, 250, 35),
                     self.font_input_chat, "Digite sua resposta"),
             InputField(pygame.Rect(Size.SCREEN_WIDTH // 2 + 95, Size.SCREEN_HEIGHT - 85, 250, 35),
                     self.font_input_chat, "Converse no Chat"),
             InputField(pygame.Rect(Size.SCREEN_WIDTH // 2 - 315, Size.SCREEN_HEIGHT // 2 - 50, 270, 40),
-                    self.font_input_chat, "Digite o nome da sala"),
+                    self.font_input_chat, "Entre 1 e 12 caracteres"),
             InputField(pygame.Rect(Size.SCREEN_WIDTH // 2 - 315, Size.SCREEN_HEIGHT // 2 + 85, 270, 40),
                     self.font_input_chat, "Entre 1 a 20"),
             InputField(pygame.Rect(Size.SCREEN_WIDTH // 2 + 80, Size.SCREEN_HEIGHT // 2 + 85, 270, 40),
                     self.font_input_chat, "Digite a senha da sala")
         ]
-        # Jogadores e salas
-        # Armazena dicionários dos jogadores da sala em que o cliente está, inclusive o seu,
-        # no formato abaixo
-        #
-        # {
-        #   'name': 'Paulo',
-        #   'score': 40,
-        #   'draw': False
-        # }
-        #
-        self.players = []
+        # Jogadores e salas 
         # Armazena dicionários de salas disponíveis para entrar
         self.rooms = []
         # Logo grande
@@ -144,6 +131,21 @@ class Screen(BaseClient):
         )
         self.button_create_prox_text = self.font_button.render('CRIAR SALA', True, Color.WHITE)
         self.button_back_text = self.font_button.render('VOLTAR', True, Color.WHITE)
+        # Play de jogar
+        self.play_elements = {
+            'title_text': self.font_input_name.render('JOGADORES', True, Color.BLACK),
+            'button_leave': pygame.Rect(Size.SCREEN_WIDTH - 110, Size.SCREEN_HEIGHT - 35, 100, 30),
+            'button_leave_text': self.font_button.render('Sair', True, Color.WHITE),
+            'draw_rect': pygame.Rect(
+                Size.SCREEN_WIDTH // 4 - 40,
+                Size.SCREEN_HEIGHT // 4 - 55,
+                Size.SCREEN_WIDTH - 175,
+                Size.SCREEN_HEIGHT // 2 + 30
+            ),
+            'image_rect': self.image_logo_small.get_rect(
+                center=(Size.SCREEN_WIDTH // 2 - 50, Size.SCREEN_HEIGHT // 2 - 250)),
+            'line_x': (self.inputs[1].rect.right + self.inputs[2].rect.left) // 2
+        }
 
     def start(self):
         while self.running:
@@ -212,11 +214,13 @@ class Screen(BaseClient):
         self.screen.blit(quant_rooms_surface, quant_rooms_rect)
 
     def play_page(self):
-        if not self.players:
+        if not self.room_clients:
             return
+            
+        # Atualiza a área de scroll apenas se necessário
         if not hasattr(self, 'scroll_area'):
             total_height = Size.SCREEN_HEIGHT if len(
-                self.players) < 8 else len(self.players) * 70 + 60
+                self.room_clients) < 8 else len(self.room_clients) * 70 + 60
             self.scroll_area = pygame.Rect(
                 self.left_panel.x,
                 self.left_panel.y,
@@ -224,85 +228,58 @@ class Screen(BaseClient):
                 min(total_height, Size.SCREEN_HEIGHT * 2)
             )
             self.scroll_offset = 0
+
+        # Desenha o painel de jogadores
         pygame.draw.rect(self.screen, Color.LIGHT_GOLD,
                          pygame.Rect(0, 0, self.left_panel.width, 50))
-        title_text = self.font_input_name.render(
-            'JOGADORES', True, Color.BLACK)
+        
+        # Lista de jogadores com scroll
         scroll_surface = pygame.Surface(
             (self.left_panel.width, self.scroll_area.height))
         scroll_surface.fill(Color.LIGHT_GOLD)
-
-        for i, player in enumerate(self.players):
+        
+        for i, id_room in enumerate(self.room_clients):
             y_pos = 60 + i * 70 - self.scroll_offset
             pygame.draw.rect(scroll_surface, Color.GOLDEN, (10, y_pos,
                              self.left_panel.width - 20, 60), border_radius=5)
             scroll_surface.blit(self.user_icon, (20, y_pos + 15))
             name_text = self.font_input_chat.render(
-                player['name'], True, Color.BLACK)
+                self.room_clients[id_room]['name'], True, Color.BLACK)
             scroll_surface.blit(name_text, (60, y_pos + 10))
             score_text = self.font_input_chat.render(
-                f"{player['score']} pts", True, Color.BLACK)
+                f"{self.room_clients[id_room]['score']} pts", True, Color.BLACK)
             scroll_surface.blit(
                 score_text, (self.left_panel.width - 94, y_pos + 32))
-            if player['draw']:
+            if self.room_clients[id_room]['state'] == 'draw':
                 scroll_surface.blit(
                     self.pencil_icon, (self.left_panel.width - 32, y_pos + 36))
 
+        # Inputs de chat
         self.inputs[1].draw(self.screen)
         self.inputs[2].draw(self.screen)
-        line_x = (self.inputs[1].rect.right + self.inputs[2].rect.left) // 2
-        pygame.draw.line(self.screen, Color.HONEY, (line_x,
-                         self.inputs[1].rect.top - 85), (line_x, self.inputs[1].rect.bottom), 2)
+        pygame.draw.line(self.screen, Color.HONEY, 
+                         (self.play_elements['line_x'], self.inputs[1].rect.top - 85), 
+                         (self.play_elements['line_x'], self.inputs[1].rect.bottom), 2)
 
-        button_leave = pygame.Rect(
-            Size.SCREEN_WIDTH - 110, Size.SCREEN_HEIGHT - 35, 100, 30)
+        # Botão Sair
         pygame.draw.rect(self.screen, Color.BLACK,
-                         button_leave.inflate(2, 2), border_radius=20)
+                         self.play_elements['button_leave'].inflate(2, 2), border_radius=20)
         pygame.draw.rect(self.screen, Color.RED,
-                         button_leave, border_radius=20)
-
-        button_text = self.font_button.render('Sair', True, Color.WHITE)
-        button_text_rect = button_text.get_rect(center=button_leave.center)
-
-        # Cursor diferente para o mouse colidindo com o botão ou input
-        mouse_pos = pygame.mouse.get_pos()
-        if button_leave.collidepoint(mouse_pos):
-            pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
-        elif self.inputs[1].rect.collidepoint(mouse_pos) or self.inputs[2].rect.collidepoint(mouse_pos):
-            pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_IBEAM)
-        else:
-            pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
+                         self.play_elements['button_leave'], border_radius=20)
 
         # Área de desenho
-        draw_rect = pygame.Rect(
-            Size.SCREEN_WIDTH // 4 - 40,
-            Size.SCREEN_HEIGHT // 4 - 55,
-            Size.SCREEN_WIDTH - 175,
-            Size.SCREEN_HEIGHT // 2 + 30
-        )
-        pygame.draw.rect(self.screen, Color.WHITE, draw_rect, border_radius=20)
+        pygame.draw.rect(self.screen, Color.WHITE, self.play_elements['draw_rect'], border_radius=20)
 
-        image_rect = self.image_logo_small.get_rect(
-            center=(Size.SCREEN_WIDTH // 2 - 50, Size.SCREEN_HEIGHT // 2 - 250))
-
-        mouse_pos = pygame.mouse.get_pos()
-        mouse_click = pygame.mouse.get_pressed()
-        # Caso para sair da sala
-        if button_leave.collidepoint(mouse_pos) and mouse_click[0]:
-            if super().server_leave_room():
-                self.current_page = 'Rooms'  # Página de listar as salas - Voltar
-                self.data_room = {}
-                self.words = []
-                self.players = []
-                print('Saiu da sala, sala apagada.')
-
+        # Renderização final
         self.screen.blit(scroll_surface, (self.left_panel.x,
                          self.left_panel.y), self.left_panel)
-        self.screen.blit(title_text, (12, 8))
+        self.screen.blit(self.play_elements['title_text'], (12, 8))
         pygame.draw.line(self.screen, Color.HONEY, (40, 50),
                          (self.left_panel.width - 40, 50), 2)
-        self.screen.blit(button_text, button_text_rect)
-        self.screen.blit(self.image_logo_small, image_rect)
+        self.screen.blit(self.play_elements['button_leave_text'], 
+                         self.play_elements['button_leave_text'].get_rect(
+                             center=self.play_elements['button_leave'].center))
+        self.screen.blit(self.image_logo_small, self.play_elements['image_rect'])
 
     def create_room_page(self):
         self.screen.blit(self.image_logo_big, self.image_logo_big_rect)
@@ -347,7 +324,7 @@ class Screen(BaseClient):
                 self.elements_cur.append(('room', room_rect, room))
                 pygame.draw.rect(self.screen, Color.WHITE, room_rect, border_radius=10)
                 pygame.draw.rect(self.screen, Color.BLACK, room_rect, 2, border_radius=10)
-                theme_text, _ = self.font_title_rooms.render(room['name'], fgcolor=Color.DARK_GOLDEN)
+                theme_text, _ = self.font_title_rooms.render(room['name'].upper(), fgcolor=Color.DARK_GOLDEN)
                 clients_text, _ = self.font_title_rooms.render(f"{room['current_clients']}/{room['max_clients']}", fgcolor=Color.BLACK)
                 info_surface = pygame.Surface(
                     (theme_text.get_width() + 10 + clients_text.get_width(),
@@ -403,7 +380,15 @@ class Screen(BaseClient):
                 pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_IBEAM)
             else:
                 pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
-
+        elif self.current_page == 'Play':
+            if self.play_elements['button_leave'].collidepoint(self.mouse_pos):
+                pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
+            elif any(input.rect.collidepoint(self.mouse_pos) for input in [self.inputs[1], self.inputs[2]]):
+                pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_IBEAM)
+            else:
+                pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
+            return
+        
     def handle_click_cursor(self):
         '''Verifica se o jogador clicou em algum elemento clicável.'''
         current_time = pygame.time.get_ticks()
@@ -413,10 +398,14 @@ class Screen(BaseClient):
         if self.current_page == 'Register':
             if (self.button_play_rect.collidepoint(self.mouse_pos)  and mouse_click and self.inputs[0].text != '') or \
             (self.inputs[0].return_pressed and self.inputs[0].text != ''):
+                tam_nick = len(self.inputs[0].text)
+                if tam_nick > 7:
+                    self.inputs[0].return_pressed = False
+                    return
                 self.last_click_time = current_time
                 self.name = self.inputs[0].text
-                super().start()
                 self.current_page = 'Rooms'
+                super().start()
                 pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
                 if self.current_input is not None:
                     self.current_input.active = False
@@ -452,26 +441,34 @@ class Screen(BaseClient):
                 data_room = [input_field.text for input_field in self.inputs[3:5]]
                 if all(data_room):  # Criando uma sala
                     name, max_rounds = data_room
+                    if not max_rounds.isdigit():
+                        return
                     max_rounds = int(max_rounds)
                     if max_rounds < 1 or max_rounds > 20: # Como tem 20 palavras de cada tema, só pode ter até no máximo 20 rodadas
                         return
                     password = self.inputs[5].text
                     room_type = 'pub' if password == '' else 'priv'
-                    # Usando tema como nome por enquanto
-                    super().server_create_room(room_type, self.theme, password if password else None)
-                    self.current_page = 'Play'
-                    self.words = load_words(self.theme, max_rounds)
-                    self.players.append({'name': self.name, 'score': 0, 'draw': False})
-                    self.data_room = {'name': name, 'theme': self.theme, 'tipo': room_type, 'max_rounds': max_rounds}
-                    # Resetar os inputs
-                    for input_field in self.inputs[3:5]:
-                        input_field.text = ''
+                    if super().server_create_room(room_type, name, self.theme, str(max_rounds), password if password else None):
+                        self.current_page = 'Play'
+                        self.words = load_words(self.theme, max_rounds)
+                        # Resetar os inputs
+                        for input_field in self.inputs[3:5]:
+                            input_field.text = ''
+                        self.inputs[2].active = False
             elif self.button_back_rect.collidepoint(self.mouse_pos):
                 self.last_click_time = current_time
                 self.current_page = 'Rooms'
-                for input_field in self.inputs[3:6]:
+                self.load_rooms = False 
+                for input_field in self.inputs[3:5]:
                     input_field.text = ''
-                    input_field.active = False
+        elif self.current_page == 'Play' and mouse_click:
+            if self.play_elements['button_leave'].collidepoint(self.mouse_pos):
+                if super().server_leave_room():
+                    self.current_page = 'Rooms'
+                    self.words = []
+                self.last_click_time = current_time
+            return
+
 
     def handle_close_game(self):
         '''Finaliza o jogo, removendo o cliente da sala (se estiver em uma) e do servidor.'''
@@ -493,17 +490,22 @@ class Screen(BaseClient):
                 "type": data[0],
                 "name": data[1],
                 "code": data[2],
-                "current_clients": data[3],
-                "max_clients": data[4]
+                "theme": data[3],
+                "current_clients": data[4],
+                "max_clients": data[5],
+                "max_rounds": data[6]
             }
             self.rooms.append(room_data)
-    
+
     def get_players(self):
         '''Carrega os jogadores da sala que o cliente está.'''
         ...
 
     def handle_chat(self, client, message):
-        print(f'~{client["name"]}: {message}')
+        ...
 
     def handle_canvas(self, canvas):
-        print(f'canvas: {canvas}')
+        ...
+
+    def handle_draw(self):
+        ...

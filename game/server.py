@@ -20,6 +20,7 @@ class Server:
         #   'theme': 'room theme',
         #   'state': 'room state',
         #   'password': 'room password',
+        #   'max_rounds': number maximum rounds,
         #   'max_clients': number maximum clients,
         #   'clients': [
         #     Client,
@@ -32,7 +33,23 @@ class Server:
         #   'address',
         #    port
         # )
-        self.rooms = []
+        self.rooms = [
+            {
+                'name': 'TTTTTXXXXXXX',
+                'code': '1',
+                'theme': 'Futurista',
+                'state': 'lobby',
+                'password': 'segredo123',
+                'max_clients': 10,
+                'max_rounds': 14,
+                'clients': 
+                    (
+                        1,
+                        '192.168.1.10',
+                        8080
+                    ),   
+            }
+        ]
 
         # Store the list of client on below format
         #
@@ -87,7 +104,6 @@ class Server:
                 return 'Número de argumentos inválido'
             elif args[0] == '':
                 return 'Nome de jogador inválido'
-
             self.clients.append({
                 'id': str(uuid.uuid4()),
                 'name': args[0],
@@ -110,15 +126,15 @@ class Server:
             return 'OK'
 
         elif msg_type == 'ROOM':
-            if len(args) < 3 or len(args) > 4:
+            if len(args) < 3 or len(args) > 5:
                 return 'Número de argumentos inválido'
             elif args[0] not in ['priv', 'pub']:
                 return 'Tipo da sala inválido'
             elif args[1] == '':
                 return 'Nome da sala inválido'
-            elif args[0] == 'priv' and len(args) != 4:
+            elif args[0] == 'priv' and len(args) != 5:
                 return 'Senha não fornecida para sala privada'
-            elif args[0] == 'pub' and len(args) != 3:
+            elif args[0] == 'pub' and len(args) != 4:
                 return 'Sala pública não requer senha'
 
             client = self.get_client(address[0], address[1])
@@ -134,15 +150,15 @@ class Server:
             self.rooms.append({
                 'name': args[1],
                 'code': code,
-                'state': 'lobby',
                 'theme': args[2],
-                'password': args[3] if len(args) == 4 else None,
+                'state': 'lobby',
+                'password': args[4] if len(args) == 5 else None,
+                'max_rounds': args[3],
                 'max_clients': 10,  # Por enquanto é um valor fixo
                 'clients': [
                     (client['id'], client['address'], client['port']),
                 ]
             })
-
             # Associa o cliente com a sala criada
             client['room'] = code
             return code
@@ -181,8 +197,7 @@ class Server:
                     continue
 
                 res += f"{room_type},{room['name']},{room['code']},{room['theme']},"
-                res += f"{str(len(room['clients']))},{room['max_clients']}\n"
-
+                res += f"{str(len(room['clients']))},{room['max_clients']},{room['max_rounds']}\n"
             return res
 
         elif msg_type == 'LEAVE':
