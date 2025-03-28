@@ -96,7 +96,7 @@ class Server:
                 'address': address[0],
                 'port': address[1],
             })
-            return f'OK:{self.clients[-1]["id"]}'
+            return f'OK&{self.clients[-1]["id"]}'
 
         elif msg_type == 'UNREGISTER':
             if len(args) != 0:

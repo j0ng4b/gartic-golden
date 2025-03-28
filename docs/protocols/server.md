@@ -65,7 +65,7 @@ Onde:
 
 #### `REGISTER`
 **Sucesso**
-- OK:id do cliente
+- OK&id do cliente
 
 **Falha**
 1. Nome de jogador inválido
