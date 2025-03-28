@@ -337,10 +337,30 @@ class BaseClient(abc.ABC):
             self.send_message('CHAT', message, dest=client, wait_response=False)
 
     def client_guess(self, guess):
+        self_client = None
+        response = None
+
         for client_id, client in self.room_clients.items():
             if client['state'] == 'draw':
                 response = self.send_message('GUESS', guess, dest=client_id)
-                return response == 'OK'
+
+                if response == 'OK' and self_client is not None:
+                    self_client['state'] = 'guess'
+                    return True
+
+            if client['self']:
+                if response is not None:
+                    if response == 'OK':
+                        client['state'] = 'guess'
+                        return True
+
+                    self.server_error = response
+                    return False
+
+                self_client = client
+
+        self.server_error = response
+        return False
 
     def client_draw(self, client):
         for room_client in self.room_clients.keys():
