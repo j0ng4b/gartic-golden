@@ -79,6 +79,7 @@ Onde:
 - Palpite já foi dado
 - Cliente não encontrado na partida
 - Cliente não pode mais dar palpites
+- Cliente é quem está desenhando
 
 #### `SKIP`
 **Falha**

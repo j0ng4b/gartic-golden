@@ -130,6 +130,10 @@ class BaseClient(abc.ABC):
                 self.send_message('RESP', 'Cliente não pode mais dar palpites', dest=dest, wait_response=False)
                 return
 
+            elif self.room_clients[dest]['state'] == 'draw':
+                self.send_message('RESP', 'Cliente é quem está desenhando', dest=dest, wait_response=False)
+                return
+
 
             if args[0] == self.draw_object:
                 self.send_message('RESP', 'OK', dest=dest, wait_response=False)
