@@ -75,7 +75,10 @@ Onde:
 - OK
 
 **Falha**
-- Palavra incorreta
+- Palpite está incorreto
+- Palpite já foi dado
+- Cliente não encontrado na partida
+- Cliente não pode mais dar palpites
 
 #### `SCORE`
 **Sucesso**

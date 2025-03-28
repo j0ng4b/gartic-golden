@@ -16,7 +16,8 @@ class BaseClient(abc.ABC):
         # Estado do jogo
         self.name = 'Player'
 
-        self.client_host = None
+        self.draw_theme = None
+        self.draw_object = None
 
         # Contexto de execução, armazena informações de execução de cada thread
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -88,6 +89,8 @@ class BaseClient(abc.ABC):
             self.room_clients[args[0]] = {
                 'name': None,
                 'msgs': [],
+                'state': None,
+                'score': 0,
             }
 
             self.room_clients[args[0]]['name'] = self.send_message('GREET', dest=args[0])
@@ -115,7 +118,28 @@ class BaseClient(abc.ABC):
             self.handle_chat(self.room_clients[dest], args[0])
 
         elif msg_type == 'GUESS':
-            pass
+            if self.room_clients.get(args[0]) is None:
+                self.send_message('RESP', 'Cliente não encontrado', dest=dest, wait_response=False)
+                return
+
+            elif self.room_clients[dest]['state'] == 'guess':
+                self.send_message('RESP', 'Palpite já foi dado', dest=dest, wait_response=False)
+                return
+
+            elif self.room_clients[dest]['state'] == 'skip':
+                self.send_message('RESP', 'Cliente não pode mais dar palpites', dest=dest, wait_response=False)
+                return
+
+
+            if args[0] == self.draw_object:
+                self.send_message('RESP', 'OK', dest=dest, wait_response=False)
+                self.client_got_the_right_answer(dest)
+
+                self.room_clients[dest]['state'] = 'guess'
+                self.room_clients[dest]['score'] += 5
+                return
+
+            self.send_message('RESP', 'Palpite está incorreto', dest=dest, wait_response=False)
 
         elif msg_type == 'GTRA':
             pass
