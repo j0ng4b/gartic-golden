@@ -59,7 +59,7 @@ Onde:
 > 
 > **Falha**
 > 1. Cliente não registrado  
->    *(exceto para `REGISTER`)*
+>    *(exceto para `REGISTER` e `LIST`)*
 > 
 > 2. Número de argumento inválido
 
