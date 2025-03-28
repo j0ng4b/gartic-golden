@@ -91,6 +91,7 @@ class BaseClient(abc.ABC):
                 'msgs': [],
                 'state': None,
                 'score': 0,
+                'self': False,
             }
 
             self.room_clients[args[0]]['name'] = self.send_message('GREET', dest=args[0])
@@ -233,7 +234,15 @@ class BaseClient(abc.ABC):
     ###
     def server_register(self):
         res = self.send_message('REGISTER', self.name)
-        if res == 'OK':
+        if res is not None and res.starwith('OK'):
+            self.room_clients[res.split(':')[1]] = {
+                'name': None,
+                'msgs': [],
+                'state': None,
+                'score': 0,
+                'self': True,
+            }
+
             return True
 
         self.server_error = res
