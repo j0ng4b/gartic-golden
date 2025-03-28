@@ -33,24 +33,7 @@ class Server:
         #   'address',
         #    port
         # )
-        self.rooms = [
-            {
-                'name': 'TTTTTXXXXXXX',
-                'code': '1',
-                'theme': 'Futurista',
-                'state': 'lobby',
-                'password': 'segredo123',
-                'max_clients': 10,
-                'max_rounds': 14,
-                'clients': 
-                    (
-                        1,
-                        '192.168.1.10',
-                        8080
-                    ),   
-            }
-        ]
-
+        self.rooms = []
         # Store the list of client on below format
         #
         # Client

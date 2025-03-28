@@ -12,7 +12,7 @@ class BaseClient(abc.ABC):
 
         self.room = None
         self.room_clients = {}
-
+        
         # Estado do jogo
         self.name = 'Player'
 

@@ -131,7 +131,7 @@ class Screen(BaseClient):
         )
         self.button_create_prox_text = self.font_button.render('CRIAR SALA', True, Color.WHITE)
         self.button_back_text = self.font_button.render('VOLTAR', True, Color.WHITE)
-        # Play de jogar
+        # Página de jogar
         self.play_elements = {
             'title_text': self.font_input_name.render('JOGADORES', True, Color.BLACK),
             'button_leave': pygame.Rect(Size.SCREEN_WIDTH - 110, Size.SCREEN_HEIGHT - 35, 100, 30),
@@ -146,6 +146,12 @@ class Screen(BaseClient):
                 center=(Size.SCREEN_WIDTH // 2 - 50, Size.SCREEN_HEIGHT // 2 - 250)),
             'line_x': (self.inputs[1].rect.right + self.inputs[2].rect.left) // 2
         }
+        self.scroll_area_players_rect = pygame.Rect(
+            0, 50, 
+            Size.SCREEN_WIDTH // 5 - 5,
+            Size.SCREEN_HEIGHT  # Valor inicial padrão
+        )
+        self.scroll_offset = 0
 
     def start(self):
         while self.running:
@@ -160,7 +166,7 @@ class Screen(BaseClient):
                 elif event.type == pygame.MOUSEWHEEL:
                     if self.left_panel.collidepoint(pygame.mouse.get_pos()):
                         self.scroll_offset = max(0, min(
-                            self.scroll_offset - event.y * 20, self.scroll_area.height - self.left_panel.height))
+                            self.scroll_offset - event.y * 20, self.scroll_area_players_rect.height - self.left_panel.height))
                 if self.current_input:
                     self.current_input.handle_event(event)
 
@@ -214,72 +220,53 @@ class Screen(BaseClient):
         self.screen.blit(quant_rooms_surface, quant_rooms_rect)
 
     def play_page(self):
+        '''Página principal do jogo.'''
         if not self.room_clients:
             return
-            
-        # Atualiza a área de scroll apenas se necessário
-        if not hasattr(self, 'scroll_area'):
-            total_height = Size.SCREEN_HEIGHT if len(
-                self.room_clients) < 8 else len(self.room_clients) * 70 + 60
-            self.scroll_area = pygame.Rect(
-                self.left_panel.x,
-                self.left_panel.y,
-                self.left_panel.width,
-                min(total_height, Size.SCREEN_HEIGHT * 2)
-            )
-            self.scroll_offset = 0
-
-        # Desenha o painel de jogadores
+        total_height = Size.SCREEN_HEIGHT if len(
+            self.room_clients) < 8 else len(self.room_clients) * 70 + 60
+        self.scroll_area_players_rect.height = min(total_height, Size.SCREEN_HEIGHT * 2)
         pygame.draw.rect(self.screen, Color.LIGHT_GOLD,
-                         pygame.Rect(0, 0, self.left_panel.width, 50))
-        
-        # Lista de jogadores com scroll
-        scroll_surface = pygame.Surface(
-            (self.left_panel.width, self.scroll_area.height))
-        scroll_surface.fill(Color.LIGHT_GOLD)
-        
-        for i, id_room in enumerate(self.room_clients):
-            y_pos = 60 + i * 70 - self.scroll_offset
-            pygame.draw.rect(scroll_surface, Color.GOLDEN, (10, y_pos,
-                             self.left_panel.width - 20, 60), border_radius=5)
-            scroll_surface.blit(self.user_icon, (20, y_pos + 15))
-            name_text = self.font_input_chat.render(
-                self.room_clients[id_room]['name'], True, Color.BLACK)
-            scroll_surface.blit(name_text, (60, y_pos + 10))
-            score_text = self.font_input_chat.render(
-                f"{self.room_clients[id_room]['score']} pts", True, Color.BLACK)
-            scroll_surface.blit(
-                score_text, (self.left_panel.width - 94, y_pos + 32))
-            if self.room_clients[id_room]['state'] == 'draw':
-                scroll_surface.blit(
-                    self.pencil_icon, (self.left_panel.width - 32, y_pos + 36))
-
-        # Inputs de chat
+                        pygame.Rect(0, 0, self.left_panel.width, 50))
+        scroll_area_players = pygame.Surface(
+            (self.left_panel.width, self.scroll_area_players_rect.height))
+        scroll_area_players.fill(Color.LIGHT_GOLD)
+        self.draw_card_players(scroll_area_players)
         self.inputs[1].draw(self.screen)
         self.inputs[2].draw(self.screen)
         pygame.draw.line(self.screen, Color.HONEY, 
-                         (self.play_elements['line_x'], self.inputs[1].rect.top - 85), 
-                         (self.play_elements['line_x'], self.inputs[1].rect.bottom), 2)
-
-        # Botão Sair
+                        (self.play_elements['line_x'], self.inputs[1].rect.top - 85), 
+                        (self.play_elements['line_x'], self.inputs[1].rect.bottom), 2)
         pygame.draw.rect(self.screen, Color.BLACK,
-                         self.play_elements['button_leave'].inflate(2, 2), border_radius=20)
+                        self.play_elements['button_leave'].inflate(2, 2), border_radius=20)
         pygame.draw.rect(self.screen, Color.RED,
-                         self.play_elements['button_leave'], border_radius=20)
-
-        # Área de desenho
+                        self.play_elements['button_leave'], border_radius=20)
         pygame.draw.rect(self.screen, Color.WHITE, self.play_elements['draw_rect'], border_radius=20)
-
-        # Renderização final
-        self.screen.blit(scroll_surface, (self.left_panel.x,
-                         self.left_panel.y), self.left_panel)
+        self.screen.blit(scroll_area_players, (self.left_panel.x, self.left_panel.y), self.left_panel)
         self.screen.blit(self.play_elements['title_text'], (12, 8))
         pygame.draw.line(self.screen, Color.HONEY, (40, 50),
-                         (self.left_panel.width - 40, 50), 2)
+                        (self.left_panel.width - 40, 50), 2)
         self.screen.blit(self.play_elements['button_leave_text'], 
-                         self.play_elements['button_leave_text'].get_rect(
-                             center=self.play_elements['button_leave'].center))
+                        self.play_elements['button_leave_text'].get_rect(
+                            center=self.play_elements['button_leave'].center))
         self.screen.blit(self.image_logo_small, self.play_elements['image_rect'])
+
+    def draw_card_players(self, area):
+        """Desenha os cards dos jogadores no painel."""
+        for i, id_room in enumerate(self.room_clients):
+            y_pos = 60 + i * 70 - self.scroll_offset
+            pygame.draw.rect(area, Color.GOLDEN, 
+                            (10, y_pos, self.left_panel.width - 20, 60), 
+                            border_radius=5)
+            area.blit(self.user_icon, (20, y_pos + 15))
+            name_text = self.font_input_chat.render(
+                self.room_clients[id_room]['name'], True, Color.BLACK)
+            area.blit(name_text, (60, y_pos + 10))
+            score_text = self.font_input_chat.render(
+                f"{self.room_clients[id_room]['score']} pts", True, Color.BLACK)
+            area.blit(score_text, (self.left_panel.width - 94, y_pos + 32))
+            if self.room_clients[id_room]['state'] == 'draw':
+                area.blit(self.pencil_icon, (self.left_panel.width - 32, y_pos + 36))
 
     def create_room_page(self):
         self.screen.blit(self.image_logo_big, self.image_logo_big_rect)
