@@ -187,7 +187,10 @@ class BaseClient(abc.ABC):
             self.handle_canvas(canvas_data)
 
         elif msg_type == 'SCORE':
-            pass
+            if self.room_clients.get(args[0]) is None:
+                return 'Cliente não encontrado'
+
+            return self.room_clients[dest]['score']
 
         return None
 

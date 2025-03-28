@@ -105,6 +105,9 @@ Onde:
 **Sucesso**
 - a pontuação atualizada do cliente que solicitou
 
+**Falha**
+- Cliente não encontrado na partida
+
 <br>
 
 ### Comportamento
