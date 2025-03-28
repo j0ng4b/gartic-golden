@@ -5,7 +5,7 @@ import pytest
 def room(server):
     addr = ('127.0.0.1', 2000)
     server.parse_server_message('REGISTER', ['TestUser'], addr)
-    server.parse_server_message('ROOM', ['pub', 'TestRoom'], addr)
+    server.parse_server_message('ROOM', ['pub', 'TestRoom', 'Test'], addr)
 
 
 
