@@ -5,11 +5,11 @@ import pytest
 def rooms(server):
     addr1 = ('127.0.0.1', 5005)
     server.parse_server_message('REGISTER', ['Eve'], addr1)
-    server.parse_server_message('ROOM', ['pub', 'RoomOne'], addr1)
+    server.parse_server_message('ROOM', ['pub', 'RoomOne', 'Test'], addr1)
 
     addr2 = ('127.0.0.1', 5006)
     server.parse_server_message('REGISTER', ['Frank'], addr2)
-    server.parse_server_message('ROOM', ['priv', 'RoomTwo', 'secret'], addr2)
+    server.parse_server_message('ROOM', ['priv', 'RoomTwo', 'Test', 'secret'], addr2)
 
 
 def test_iniaially_empty_list(server):
