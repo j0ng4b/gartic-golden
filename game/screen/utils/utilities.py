@@ -121,8 +121,11 @@ class InputField():
             )
 
 
-def load_words(theme):
-    '''Retorna 10 palavras aleatórias de acordo com um tema.'''
+def load_words(theme: str, max_rounds: int):
+    '''
+        Retorna palavras aleatórias de acordo com um tema e número de rodadas
+        (atualmente no máximo até 20).
+    '''
     path_file = os.path.join(os.path.dirname(os.path.dirname(
         os.path.dirname(__file__))), 'data', 'words.txt')
     with open(path_file, 'r', encoding='utf-8') as file:
@@ -130,5 +133,5 @@ def load_words(theme):
     for line in lines:
         if line.startswith(theme + ","):
             words = line.strip().split(",")[1:]
-            return random.sample(words, 10)
+            return random.sample(words, max_rounds)
     return []
