@@ -88,7 +88,6 @@ Onde:
 - Cliente já não pode mais dar palpites
 - Cliente é quem está desenhando
 
-
 #### `SCORE`
 **Sucesso**
 - a pontuação atualizada do cliente que solicitou

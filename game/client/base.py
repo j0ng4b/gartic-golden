@@ -119,50 +119,46 @@ class BaseClient(abc.ABC):
 
         elif msg_type == 'GUESS':
             if self.room_clients.get(args[0]) is None:
-                self.send_message('RESP', 'Cliente não encontrado', dest=dest, wait_response=False)
-                return
+                return 'Cliente não encontrado'
 
             elif self.room_clients[dest]['state'] == 'guess':
-                self.send_message('RESP', 'Palpite já foi dado', dest=dest, wait_response=False)
-                return
+                return 'Palpite já foi dado'
 
             elif self.room_clients[dest]['state'] == 'skip':
-                self.send_message('RESP', 'Cliente não pode mais dar palpites', dest=dest, wait_response=False)
-                return
+                return 'Cliente não pode mais dar palpites'
 
             elif self.room_clients[dest]['state'] == 'draw':
-                self.send_message('RESP', 'Cliente é quem está desenhando', dest=dest, wait_response=False)
-                return
+                return 'Cliente é quem está desenhando'
 
 
             if args[0] == self.draw_object:
-                self.send_message('RESP', 'OK', dest=dest, wait_response=False)
                 self.client_got_the_right_answer(dest)
 
                 self.room_clients[dest]['state'] = 'guess'
                 self.room_clients[dest]['score'] += 5
-                return
 
-            self.send_message('RESP', 'Palpite está incorreto', dest=dest, wait_response=False)
+                return 'OK'
+
+            return 'Palpite está incorreto'
 
         elif msg_type == 'GTRA':
             pass
 
         elif msg_type == 'SKIP':
             if self.room_clients.get(args[0]) is None:
-                self.send_message('RESP', 'Cliente não encontrado', dest=dest, wait_response=False)
+                return 'Cliente não encontrado'
 
             elif self.room_clients[dest]['state'] == 'guess':
-                self.send_message('RESP', 'Cliente já acertou o palpite', dest=dest, wait_response=False)
+                return 'Cliente já acertou o palpite'
 
             elif self.room_clients[dest]['state'] == 'skip':
-                self.send_message('RESP', 'Cliente já não pode mais dar palpites', dest=dest, wait_response=False)
+                return 'Cliente já não pode mais dar palpites'
 
             elif self.room_clients[dest]['state'] == 'draw':
-                self.send_message('RESP', 'Cliente é quem está desenhando', dest=dest, wait_response=False)
+                return 'Cliente é quem está desenhando'
 
-            else:
-                self.room_clients[dest]['state'] = 'skip'
+            self.room_clients[dest]['state'] = 'skip'
+            return 'OK'
 
         elif msg_type == 'DRAW':
             pass
