@@ -80,6 +80,14 @@ Onde:
 - Cliente não encontrado na partida
 - Cliente não pode mais dar palpites
 
+#### `SKIP`
+**Falha**
+- Cliente não encontrado na partida
+- Cliente já acertou o palpite
+- Cliente já não pode mais dar palpites
+- Cliente é quem está desenhando
+
+
 #### `SCORE`
 **Sucesso**
 - a pontuação atualizada do cliente que solicitou

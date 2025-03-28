@@ -145,7 +145,20 @@ class BaseClient(abc.ABC):
             pass
 
         elif msg_type == 'SKIP':
-            pass
+            if self.room_clients.get(args[0]) is None:
+                self.send_message('RESP', 'Cliente não encontrado', dest=dest, wait_response=False)
+
+            elif self.room_clients[dest]['state'] == 'guess':
+                self.send_message('RESP', 'Cliente já acertou o palpite', dest=dest, wait_response=False)
+
+            elif self.room_clients[dest]['state'] == 'skip':
+                self.send_message('RESP', 'Cliente já não pode mais dar palpites', dest=dest, wait_response=False)
+
+            elif self.room_clients[dest]['state'] == 'draw':
+                self.send_message('RESP', 'Cliente é quem está desenhando', dest=dest, wait_response=False)
+
+            else:
+                self.room_clients[dest]['state'] = 'skip'
 
         elif msg_type == 'DRAW':
             pass
