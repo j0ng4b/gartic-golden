@@ -2,7 +2,6 @@ Futebol,Bola,Gol,Goleiro,Atacante,Zagueiro,Técnico,Estádio,Torcida,Camisa,Chut
 Música,Violão,Guitarra,Piano,Bateria,Microfone,Palco,Banda,Orquestra,Notas musicais,Partitura,Maestro,Cantor,Show,Rap,Pop,Rock,Reggae,Samba,Funk,Clássico
 Animais,Cachorro,Gato,Elefante,Leão,Tartaruga,Golfinho,Tubarão,Cobra,Aranha,Cavalo,Vaca,Papagaio,Águia,Coruja,Jacaré,Camaleão,Baleia,Pinguim,Urso,Coelho
 Objetos,Celular,Relógio,Óculos,Mochila,Guarda-chuva,Controle remoto,Televisão,Computador,Cadeira,Mesa,Caneta,Lápis,Livro,Espelho,Sapato,Boné,Balança,Chave,Garrafa,Prato
-Filmes e Séries,Harry Potter,Star Wars,Titanic,Avatar,Matrix,Toy Story,Frozen,Vingadores,Homem-Aranha,Breaking Bad,Stranger Things,Game of Thrones,O Poderoso Chefão,Batman,O Senhor dos Anéis,Rei Leão,Sherlock Holmes,Friends,Percy Jackson,Naruto
 Comidas,Pizza,Hambúrguer,Sushi,Chocolate,Sorvete,Bolo,Lasanha,Brigadeiro,Pipoca,Cachorro-quente,Coxinha,Pastel,Torta,Pão de queijo,Batata frita,Feijoada,Arroz,Macarrão,Panqueca,Churrasco
 Profissões,Médico,Professor,Bombeiro,Policial,Engenheiro,Motorista,Advogado,Ator,Cientista,Cozinheiro,Dentista,Escritor,Arquiteto,Jornalista,Piloto,Pintor,Garçom,Mecânico,Fotógrafo,Programador
 Lugares,Praia,Montanha,Cachoeira,Deserto,Floresta,Hospital,Escola,Museu,Zoológico,Castelo,Shopping,Mercado,Aeroporto,Estádio,Parque,Fazenda,Cinema,Circo,Ilha,Universidade
