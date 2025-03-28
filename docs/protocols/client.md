@@ -81,7 +81,20 @@ Onde:
 - Cliente não pode mais dar palpites
 - Cliente é quem está desenhando
 
+#### `GTRA`
+**Sucesso**
+- OK
+
+**Falha**
+- Cliente não encontrado na partida
+- Cliente já acertou o palpite
+- Cliente não pode mais dar palpites
+- Cliente é quem está desenhando
+
 #### `SKIP`
+**Sucesso**
+- OK
+
 **Falha**
 - Cliente não encontrado na partida
 - Cliente já acertou o palpite

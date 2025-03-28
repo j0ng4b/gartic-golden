@@ -142,7 +142,21 @@ class BaseClient(abc.ABC):
             return 'Palpite está incorreto'
 
         elif msg_type == 'GTRA':
-            pass
+            if self.room_clients.get(args[0]) is None:
+                return 'Cliente não encontrado'
+
+            elif self.room_clients[dest]['state'] == 'guess':
+                return 'Cliente já acertou o palpite'
+
+            elif self.room_clients[dest]['state'] == 'skip':
+                return 'Cliente não pode mais dar palpites'
+
+            elif self.room_clients[dest]['state'] == 'draw':
+                return 'Cliente é quem está desenhando'
+
+            self.room_clients[dest]['state'] = 'guess'
+            self.room_clients[dest]['score'] += 5
+            return 'OK'
 
         elif msg_type == 'SKIP':
             if self.room_clients.get(args[0]) is None:
