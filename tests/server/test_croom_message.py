@@ -24,7 +24,7 @@ def test_client_not_on_any_room(server):
 def test_only_owner_can_close_room(server):
     addr1 = ('127.0.0.1', 6000)
     server.parse_server_message('REGISTER', ['Tester1'], addr1)
-    server.parse_server_message('ROOM', ['pub', 'TestRoom'], addr1)
+    server.parse_server_message('ROOM', ['pub', 'TestRoom', 'Test'], addr1)
 
     addr2 = ('127.0.0.1', 6001)
     server.parse_server_message('REGISTER', ['Tester2'], addr2)
@@ -37,7 +37,7 @@ def test_only_owner_can_close_room(server):
 def test_close_room(server):
     addr1 = ('127.0.0.1', 6000)
     server.parse_server_message('REGISTER', ['Tester1'], addr1)
-    server.parse_server_message('ROOM', ['pub', 'TestRoom'], addr1)
+    server.parse_server_message('ROOM', ['pub', 'TestRoom', 'Test'], addr1)
 
     addr2 = ('127.0.0.1', 6001)
     server.parse_server_message('REGISTER', ['Tester2'], addr2)
@@ -51,7 +51,7 @@ def test_close_room(server):
 def test_send_play_and_game_messages_to_clients(server):
     addr1 = ('127.0.0.1', 6000)
     server.parse_server_message('REGISTER', ['Tester1'], addr1)
-    server.parse_server_message('ROOM', ['pub', 'TestRoom'], addr1)
+    server.parse_server_message('ROOM', ['pub', 'TestRoom', 'Test'], addr1)
 
     addr2 = ('127.0.0.1', 6001)
     server.parse_server_message('REGISTER', ['Tester2'], addr2)
@@ -72,7 +72,7 @@ def test_send_play_and_game_messages_to_clients(server):
 def test_close_room_with_few_clients(server):
     addr = ('127.0.0.1', 6000)
     server.parse_server_message('REGISTER', ['Tester'], addr)
-    server.parse_server_message('ROOM', ['pub', 'TestRoom'], addr)
+    server.parse_server_message('ROOM', ['pub', 'TestRoom', 'Test'], addr)
 
     response = server.parse_server_message('CROOM', [], addr)
     assert response == 'Poucos clientes na sala'
