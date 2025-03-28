@@ -272,9 +272,9 @@ class BaseClient(abc.ABC):
         for client in self.room_clients.keys():
             self.send_message('SKIP', dest=client, wait_response=False)
 
-    def client_got_the_right_answer(self):
-        for client in self.room_clients.keys():
-            self.send_message('GTRA', dest=client, wait_response=False)
+    def client_got_the_right_answer(self, client):
+        for room_client in self.room_clients.keys():
+            self.send_message('GTRA', client, dest=room_client, wait_response=False)
 
     def client_canvas(self, canvas_data):
         # Comprime a imagem e envia para todos os clientes
