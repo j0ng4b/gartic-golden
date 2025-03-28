@@ -5,14 +5,14 @@ import pytest
 def public_room(server):
     addr = ('127.0.0.1', 2000)
     server.parse_server_message('REGISTER', ['TestUser'], addr)
-    server.parse_server_message('ROOM', ['pub', 'TestRoom'], addr)
+    server.parse_server_message('ROOM', ['pub', 'TestRoom', 'Test'], addr)
 
 
 @pytest.fixture
 def private_room(server):
     addr = ('127.0.0.1', 2000)
     server.parse_server_message('REGISTER', ['TestUser'], addr)
-    server.parse_server_message('ROOM', ['priv', 'TestRoom', 'password'], addr)
+    server.parse_server_message('ROOM', ['priv', 'TestRoom', 'Test', 'password'], addr)
 
 
 
@@ -57,7 +57,7 @@ def test_client_already_on_other_room(server):
     addr = ('127.0.0.1', 2000)  # usa o TestUser do public_room fixture
 
     server.parse_server_message('REGISTER', ['Tester'], ('127.0.0.1', 6000))
-    server.parse_server_message('ROOM', ['pub', 'Room'], ('127.0.0.1', 6000))
+    server.parse_server_message('ROOM', ['pub', 'Room', 'Test'], ('127.0.0.1', 6000))
 
     response = server.parse_server_message('ENTER', [room_code], addr)
     assert response == 'Cliente já está em outra sala'
@@ -139,7 +139,7 @@ def test_send_connect_message_to_clients(server):
 
     addr1 = ('127.0.0.1', 6000)
     server.parse_server_message('REGISTER', ['Tester1'], addr1)
-    server.parse_server_message('ROOM', ['pub', 'Room'], addr1)
+    server.parse_server_message('ROOM', ['pub', 'Room', 'Test'], addr1)
 
     addr2 = ('127.0.0.1', 6001)
     server.parse_server_message('REGISTER', ['Tester2'], addr2)
