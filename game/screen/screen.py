@@ -26,6 +26,8 @@ class Screen(BaseClient):
         self.user_icon = pygame.transform.scale(self.icon_user, (30, 30))
         self.pencil = pygame.image.load(os.path.join(path, 'assets', 'pencil.png'))
         self.pencil_icon = pygame.transform.scale(self.pencil, (20, 20))
+        self.refresh_icon = pygame.image.load(os.path.join(path, 'assets', 'refresh.png'))
+        self.refresh_icon = pygame.transform.scale(self.refresh_icon, (35, 35))
         # Estado do jogo
         self.running = True
         self.current_page = 'Register'  # Página inicial - 'Register'
@@ -33,6 +35,18 @@ class Screen(BaseClient):
         self.mouse_pos = pygame.mouse.get_pos()
         self.mouse_click = pygame.mouse.get_pressed()
         self.last_click_time = 0
+        self.themes = [
+            'Futebol',
+            'Música',
+            'Animais',
+            'Objetos',
+            'Filmes e Séries',
+            'Comidas',
+            'Profissões',
+            'Lugares'
+        ]
+        self.theme = random.choice(self.themes)
+        self.words = []
         # Configuração do carrossel
         self.carousel_config = {
             'current_page': 0, 'target_page': 0, 'offset': 0, 'animation_speed': 0.1
@@ -49,8 +63,6 @@ class Screen(BaseClient):
                     self.font_input_chat, "Converse no Chat"),
             InputField(pygame.Rect(Size.SCREEN_WIDTH // 2 - 315, Size.SCREEN_HEIGHT // 2 - 50, 270, 40),
                     self.font_input_chat, "Digite o nome da sala"),
-            InputField(pygame.Rect(Size.SCREEN_WIDTH // 2 + 80, Size.SCREEN_HEIGHT // 2 - 50, 270, 40),
-                    self.font_input_chat, "Escolha o tema da sala"),
             InputField(pygame.Rect(Size.SCREEN_WIDTH // 2 - 315, Size.SCREEN_HEIGHT // 2 + 85, 270, 40),
                     self.font_input_chat, "Escolha o máximo de jogadores"),
             InputField(pygame.Rect(Size.SCREEN_WIDTH // 2 + 80, Size.SCREEN_HEIGHT // 2 + 85, 270, 40),
@@ -105,10 +117,20 @@ class Screen(BaseClient):
             center=(Size.SCREEN_WIDTH // 2, Size.SCREEN_HEIGHT // 2 - 225))
         self.create_labels = [
             {'text': 'Nome da Sala', 'pos': (Size.SCREEN_WIDTH // 2 - 180, Size.SCREEN_HEIGHT // 2 - 90)},
-            {'text': 'Tema', 'pos': (Size.SCREEN_WIDTH // 2 + 200, Size.SCREEN_HEIGHT // 2 - 90)},
+            {'text': 'Senha', 'pos': (Size.SCREEN_WIDTH // 2 + 200, Size.SCREEN_HEIGHT // 2 + 40)},
             {'text': 'Max Jogadores', 'pos': (Size.SCREEN_WIDTH // 2 - 180, Size.SCREEN_HEIGHT // 2 + 40)},
-            {'text': 'Senha', 'pos': (Size.SCREEN_WIDTH // 2 + 200, Size.SCREEN_HEIGHT // 2 + 40)}
+            {'text': 'Tema', 'pos': (Size.SCREEN_WIDTH // 2 + 200, Size.SCREEN_HEIGHT // 2 - 90)}
         ]
+        self.theme_rect = pygame.Rect(
+            Size.SCREEN_WIDTH // 2 + 80,
+            Size.SCREEN_HEIGHT // 2 - 50,
+            200, 40
+        )    
+        self.change_theme_button = pygame.Rect(
+                self.theme_rect.right + 10,
+                self.theme_rect.y + (self.theme_rect.height - 30) // 2,
+                30, 30
+            )
         self.button_back_rect = pygame.Rect(
             Size.SCREEN_WIDTH // 2 - 272,
             Size.SCREEN_HEIGHT // 2 + 225, 
@@ -283,7 +305,15 @@ class Screen(BaseClient):
         for i, label in enumerate(self.create_labels):
             text = self.font_label.render(label['text'], True, Color.BLACK)
             self.screen.blit(text, text.get_rect(center=label['pos']))
-            self.inputs[i + 3].draw(self.screen)
+        self.inputs[3].draw(self.screen)
+        self.inputs[4].draw(self.screen)
+        self.inputs[5].draw(self.screen)
+        pygame.draw.rect(self.screen, Color.WHITE, self.theme_rect, border_radius=5)
+        pygame.draw.rect(self.screen, Color.BLACK, self.theme_rect, 2, border_radius=5)
+        theme_text = self.font_input_chat.render(self.theme, True, Color.BLACK)
+        self.screen.blit(theme_text, (self.theme_rect.x + 10, self.theme_rect.y + 10))
+        pygame.draw.rect(self.screen, Color.GOLDEN, self.change_theme_button, border_radius=5)
+        self.screen.blit(self.refresh_icon, self.change_theme_button)
         pygame.draw.rect(self.screen, Color.BLACK, self.button_back_rect.inflate(2, 2), border_radius=20)
         pygame.draw.rect(self.screen, Color.RED, self.button_back_rect, border_radius=20)        
         pygame.draw.rect(self.screen, Color.BLACK, self.button_create_prox_rect.inflate(2, 2), border_radius=20)
@@ -362,7 +392,8 @@ class Screen(BaseClient):
                 pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
         elif self.current_page == 'Create':
             if (self.button_create_prox_rect.collidepoint(self.mouse_pos) or 
-                self.button_back_rect.collidepoint(self.mouse_pos)):
+                self.button_back_rect.collidepoint(self.mouse_pos) or 
+                self.change_theme_button.collidepoint(self.mouse_pos)):
                 pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
             elif any(input.rect.collidepoint(self.mouse_pos) for input in self.inputs[3:7]):
                 pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_IBEAM)
@@ -395,7 +426,9 @@ class Screen(BaseClient):
                     self.last_click_time = current_time
                     if elem_type == 'room':
                         room = element[2]
-                        print(f'Entrando na sala: {room["name"]}')
+                        password = None if room['type'] else ''
+                        # super().server_enter_room(room_code=room['code'], room_password=password)
+                        # self.current_page = 'Play'
                     elif elem_type == 'arrow_left':
                         self.carousel_config['target_page'] -= 1
                     elif elem_type == 'arrow_right':
@@ -407,21 +440,31 @@ class Screen(BaseClient):
                         self.load_rooms = False
                     break
         elif self.current_page == 'Create' and mouse_click:
-            if self.button_create_prox_rect.collidepoint(self.mouse_pos):
+            if self.change_theme_button.collidepoint(self.mouse_pos):
                 self.last_click_time = current_time
-                data_room = [input_field.text for input_field in self.inputs[3:6]]
+                self.theme = random.choice(self.themes)
+            elif self.button_create_prox_rect.collidepoint(self.mouse_pos):
+                self.last_click_time = current_time
+                data_room = [input_field.text for input_field in self.inputs[3:5]]
                 if all(data_room):  # Criando uma sala
-                    name, theme, max_clients = data_room
-                    password = self.inputs[6].text
+                    name, max_clients = data_room
+                    password = self.inputs[5].text
                     room_type = 'pub' if password == '' else 'priv'
                     # Usando tema como nome por enquanto
-                    super().server_create_room(room_type, theme, password if password else None)
+                    super().server_create_room(room_type, self.theme, password if password else None)
                     self.current_page = 'Play'
+                    self.words = load_words(self.theme)
                     self.players.append({'name': self.name, 'score': 0, 'draw': False})
+                    print('*************')
+                    print('Sala Criada')
+                    print('Tema: ' + self.theme)
+                    print('Tipo: ' + room_type)
+                    print('Palavras separadas para as rodadas: ', self.words)
+                    print('*************')
             elif self.button_back_rect.collidepoint(self.mouse_pos):
                 self.last_click_time = current_time
                 self.current_page = 'Rooms'
-                for input_field in self.inputs[3:7]:
+                for input_field in self.inputs[3:6]:
                     input_field.text = ''
                     input_field.active = False
 
