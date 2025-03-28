@@ -17,6 +17,7 @@ class Server:
         # {
         #   'name': 'room name',
         #   'code': 'room code',
+        #   'theme': 'room theme',
         #   'state': 'room state',
         #   'password': 'room password',
         #   'max_clients': number maximum clients,
@@ -109,15 +110,15 @@ class Server:
             return 'OK'
 
         elif msg_type == 'ROOM':
-            if len(args) < 2 or len(args) > 3:
+            if len(args) < 3 or len(args) > 4:
                 return 'Número de argumentos inválido'
             elif args[0] not in ['priv', 'pub']:
                 return 'Tipo da sala inválido'
             elif args[1] == '':
                 return 'Nome da sala inválido'
-            elif args[0] == 'priv' and len(args) != 3:
+            elif args[0] == 'priv' and len(args) != 4:
                 return 'Senha não fornecida para sala privada'
-            elif args[0] == 'pub' and len(args) != 2:
+            elif args[0] == 'pub' and len(args) != 3:
                 return 'Sala pública não requer senha'
 
             client = self.get_client(address[0], address[1])
@@ -134,7 +135,8 @@ class Server:
                 'name': args[1],
                 'code': code,
                 'state': 'lobby',
-                'password': args[2] if len(args) == 3 else None,
+                'theme': args[2],
+                'password': args[3] if len(args) == 4 else None,
                 'max_clients': 10,  # Por enquanto é um valor fixo
                 'clients': [
                     (client['id'], client['address'], client['port']),
@@ -178,7 +180,7 @@ class Server:
                 if (len(args) == 1 and room_type != args[0]) or room['state'] != 'lobby':
                     continue
 
-                res += f"{room_type},{room['name']},{room['code']},"
+                res += f"{room_type},{room['name']},{room['code']},{room['theme']},"
                 res += f"{str(len(room['clients']))},{room['max_clients']}\n"
 
             return res
