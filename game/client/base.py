@@ -337,16 +337,18 @@ class BaseClient(abc.ABC):
             self.send_message('CHAT', message, dest=client, wait_response=False)
 
     def client_guess(self, guess):
-        # Somente envia para o cliente que está desenhando
-        ...
+        for client_id, client in self.room_clients.items():
+            if client['state'] == 'draw':
+                response = self.send_message('GUESS', guess, dest=client_id)
+                return response == 'OK'
 
     def client_draw(self, client):
         for room_client in self.room_clients.keys():
             self.send_message('DRAW', client, dest=room_client, wait_response=False)
 
-    def client_finish_draw(self):
-        # Somente envia para o cliente que está desenhando para parar de desenhar
-        ...
+    def client_finish_draw(self, reason):
+        for client in self.room_clients.keys():
+            self.send_message('FDRAW', reason, dest=client, wait_response=False)
 
     def client_skip(self):
         for client in self.room_clients.keys():
