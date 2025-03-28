@@ -128,7 +128,6 @@ partida começará.
 Etapas:
 - gerar a ordem de quem desenhará (host)
 - informar aos clientes quem desenhará através da mensagem `DRAW` (host)
-- solicita sua pontuação atual aos outros clientes apos receber o `DRAW`
 - manter o *timeout* de quem desenha (host)
 - manter a lista de clientes que acertaram o desenho ou que não vão dar mais palpites.  
   *(manter o estado do cliente)*
@@ -138,6 +137,14 @@ Etapas:
 **Gatilho**
 - receber do servidor ou `GAME` ou `PLAY`
 <br>
+
+#### Fim de jogo
+Quando todos clientes tiveram desenhado ao menos uma vez o cliente dono da sala pode enviar a
+mensagem `END` para o servidor para que ele redistribúa para todos os clientes da sala.
+
+> [!NOTE]
+> talvez seja necessário esperar alguns segundos antes de enviar a mensagem `END` para ter certeza
+> de que todos clientes conseguiram fazer suas devidas atividades a tempo (ex: atualizar pontuação).
 
 #### Conectar a outro cliente
 Quando o cliente deve se conectar com outro cliente ele envia uma mensagem (`GREET`) para tanto 
@@ -168,21 +175,20 @@ esta correto.
 - receber de outro cliente a mensagem `GUESS`
 
 **Ação**
-- validar se o palpite corresponde a palavra/frase tema do desenho
+- validar se o palpite corresponde ao objeto que deve ser desenhado
 - notificar os clientes da sala se o cliente acertou
 <br>
 
 #### Desenho
 O cliente dono da sala que gerencia a ordem de quem desenha, ele também deve manter uma lista
 de quem falta dar palpite (ou que não quis mais dar palpite), ao final quando todos tiverem
-palpitado ele informa ao cliente que atualmente está desenhando a sua pontuação e que não desenha
-mais.
+palpitado (ou pulado) que a rodada está encerrada ou também caso o timeout tenha sido atingido.
 
-Caso que esteja desenhando é o dono da sala, ele não precisa enviar mensagem para si mesmo.
+Caso quem esteja desenhando é o dono da sala, ele não precisa enviar mensagem para si mesmo.
 
 **Ação**
-- ao início notificar (`DRAW`) um cliente que ele será quem faz o desenho
-- ao final notificar (`FDRAW`) o cliente que ele não desenhará mais
+- ao início notificar (`DRAW`) a todos clientes o cliente que fara o desenho.
+- ao final notificar (`FDRAW`) notificar a todos o fim da rodada.
 <br>
 
 #### Transmissão do desenho
