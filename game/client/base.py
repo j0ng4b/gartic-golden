@@ -186,6 +186,9 @@ class BaseClient(abc.ABC):
             canvas_data = zlib.decompress(canvas_data)
             self.handle_canvas(canvas_data)
 
+        elif msg_type == 'SCORE':
+            pass
+
         return None
 
     @abc.abstractmethod
@@ -334,4 +337,18 @@ class BaseClient(abc.ABC):
 
         for client in self.room_clients.keys():
             self.send_message('CANVAS', canvas_data, dest=client, wait_response=False)
+
+    def client_score(self):
+        scores = []
+        for client in self.room_clients.keys():
+            response = self.send_message('SCORE', dest=client)
+
+            if response is not None and response.isdigit():
+                scores.append(int(response))
+
+        freq = {}
+        for score in scores:
+            freq[score] = freq.get(score, 0) + 1
+
+        return max(freq, key=lambda x: freq[x])
 
