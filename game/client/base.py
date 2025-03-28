@@ -28,7 +28,7 @@ class BaseClient(abc.ABC):
             '': [],
         }
 
-        self.server_error = None
+        self.error = None
 
     def start(self):
         # Inicia o a comunicação com o servidor, deve ser inciado antes de
@@ -189,7 +189,18 @@ class BaseClient(abc.ABC):
             return 'OK'
 
         elif msg_type == 'FDRAW':
-            pass
+            # Reseta o estado de todos os clientes
+            for client in self.room_clients.keys():
+                if self.room_clients[client]['state'] == 'draw':
+                    # Calcula a pontuação do cliente que estava desenhando
+                    if args[0] == 'all-guess':
+                        self.room_clients[client]['score'] += 8
+                    elif args[0] == 'guess':
+                        self.room_clients[client]['score'] += 5
+                    else:  # timeout
+                        self.room_clients[client]['score'] += 0
+
+                self.room_clients[client]['state'] = None
 
         elif msg_type == 'CANVAS':
             # Decodifica a imagem e envia para o método de tratamento
@@ -237,8 +248,8 @@ class BaseClient(abc.ABC):
         return self.get_message(dest)
 
     def get_server_error(self):
-        error = self.server_error
-        self.server_error = None
+        error = self.error
+        self.error = None
 
         return error
 
@@ -259,7 +270,7 @@ class BaseClient(abc.ABC):
 
             return True
 
-        self.server_error = res
+        self.error = res
         return False
 
     def server_unregister(self):
@@ -267,7 +278,7 @@ class BaseClient(abc.ABC):
         if res == 'OK':
             return True
 
-        self.server_error = res
+        self.error = res
         return False
 
     def server_create_room(self, room_type, room_name, room_password=None):
@@ -281,7 +292,7 @@ class BaseClient(abc.ABC):
             self.room = res
             return True
 
-        self.server_error = res
+        self.error = res
         return False
 
     def server_close_room(self):
@@ -289,7 +300,7 @@ class BaseClient(abc.ABC):
         if res == 'OK':
             return True
 
-        self.server_error = res
+        self.error = res
         return False
 
     def server_list_rooms(self, room_type=None):
@@ -315,7 +326,7 @@ class BaseClient(abc.ABC):
             self.room = room_code
             return True
 
-        self.server_error = res
+        self.error = res
         return False
 
     def server_leave_room(self):
@@ -325,7 +336,7 @@ class BaseClient(abc.ABC):
             self.room_clients = {}
             return True
 
-        self.server_error = res
+        self.error = res
         return False
 
 
@@ -354,12 +365,12 @@ class BaseClient(abc.ABC):
                         client['state'] = 'guess'
                         return True
 
-                    self.server_error = response
+                    self.error = response
                     return False
 
                 self_client = client
 
-        self.server_error = response
+        self.error = response
         return False
 
     def client_draw(self, client):
