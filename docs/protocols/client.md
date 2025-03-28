@@ -70,6 +70,14 @@ Onde:
 **Sucesso**
 - nome do cliente
 
+#### `DRAW`
+**Sucesso**
+- OK
+
+**Falha**
+- Cliente não encontrado na partida
+- Cliente já acertou o palpite
+
 #### `GUESS`
 **Sucesso**
 - OK
@@ -226,6 +234,7 @@ desenhando e quem não está.
 O primeiro cenário é para quem está desenhando, esse só recebe pontuação ao final do desenho, seguindo a
 seguinte regra:
 - Todos acertaram o desenho: 8 pontos
+- Apenas alguns acertaram o desenho: 5 pontos
 - Tempo esgotado: 0 pontos
 
 Para os demais clientes, as regras são:

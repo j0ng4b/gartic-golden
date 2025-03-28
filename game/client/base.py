@@ -176,7 +176,17 @@ class BaseClient(abc.ABC):
             return 'OK'
 
         elif msg_type == 'DRAW':
-            pass
+            if self.room_clients.get(args[0]) is None:
+                return 'Cliente não encontrado'
+
+            elif self.room_clients[dest]['state'] == 'draw':
+                return 'Cliente já está desenhando'
+
+            self.room_clients[dest]['state'] = 'draw'
+            if self.room_clients[dest]['self']:
+                self.handle_draw()
+
+            return 'OK'
 
         elif msg_type == 'FDRAW':
             pass
@@ -198,6 +208,10 @@ class BaseClient(abc.ABC):
     @abc.abstractmethod
     def handle_chat(self, client, message):
         raise NotImplementedError('handle_chat must be implemented')
+
+    @abc.abstractmethod
+    def handle_draw(self):
+        raise NotImplementedError('handle_draw must be implemented')
 
     @abc.abstractmethod
     def handle_canvas(self, canvas):
@@ -326,9 +340,9 @@ class BaseClient(abc.ABC):
         # Somente envia para o cliente que está desenhando
         ...
 
-    def client_draw(self):
-        # Notifica os clientes o cliente que fará o desenho
-        ...
+    def client_draw(self, client):
+        for room_client in self.room_clients.keys():
+            self.send_message('DRAW', client, dest=room_client, wait_response=False)
 
     def client_finish_draw(self):
         # Somente envia para o cliente que está desenhando para parar de desenhar
