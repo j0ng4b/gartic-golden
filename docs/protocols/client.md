@@ -34,6 +34,7 @@ Onde:
 
 
 #### Mensagens aceitas (vinda do servidor)
+
 | Tipo | Argumentos | Descrição
 | :-: | :-: | :-- |
 | `CONNECT` | `id do cliente` | o cliente deve iniciar uma "conexão" com outro cliente |
@@ -43,6 +44,7 @@ Onde:
 | `END` | | informar que a partida está encerrada |
 
 #### Mensagens aceitas (vinda de outro cliente)
+
 | Tipo | Argumentos | Descrição
 | :-: | :-: | :-- |
 | `GREET` |  | cumprimenta outro cliente |
@@ -66,6 +68,11 @@ Onde:
 > [!IMPORTANT]
 >  Mensagens sem respostas não serão listadas.
 
+> [!IMPORTANT]
+> *Respostas padrão para todas mensagens*
+> 
+> **Falha**
+> 1. Número de argumento inválido
 #### `GREET`
 **Sucesso**
 - nome do cliente
@@ -76,18 +83,23 @@ Onde:
 
 **Falha**
 - Cliente não encontrado na partida
-- Cliente já acertou o palpite
+- Cliente já está desenhando
+
+#### `FDRAW`
+**Sucesso**
+- OK
 
 #### `GUESS`
 **Sucesso**
 - OK
 
 **Falha**
+- Não estou desenhando
 - Palpite está incorreto
-- Palpite já foi dado
+- Cliente já acertou o objeto
 - Cliente não encontrado na partida
-- Cliente não pode mais dar palpites
-- Cliente é quem está desenhando
+- Pulou a rodada, não pode mais dar palpites
+- Não pode dar palpite quando é sua vez de desenhar
 
 #### `GTRA`
 **Sucesso**
@@ -95,9 +107,9 @@ Onde:
 
 **Falha**
 - Cliente não encontrado na partida
-- Cliente já acertou o palpite
-- Cliente não pode mais dar palpites
-- Cliente é quem está desenhando
+- Cliente já acertou o objeto
+- Pulou a rodada, impossível ter acertado o objeto
+- Quando se esta desenhando não pode dar palpite
 
 #### `SKIP`
 **Sucesso**
@@ -105,13 +117,13 @@ Onde:
 
 **Falha**
 - Cliente não encontrado na partida
-- Cliente já acertou o palpite
-- Cliente já não pode mais dar palpites
-- Cliente é quem está desenhando
+- Cliente já acertou o objeto
+- A roda já foi pulada
+- Quando se esta desenhando não pode pular a rodada
 
 #### `SCORE`
 **Sucesso**
-- a pontuação atualizada do cliente que solicitou
+- A pontuação atualizada do cliente que solicitou
 
 **Falha**
 - Cliente não encontrado na partida
