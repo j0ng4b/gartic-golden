@@ -2,10 +2,10 @@ name: test
 
 on:
   push:
-    branches: [ "main", "ci" ]
+    branches: [ "main" ]
     paths: [ "**.py" ]
   pull_request:
-    branches: [ "main", "ci" ]
+    branches: [ "main" ]
     paths: [ "**.py" ]
   workflow_dispatch:
 
