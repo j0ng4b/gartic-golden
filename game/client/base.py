@@ -16,6 +16,7 @@ class BaseClient(abc.ABC):
         # Dados do client
         self.id = None
         self.state = None
+        self.score = 0
 
         # Estado do jogo
         self.name = 'Player'
@@ -114,6 +115,8 @@ class BaseClient(abc.ABC):
 
     def parse_client_message(self, dest, msg_type, args):
         if msg_type == 'GREET':
+            if len(args) > 0:
+                return 'Número de argumentos inválido'
             return self.name
 
         elif msg_type == 'CHAT':
@@ -123,21 +126,22 @@ class BaseClient(abc.ABC):
             with self.mutex:
                 self.room_clients[dest]['msgs'].append(args[0])
 
+            # Chama o método de tratamento de mensagens de chat a nível de interface
             self.handle_chat(self.room_clients[dest], args[0])
 
         elif msg_type == 'GUESS':
-            if self.room_clients.get(dest) is None:
-                return 'Cliente não encontrado'
-
+            if len(args) != 1:
+                return 'Número de argumentos inválido'
+            elif self.state != 'draw':
+                return 'Não estou desenhando'
+            elif self.room_clients.get(dest) is None:
+                return 'Cliente não encontrado na partida'
             elif self.room_clients[dest]['state'] == 'guess':
-                return 'Palpite já foi dado'
-
+                return 'Cliente já acertou o objeto'
             elif self.room_clients[dest]['state'] == 'skip':
-                return 'Cliente não pode mais dar palpites'
-
+                return 'Pulou a rodada, não pode mais dar palpites'
             elif self.room_clients[dest]['state'] == 'draw':
-                return 'Cliente é quem está desenhando'
-
+                return 'Não pode dar palpite quando é sua vez de desenhar'
 
             if args[0] == self.draw_object:
                 self.client_got_the_right_answer(dest)
@@ -146,38 +150,35 @@ class BaseClient(abc.ABC):
                 self.room_clients[dest]['score'] += 5
 
                 return 'OK'
-
             return 'Palpite está incorreto'
 
         elif msg_type == 'GTRA':
-            if self.room_clients.get(dest) is None:
+            if len(args) != 1:
+                return 'Número de argumentos inválido'
+            elif self.room_clients.get(args[0]) is None:
                 return 'Cliente não encontrado'
-
-            elif self.room_clients[dest]['state'] == 'guess':
-                return 'Cliente já acertou o palpite'
-
+            elif self.room_clients[args[0]]['state'] == 'guess':
+                return 'Cliente já acertou o objeto'
+            elif self.room_clients[args[0]]['state'] == 'draw':
+                return 'Quando se esta desenhando não pode dar palpite'
             elif self.room_clients[dest]['state'] == 'skip':
-                return 'Cliente não pode mais dar palpites'
+                return 'Pulou a rodada, impossível ter acertado o objeto'
 
-            elif self.room_clients[dest]['state'] == 'draw':
-                return 'Cliente é quem está desenhando'
-
-            self.room_clients[dest]['state'] = 'guess'
-            self.room_clients[dest]['score'] += 5
+            self.room_clients[args[0]]['state'] = 'guess'
+            self.room_clients[args[0]]['score'] += 5
             return 'OK'
 
         elif msg_type == 'SKIP':
-            if self.room_clients.get(dest) is None:
+            if len(args) > 0:
+                return 'Número de argumentos inválido'
+            elif self.room_clients.get(dest) is None:
                 return 'Cliente não encontrado'
-
             elif self.room_clients[dest]['state'] == 'guess':
-                return 'Cliente já acertou o palpite'
-
+                return 'Cliente já acertou o objeto'
             elif self.room_clients[dest]['state'] == 'skip':
-                return 'Cliente já não pode mais dar palpites'
-
+                return 'A roda já foi pulada'
             elif self.room_clients[dest]['state'] == 'draw':
-                return 'Cliente é quem está desenhando'
+                return 'Quando se esta desenhando não pode pular a rodada'
 
             self.room_clients[dest]['state'] = 'skip'
             return 'OK'
@@ -187,6 +188,8 @@ class BaseClient(abc.ABC):
                 return 'Número de argumentos inválido'
             elif args[0] == self.id:
                 self.state = 'draw'
+
+                # Chama o método de tratamento de desenho a nível de interface
                 self.handle_draw()
 
                 return 'OK'
@@ -199,27 +202,42 @@ class BaseClient(abc.ABC):
             return 'OK'
 
         elif msg_type == 'FDRAW':
-            # Reseta o estado de todos os clientes
+            if len(args) != 1:
+                return 'Número de argumentos inválido'
+
+            # Redefine o estado de todos os clientes
             for client in self.room_clients.keys():
+                # Calcula a pontuação do cliente que estava desenhando
                 if self.room_clients[client]['state'] == 'draw':
-                    # Calcula a pontuação do cliente que estava desenhando
-                    if args[0] == 'all-guess':
+                    if args[0] == 'all-guess':  # todos acertaram o objeto
                         self.room_clients[client]['score'] += 8
-                    elif args[0] == 'guess':
+                    elif args[0] == 'guess':  # ao menos um acertou o objeto
                         self.room_clients[client]['score'] += 5
-                    else:  # timeout
-                        self.room_clients[client]['score'] += 0
+                    else:  # tempo esgotado
+                        self.room_clients[client]['score'] += 2
 
                 self.room_clients[client]['state'] = None
+
+            # Redefine o próprio estado
+            self.state = None
+
+            # Atualiza a própria pontuação
+            self.score = self.client_score()
+
+            return 'OK'
 
         elif msg_type == 'CANVAS':
             # Decodifica a imagem e envia para o método de tratamento
             canvas_data = base64.b64decode(args[0])
             canvas_data = zlib.decompress(canvas_data)
+
+            # Chama o método de tratamento da imagem a nível de interface
             self.handle_canvas(canvas_data)
 
         elif msg_type == 'SCORE':
-            if self.room_clients.get(dest) is None:
+            if len(args) > 0:
+                return 'Número de argumentos inválido'
+            elif self.room_clients.get(dest) is None:
                 return 'Cliente não encontrado'
 
             return self.room_clients[dest]['score']
