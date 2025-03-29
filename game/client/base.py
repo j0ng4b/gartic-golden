@@ -12,7 +12,7 @@ class BaseClient(abc.ABC):
 
         self.room = None
         self.room_clients = {}
-        
+
         # Estado do jogo
         self.name = 'Player'
 
@@ -40,19 +40,16 @@ class BaseClient(abc.ABC):
 
         self.server_register()
 
+    ###
+    # Métodos de comunicação: manipulação e análise de mensagens
+    ###
 
-    ###
-    ### Métodos de comunicação: manipulação e análise de mensagens
-    ###
     def handle_messages(self):
         while True:
             msg = self.socket.recv(1024).decode()
-
-            # Verifica se a mensagem está no formato correto
             if '/' not in msg or ':' not in msg:
                 print('Mensagem inválida:', msg)
                 continue
-
 
             threading.Thread(
                 target=self.parser_message,
@@ -63,7 +60,6 @@ class BaseClient(abc.ABC):
         dest, msg = msg.split('/')
         msg_type, args = msg.split(':')
         args = args.split(';')
-
 
         # Verifica se a mensagem é uma resposta
         if msg_type == 'RESP':
@@ -80,7 +76,8 @@ class BaseClient(abc.ABC):
         if dest in self.room_clients:
             response = self.parse_client_message(dest, msg_type, args)
             if response is not None:
-                self.send_message('RESP', response, dest=dest, wait_response=False)
+                self.send_message('RESP', response, dest=dest,
+                                  wait_response=False)
 
     def parse_server_message(self, msg_type, args):
         if msg_type == 'CONNECT':
@@ -95,7 +92,8 @@ class BaseClient(abc.ABC):
                 'self': False,
             }
 
-            self.room_clients[args[0]]['name'] = self.send_message('GREET', dest=args[0])
+            self.room_clients[args[0]]['name'] = self.send_message(
+                'GREET', dest=args[0])
 
         elif msg_type == 'DISCONNECT':
             with self.mutex:
@@ -131,7 +129,6 @@ class BaseClient(abc.ABC):
 
             elif self.room_clients[dest]['state'] == 'draw':
                 return 'Cliente é quem está desenhando'
-
 
             if args[0] == self.draw_object:
                 self.client_got_the_right_answer(dest)
@@ -229,10 +226,10 @@ class BaseClient(abc.ABC):
     def handle_canvas(self, canvas):
         raise NotImplementedError('handle_canvas must be implemented')
 
+    ###
+    # Métodos principais para comunicação
+    ###
 
-    ###
-    ### Métodos principais para comunicação
-    ###
     def get_message(self, dest):
         while True:
             with self.mutex:
@@ -254,10 +251,10 @@ class BaseClient(abc.ABC):
 
         return error
 
+    ###
+    # Métodos de comunicação com o servidor
+    ###
 
-    ###
-    ### Métodos de comunicação com o servidor
-    ###
     def server_register(self):
         res = self.send_message('REGISTER', self.name)
         if res is not None and res.startswith('OK'):
@@ -339,13 +336,14 @@ class BaseClient(abc.ABC):
         self.error = res
         return False
 
+    ###
+    # Métodos de comunicação com outros clientes
+    ###
 
-    ###
-    ### Métodos de comunicação com outros clientes
-    ###
     def client_chat(self, message):
         for client in self.room_clients.keys():
-            self.send_message('CHAT', message, dest=client, wait_response=False)
+            self.send_message('CHAT', message, dest=client,
+                              wait_response=False)
 
     def client_guess(self, guess):
         self_client = None
@@ -375,11 +373,13 @@ class BaseClient(abc.ABC):
 
     def client_draw(self, client):
         for room_client in self.room_clients.keys():
-            self.send_message('DRAW', client, dest=room_client, wait_response=False)
+            self.send_message(
+                'DRAW', client, dest=room_client, wait_response=False)
 
     def client_finish_draw(self, reason):
         for client in self.room_clients.keys():
-            self.send_message('FDRAW', reason, dest=client, wait_response=False)
+            self.send_message('FDRAW', reason, dest=client,
+                              wait_response=False)
 
     def client_skip(self):
         for client in self.room_clients.keys():
@@ -387,7 +387,8 @@ class BaseClient(abc.ABC):
 
     def client_got_the_right_answer(self, client):
         for room_client in self.room_clients.keys():
-            self.send_message('GTRA', client, dest=room_client, wait_response=False)
+            self.send_message(
+                'GTRA', client, dest=room_client, wait_response=False)
 
     def client_canvas(self, canvas_data):
         # Comprime a imagem e envia para todos os clientes
@@ -395,7 +396,8 @@ class BaseClient(abc.ABC):
         canvas_data = base64.b64encode(canvas_data).decode()
 
         for client in self.room_clients.keys():
-            self.send_message('CANVAS', canvas_data, dest=client, wait_response=False)
+            self.send_message('CANVAS', canvas_data,
+                              dest=client, wait_response=False)
 
     def client_score(self):
         scores = []
@@ -410,4 +412,3 @@ class BaseClient(abc.ABC):
             freq[score] = freq.get(score, 0) + 1
 
         return max(freq, key=lambda x: freq[x])
-

@@ -22,6 +22,7 @@ class Color():
     HONEY = (251, 189, 0)
     RED = (218, 41, 44)
     LIGHT_GOLD = (254, 214, 91)
+    DARK_GREEN = (44,91,0)
 
 
 class InputField():
