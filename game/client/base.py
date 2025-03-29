@@ -276,6 +276,11 @@ class BaseClient(abc.ABC):
     ### Métodos principais para comunicação
     ###
     def get_message(self, dest):
+        '''
+        Método que retorna a primeira mensagem da pilha de mensagens do cliente.
+        Caso não haja mensagens, ele fica em espera até que uma nova mensagem
+        chegue.
+        '''
         while True:
             with self.mutex:
                 if len(self.msgs[dest]) == 0:
@@ -284,6 +289,9 @@ class BaseClient(abc.ABC):
                 return self.msgs[dest].pop(0)
 
     def send_message(self, type, *args, dest='', wait_response=True):
+        '''
+        Método que envia uma mensagem para o servidor ou para outro cliente.
+        '''
         self.socket.send(f"{dest}/{type}:{';'.join(args)}".encode())
 
         if not wait_response:
