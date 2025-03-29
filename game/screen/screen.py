@@ -1,10 +1,5 @@
 from game.client.base import BaseClient
 from game.screen.utils.utilities import *
-from game.screen.pages.registe_page import register_page
-from game.screen.pages.rooms_page import rooms_page
-from game.screen.pages.play_page import play_page
-from game.screen.pages.create_room import create_room_page
-
 
 class Screen(BaseClient):
     def __init__(self, address, port):
@@ -225,13 +220,13 @@ class Screen(BaseClient):
     def draw(self):
         '''Filtra a sala que deve ser exibida.'''
         if self.current_page == 'Register':
-            register_page(self)
+            self.register_page()
         elif self.current_page == 'Rooms':
-            rooms_page(self)
+            self.rooms_page()
         elif self.current_page == 'Create':
-            create_room_page(self)
+            self.create_room_page()
         elif self.current_page == 'Play':
-            play_page(self)
+            self.play_page()
             self.handle_chat()
         self.handle_colision_cursor()
         self.handle_click_cursor()
@@ -343,8 +338,6 @@ class Screen(BaseClient):
                     self.current_page = 'Rooms'
                     self.words = []
                     self.load_rooms = False
-                    for client in self.room_clients.values():  # Reseta msgs
-                        client['msgs'] = []
                     self.chat_all_scroll = 0
         if mouse_click:
             self.last_click_time = current_time
@@ -381,22 +374,266 @@ class Screen(BaseClient):
         ...
 
     def handle_chat(self, client=None, message=None):
-        if self.inputs[2].return_pressed and self.inputs[2].text.strip() != '':
-            mensagem = self.inputs[2].text.strip()[:12].ljust(12)
-            mensagem = f'{mensagem}{int(datetime.now().timestamp())}'
-            super().client_chat(mensagem)
-            with self.mutex:
-                for client in self.room_clients.values():
-                    if client['self']:
-                        client['msgs'].append(mensagem)
-            self.inputs[2].text = ''
+        if self.inputs[2].return_pressed:
+            if self.inputs[2].text.strip() != '':
+                mensagem = self.inputs[2].text.strip()[:12].ljust(12)
+                mensagem = f'{mensagem}{int(datetime.now().timestamp())}'
+                super().client_chat(mensagem)
+                with self.mutex:
+                    for client in self.room_clients.values():
+                        if client['self']:
+                            client['msgs'].append(mensagem)
+                self.inputs[2].text = ''
+                self.inputs[2].return_pressed = False
+                self.inputs[2].active = False
+                self.current_input = None
+                self.chat_all_scroll = 0
+        else:
             self.inputs[2].return_pressed = False
-            self.inputs[2].active = False
-            self.current_input = None
-            self.chat_all_scroll = 0
-
+            
     def handle_canvas(self, canvas):
         ...
 
     def handle_draw(self):
         ...
+
+    #
+    # Páginas
+    #
+    # Create
+    def create_room_page(self):
+        self.screen.blit(self.image_logo_big, self.image_logo_big_rect)
+        for _, label in enumerate(self.create_labels):
+            text = self.font_label.render(label['text'], True, Color.BLACK)
+            self.screen.blit(text, text.get_rect(center=label['pos']))
+        self.inputs[3].draw(self.screen)
+        self.inputs[4].draw(self.screen)
+        self.inputs[5].draw(self.screen)
+        pygame.draw.rect(self.screen, Color.WHITE,
+                         self.theme_rect, border_radius=5)
+        pygame.draw.rect(self.screen, Color.BLACK,
+                         self.theme_rect, 2, border_radius=5)
+        theme_text = self.font_input_chat.render(self.theme, True, Color.BLACK)
+        self.screen.blit(theme_text, (self.theme_rect.x +
+                                      10, self.theme_rect.y + 10))
+        pygame.draw.rect(self.screen, Color.GOLDEN,
+                         self.change_theme_button, border_radius=5)
+        self.screen.blit(self.refresh_icon, self.change_theme_button)
+        pygame.draw.rect(self.screen, Color.BLACK,
+                         self.button_back_rect.inflate(2, 2), border_radius=20)
+        pygame.draw.rect(self.screen, Color.RED,
+                         self.button_back_rect, border_radius=20)
+        pygame.draw.rect(self.screen, Color.BLACK, self.button_create_prox_rect.inflate(
+            2, 2), border_radius=20)
+        pygame.draw.rect(self.screen, Color.GREEN,
+                         self.button_create_prox_rect, border_radius=20)
+        self.screen.blit(self.button_create_prox_text, self.button_create_prox_text.get_rect(
+            center=self.button_create_prox_rect.center))
+        self.screen.blit(self.button_back_text, self.button_back_text.get_rect(
+            center=self.button_back_rect.center))
+
+    # Play
+    def play_page(self):
+        '''Página principal do jogo.'''
+        if not self.room_clients:
+            return
+        total_height = Size.SCREEN_HEIGHT if len(
+            self.room_clients) < 8 else len(self.room_clients) * 70 + 60
+        self.scroll_area_players_rect.height = min(
+            total_height, Size.SCREEN_HEIGHT * 2)
+        pygame.draw.rect(self.screen, Color.LIGHT_GOLD,
+                         pygame.Rect(0, 0, self.left_panel.width, 50))
+        scroll_area_players = pygame.Surface(
+            (self.left_panel.width, self.scroll_area_players_rect.height))
+        scroll_area_players.fill(Color.LIGHT_GOLD)
+        self.draw_card_players(scroll_area_players)
+        self.inputs[1].draw(self.screen)
+        self.inputs[2].draw(self.screen)
+        self.draw_chat_all()
+        pygame.draw.line(self.screen, Color.HONEY,
+                         (self.play_elements['line_x'],
+                          self.inputs[1].rect.top - 85),
+                         (self.play_elements['line_x'], self.inputs[1].rect.bottom), 2)
+        pygame.draw.rect(self.screen, Color.BLACK,
+                         self.play_elements['button_leave'].inflate(2, 2), border_radius=20)
+        pygame.draw.rect(self.screen, Color.RED,
+                         self.play_elements['button_leave'], border_radius=20)
+        pygame.draw.rect(self.screen, Color.WHITE,
+                         self.play_elements['draw_rect'], border_radius=20)
+        self.screen.blit(scroll_area_players, (self.left_panel.x,
+                                               self.left_panel.y), self.left_panel)
+        self.screen.blit(self.play_elements['title_text'], (12, 8))
+        pygame.draw.line(self.screen, Color.HONEY, (40, 50),
+                         (self.left_panel.width - 40, 50), 2)
+        self.screen.blit(self.play_elements['button_leave_text'],
+                         self.play_elements['button_leave_text'].get_rect(
+            center=self.play_elements['button_leave'].center))
+        self.screen.blit(self.image_logo_small,
+                         self.play_elements['image_rect'])
+
+    def draw_card_players(self, area):
+        '''Desenha os cards dos jogadores no painel.'''
+        ord_players = sorted(
+            self.room_clients.items(),
+            key=lambda item: item[1]['score'],
+            reverse=True
+        )
+        for i, (_, client_data) in enumerate(ord_players):
+            y_pos = 60 + i * 70 - self.scroll_offset
+            pygame.draw.rect(
+                area,
+                Color.GOLDEN,
+                (10, y_pos, self.left_panel.width - 20, 60),
+                border_radius=5
+            )
+            area.blit(self.user_icon, (20, y_pos + 15))
+            name_text = self.font_input_chat.render(
+                client_data['name'],
+                True,
+                Color.DARK_GREEN if client_data['self'] else Color.BLACK
+            )
+            area.blit(name_text, (60, y_pos + 10))
+            score_text = self.font_input_chat.render(
+                f"{client_data['score']} pts",
+                True,
+                Color.BLACK
+            )
+            area.blit(score_text, (self.left_panel.width - 94, y_pos + 32))
+            if client_data['state'] == 'draw':
+                area.blit(self.pencil_icon,
+                          (self.left_panel.width - 32, y_pos + 36))
+
+    def draw_chat_all(self):
+        '''Desenha o chat geral.'''
+        all_msgs = []
+        for client in self.room_clients.values():
+            for msg in client['msgs']:
+                all_msgs.append({
+                    'text': msg[:12],
+                    'timestamp': int(msg[12:]),
+                    'sender': client['name'],
+                    'is_self': client['self']
+                })
+        all_msgs.sort(key=lambda x: x['timestamp'])
+        total = len(all_msgs)
+        self.scroll_max = max(0, total - 4)
+        if total > 4:
+            if self.chat_all_scroll == self.scroll_max:
+                self.chat_all_scroll = total - 4
+        else:
+            self.chat_all_scroll = 0
+        pygame.draw.rect(self.screen, Color.LIGHT_GOLD,
+                         self.chat_all_rect, border_radius=5)
+        old_clip = self.screen.get_clip()
+        self.screen.set_clip(self.chat_all_rect)
+        for i in range(4):
+            idx = (total - 1) - (self.chat_all_scroll + i)
+            if idx < 0 or idx >= total:
+                continue
+            msg = all_msgs[idx]
+            prefix = "Você" if msg['is_self'] else msg['sender']
+            color = Color.DARK_GREEN if msg['is_self'] else Color.BLACK
+            text = f"{prefix}: {msg['text'].strip()}"
+            surface = self.font_input_chat.render(text, True, color)
+            # Ajuste para exibir de baixo para cima
+            y = self.chat_all_rect.bottom - 18 - (i * 18)
+            x = self.chat_all_rect.right - 25 - \
+                surface.get_width(
+                ) if msg['is_self'] else self.chat_all_rect.left + 25
+            self.screen.blit(surface, (x, y))
+        self.screen.set_clip(old_clip)
+
+    # Register
+    def register_page(self):
+        '''Exibe a tela de registro onde o jogador pode inserir um apelido.'''
+        self.inputs[0].draw(self.screen)
+        pygame.draw.rect(self.screen, Color.BLACK,
+                         self.button_play_border, border_radius=20)
+        pygame.draw.rect(self.screen, Color.GREEN,
+                         self.button_play_rect, border_radius=20)
+        self.screen.blit(self.text_label_nick, self.text_label_nick_rect)
+        self.screen.blit(self.image_logo_big, self.image_logo_big_rect)
+        self.screen.blit(self.button_play_text, self.button_play_text_rect)
+
+    # List Rooms
+    def rooms_page(self):
+        '''Exibe a tela de salas onde o jogador pode entrar ou criar uma sala.'''
+        self.elements_cur.clear()
+        if not self.load_rooms:
+            self.get_rooms()
+            self.load_rooms = True
+        total_pages = max(1, (len(self.rooms) + 5) // 6)
+        quant_rooms_text = 'Salas ' + \
+            (f'{self.carousel_config['current_page'] + 1}/{total_pages}' if self.rooms else f'0/0')
+        quant_rooms_surface = self.font_input_chat.render(
+            quant_rooms_text, True, Color.BLACK)
+        quant_rooms_rect = quant_rooms_surface.get_rect(
+            center=self.quant_rooms_text_pos)
+        self.elements_cur.append(('button_create', self.button_create_rect))
+        self.elements_cur.append(('quant_rooms_text', quant_rooms_rect))
+        self.draw_rooms(total_pages)
+        pygame.draw.rect(self.screen, Color.BLACK,
+                         self.button_create_border, border_radius=20)
+        pygame.draw.rect(self.screen, Color.GREEN,
+                         self.button_create_rect, border_radius=20)
+        self.screen.blit(self.button_create_text, self.button_create_text_rect)
+        self.screen.blit(self.image_logo_big, self.image_logo_big_rect)
+        self.screen.blit(self.available_rooms_text, self.available_rooms_pos)
+        self.screen.blit(quant_rooms_surface, quant_rooms_rect)
+
+    def draw_rooms(self, total_pages):
+        '''Desenha as salas em um carrossel (6 por página).'''
+        if self.carousel_config['current_page'] != self.carousel_config['target_page']:
+            direction = 1 if self.carousel_config['target_page'] > self.carousel_config['current_page'] else -1
+            self.carousel_config['offset'] += direction * \
+                self.carousel_config['animation_speed'] * Size.SCREEN_WIDTH
+            if abs(self.carousel_config['offset']) >= Size.SCREEN_WIDTH:
+                self.carousel_config['current_page'] += direction
+                self.carousel_config['offset'] = 0
+        offset_direction = -1 if self.carousel_config['offset'] < 0 else 1
+        for page_offset in [0, offset_direction]:
+            current_page = self.carousel_config['current_page'] + page_offset
+            if not 0 <= current_page < total_pages:
+                continue
+            start_index = current_page * 6
+            end_index = min((current_page + 1) * 6, len(self.rooms))
+            for i, room in enumerate(self.rooms[start_index:end_index]):
+                x = self.rooms_start_x + \
+                    (i % 3) * 220 + (page_offset * Size.SCREEN_WIDTH)
+                y = self.rooms_start_y + (i // 3) * 100
+                room_rect = pygame.Rect(x, y, 200, 80)
+                self.elements_cur.append(('room', room_rect, room))
+                pygame.draw.rect(self.screen, Color.WHITE,
+                                 room_rect, border_radius=10)
+                pygame.draw.rect(self.screen, Color.BLACK,
+                                 room_rect, 2, border_radius=10)
+                theme_text, _ = self.font_title_rooms.render(
+                    room['name'].upper(), fgcolor=Color.DARK_GOLDEN)
+                clients_text, _ = self.font_title_rooms.render(
+                    f"{room['current_clients']}/{room['max_clients']}", fgcolor=Color.BLACK)
+                info_surface = pygame.Surface(
+                    (theme_text.get_width() + 10 + clients_text.get_width(),
+                     max(theme_text.get_height(), clients_text.get_height())),
+                    pygame.SRCALPHA
+                )
+                info_surface.blit(theme_text, (0, 0))
+                info_surface.blit(
+                    clients_text, (theme_text.get_width() + 10, 0))
+                self.screen.blit(info_surface, info_surface.get_rect(
+                    center=room_rect.center))
+        if self.carousel_config['current_page'] > 0:
+            self.elements_cur.append(('arrow_left', self.arrow_left_rect))
+        if self.carousel_config['current_page'] < total_pages - 1:
+            self.elements_cur.append(('arrow_right', self.arrow_right_rect))
+        if self.carousel_config['current_page'] > 0:
+            pygame.draw.polygon(self.screen, Color.BLACK, [
+                (self.arrow_left_rect.left + 15, self.arrow_left_rect.centery),
+                (self.arrow_left_rect.right, self.arrow_left_rect.top + 10),
+                (self.arrow_left_rect.right, self.arrow_left_rect.bottom - 10)
+            ])
+        if self.carousel_config['current_page'] < total_pages - 1:
+            pygame.draw.polygon(self.screen, Color.BLACK, [
+                (self.arrow_right_rect.right - 15, self.arrow_right_rect.centery),
+                (self.arrow_right_rect.left, self.arrow_right_rect.top + 10),
+                (self.arrow_right_rect.left, self.arrow_right_rect.bottom - 10)
+            ])

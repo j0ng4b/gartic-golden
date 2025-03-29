@@ -330,7 +330,13 @@ class BaseClient(abc.ABC):
         res = self.send_message('LEAVE')
         if res == 'OK':
             self.room = None
-            self.room_clients = dict(list(self.room_clients.items())[:1])
+            self.room_clients = {chave: {
+                'name': self.name,
+                'msgs': [],
+                'state': None,
+                'score': 0,
+                'self': True,
+            } for chave in list(self.room_clients)[:1]}
             return True
 
         self.error = res
