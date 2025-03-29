@@ -102,4 +102,4 @@ jobs:
         port: ${{ secrets.SERVER_SSH_PORT }}
         script: |
           tmux send-keys -t gg.0 C-c
-          tmux send-keys -t gg.0 'cd gg && python3 main.py -s' C-m
+          tmux send-keys -t gg.0 'python3 main.py -s' C-m

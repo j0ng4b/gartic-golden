@@ -2,9 +2,6 @@ import argparse
 import logging
 
 from game.config import Config
-from game.client.tui import TUIClient
-from game.screen.screen import Screen
-from game.server import Server
 
 
 def main(args):
@@ -17,10 +14,13 @@ def main(args):
 
     mode = None
     if args.server:
+        from game.server import Server
         mode = Server(args.address, args.port)
     elif args.gui:
+        from game.screen.screen import Screen
         mode = Screen(args.address, args.port)
     else:
+        from game.client.tui import TUIClient
         mode = TUIClient(args.address, args.port)
     mode.start()
 
