@@ -1,8 +1,9 @@
 import os
+
 import random
 import pygame
 import pygame.freetype
-
+from datetime import datetime
 
 class Size():
     # Tamanho da tela
