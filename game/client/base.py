@@ -113,6 +113,9 @@ class BaseClient(abc.ABC):
             return self.name
 
         elif msg_type == 'CHAT':
+            if self.room_clients.get(dest) is None:
+                return None
+
             with self.mutex:
                 self.room_clients[dest]['msgs'].append(args[0])
 
