@@ -390,6 +390,9 @@ class BaseClient(abc.ABC):
 
     def client_got_the_right_answer(self, client):
         for room_client in self.room_clients.keys():
+            if client == room_client:
+                continue
+
             self.send_message('GTRA', client, dest=room_client, wait_response=False)
 
     def client_canvas(self, canvas_data):
