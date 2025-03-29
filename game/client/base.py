@@ -228,14 +228,29 @@ class BaseClient(abc.ABC):
 
     @abc.abstractmethod
     def handle_chat(self, client, message):
+        '''
+        Função que deve ser implementada pela interface para que ela possa
+        manipular as mensagens de chat que chegarem.
+        '''
         raise NotImplementedError('handle_chat must be implemented')
 
     @abc.abstractmethod
     def handle_draw(self):
+        '''
+        Função que deve ser implementada também pela interface para que possa
+        seguir com o processo de iniciar o desenho: escolher uma palavra,
+        limpar a tela de desenho atual, etc.
+        '''
         raise NotImplementedError('handle_draw must be implemented')
 
     @abc.abstractmethod
     def handle_canvas(self, canvas):
+        '''
+        Essa função é chamada no momento que a interface precisa sincronizar
+        seus canvas, por exemplo, o cliente que está desenhando envia o
+        desenha para que o outro cliente possa visualizá-lo é essa função que
+        faz o trabalho de mostrar os dados na tela.
+        '''
         raise NotImplementedError('handle_canvas must be implemented')
 
 
