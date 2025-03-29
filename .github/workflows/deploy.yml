@@ -77,7 +77,17 @@ jobs:
       with:
         fetch-depth: 0
 
+    - name: Check if server files had changed
+      id: check_server_files
+      uses: tj-actions/changed-files@v46.0.3
+      with:
+        files: |
+          requirements.txt
+          main.py
+          game/*.py
+
     - name: Deploy to server
+      if: steps.check_server_files.outputs.any_changed == 'true'
       uses: appleboy/scp-action@master
       with:
         host: ${{ secrets.SERVER_ADDRESS }}
@@ -91,6 +101,7 @@ jobs:
         target: "gg"
 
     - name: Restart project
+      if: steps.check_server_files.outputs.any_changed == 'true'
       uses: appleboy/ssh-action@v0.1.3
       with:
         host: ${{ secrets.SERVER_ADDRESS }}
