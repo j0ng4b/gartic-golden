@@ -31,14 +31,17 @@ class DummyClient(BaseClient):
         super().__init__(address, port)
         self.socket = DummySocket()
 
+        self.handle_chat_calls = []
+        self.handle_canvas_calls = []
+
     def handle_chat(self, client, message):
-        pass
+        self.handle_chat_calls.append((client, message))
 
     def handle_draw(self):
         pass
 
     def handle_canvas(self, canvas):
-        pass
+        self.handle_canvas_calls.append(canvas)
 
     def get_message(self):
         return self.msgs.pop(0)
