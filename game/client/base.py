@@ -119,7 +119,7 @@ class BaseClient(abc.ABC):
             self.handle_chat(self.room_clients[dest], args[0])
 
         elif msg_type == 'GUESS':
-            if self.room_clients.get(args[0]) is None:
+            if self.room_clients.get(dest) is None:
                 return 'Cliente não encontrado'
 
             elif self.room_clients[dest]['state'] == 'guess':
@@ -143,7 +143,7 @@ class BaseClient(abc.ABC):
             return 'Palpite está incorreto'
 
         elif msg_type == 'GTRA':
-            if self.room_clients.get(args[0]) is None:
+            if self.room_clients.get(dest) is None:
                 return 'Cliente não encontrado'
 
             elif self.room_clients[dest]['state'] == 'guess':
@@ -160,7 +160,7 @@ class BaseClient(abc.ABC):
             return 'OK'
 
         elif msg_type == 'SKIP':
-            if self.room_clients.get(args[0]) is None:
+            if self.room_clients.get(dest) is None:
                 return 'Cliente não encontrado'
 
             elif self.room_clients[dest]['state'] == 'guess':
@@ -176,7 +176,7 @@ class BaseClient(abc.ABC):
             return 'OK'
 
         elif msg_type == 'DRAW':
-            if self.room_clients.get(args[0]) is None:
+            if self.room_clients.get(dest) is None:
                 return 'Cliente não encontrado'
 
             elif self.room_clients[dest]['state'] == 'draw':
@@ -209,7 +209,7 @@ class BaseClient(abc.ABC):
             self.handle_canvas(canvas_data)
 
         elif msg_type == 'SCORE':
-            if self.room_clients.get(args[0]) is None:
+            if self.room_clients.get(dest) is None:
                 return 'Cliente não encontrado'
 
             return self.room_clients[dest]['score']
