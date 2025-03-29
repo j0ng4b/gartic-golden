@@ -13,6 +13,10 @@ class BaseClient(abc.ABC):
         self.room = None
         self.room_clients = {}
 
+        # Dados do client
+        self.id = None
+        self.state = None
+
         # Estado do jogo
         self.name = 'Player'
 
@@ -179,16 +183,19 @@ class BaseClient(abc.ABC):
             return 'OK'
 
         elif msg_type == 'DRAW':
-            if self.room_clients.get(dest) is None:
-                return 'Cliente não encontrado'
-
-            elif self.room_clients[dest]['state'] == 'draw':
-                return 'Cliente já está desenhando'
-
-            self.room_clients[dest]['state'] = 'draw'
-            if self.room_clients[dest]['self']:
+            if len(args) != 1:
+                return 'Número de argumentos inválido'
+            elif args[0] == self.id:
+                self.state = 'draw'
                 self.handle_draw()
 
+                return 'OK'
+            elif self.room_clients.get(args[0]) is None:
+                return 'Cliente não encontrado'
+            elif self.room_clients[args[0]]['state'] == 'draw':
+                return 'Cliente já está desenhando'
+
+            self.room_clients[args[0]]['state'] = 'draw'
             return 'OK'
 
         elif msg_type == 'FDRAW':
@@ -263,14 +270,7 @@ class BaseClient(abc.ABC):
     def server_register(self):
         res = self.send_message('REGISTER', self.name)
         if res is not None and res.startswith('OK'):
-            self.room_clients[res.split('&')[1]] = {
-                'name': self.name,
-                'msgs': [],
-                'state': None,
-                'score': 0,
-                'self': True,
-            }
-
+            self.id = res.split('&')[1]
             return True
 
         self.error = res
