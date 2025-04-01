@@ -68,13 +68,19 @@ class BaseClient(abc.ABC):
         msg_type, args = msg.split(':')
         args = args.split(';')
 
-
         # Verifica se a mensagem é uma resposta
         if msg_type == 'RESP':
             with self.mutex:
                 self.msgs[dest].append(args[0])
 
             return
+
+        # Caso os argumentos sejam vazios, transforma em uma lista vazia
+        #
+        # NOTA: isso é necessário para evitar que o split gere uma lista com
+        # um elemento vazio caso a mensagem não tenha argumentos
+        if len(args) == 1 and args[0] == '':
+            args = []
 
         # Verifica se a mensagem veio do servidor
         if dest == '':
