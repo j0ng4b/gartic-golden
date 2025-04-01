@@ -331,8 +331,8 @@ class BaseClient(abc.ABC):
         self.error = res
         return False
 
-    def server_create_room(self, room_type, room_name, room_password=None):
-        args = [room_type, room_name]
+    def server_create_room(self, room_type, room_name, room_theme, room_password=None):
+        args = [room_type, room_name, room_theme]
         if room_password is not None:
             args.append(room_password)
 
