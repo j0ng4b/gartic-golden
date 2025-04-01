@@ -96,7 +96,8 @@ class TUIClient(BaseClient):
 
         elif opt == 1:
             name = input('Nome da sala: ')
-            ok = self.server_create_room('pub', name)
+            theme = input('Tema da sala: ')
+            ok = self.server_create_room('pub', name, theme)
 
         elif opt == 2:
             name = input('Nome da sala: ')
@@ -171,8 +172,11 @@ class TUIClient(BaseClient):
         self.menu = 0
 
     def handle_chat(self, client, message):
-        print(f'~{client["name"]}: {message}')
+        ...
 
     def handle_canvas(self, canvas):
-        print(f'canvas: {canvas}')
+        ...
+
+    def handle_draw(self):
+        ...
 
