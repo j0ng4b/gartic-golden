@@ -15,7 +15,7 @@ class Screen(BaseClient):
         # Janela
         pygame.display.set_icon(pygame.image.load(os.path.join(path, 'assets', 'ico.png')))
         pygame.display.set_caption('Gartic Golden')
-        self.screen = pygame.display.set_mode((Size.SCREEN_WIDTH, Size.SCREEN_HEIGHT))
+        self.surface = pygame.display.set_mode((Size.SCREEN_WIDTH, Size.SCREEN_HEIGHT))
         self.clock = pygame.time.Clock()
         # Fontes
         self.font_label = pygame.font.Font(os.path.join(path, 'font', 'Acme-Regular.ttf'), 40)
@@ -155,7 +155,7 @@ class Screen(BaseClient):
             self.pages[page_name] = page
 
             # Inicializa a página com o método init
-            page.init(self.goto_page)
+            page.init(self.surface, self.goto_page)
 
     def goto_page(self, page_name):
         if page_name in self.pages:
@@ -187,7 +187,7 @@ class Screen(BaseClient):
             self.current_page.update()
 
             # Desenha a página atual
-            self.screen.fill(Color.GOLDEN)
+            self.surface.fill(Color.GOLDEN)
             self.current_page.draw()
             pygame.display.update()
             self.clock.tick(60)
@@ -209,12 +209,12 @@ class Screen(BaseClient):
 
     def register_page(self):
         '''Exibe a tela de registro onde o jogador pode inserir um apelido.'''
-        self.inputs[0].draw(self.screen)
-        pygame.draw.rect(self.screen, Color.BLACK, self.button_play_border, border_radius=20)
-        pygame.draw.rect(self.screen, Color.GREEN, self.button_play_rect, border_radius=20)
-        self.screen.blit(self.text_label_nick, self.text_label_nick_rect)
-        self.screen.blit(self.image_logo_big, self.image_logo_big_rect)
-        self.screen.blit(self.button_play_text, self.button_play_text_rect)
+        self.inputs[0].draw(self.surface)
+        pygame.draw.rect(self.surface, Color.BLACK, self.button_play_border, border_radius=20)
+        pygame.draw.rect(self.surface, Color.GREEN, self.button_play_rect, border_radius=20)
+        self.surface.blit(self.text_label_nick, self.text_label_nick_rect)
+        self.surface.blit(self.image_logo_big, self.image_logo_big_rect)
+        self.surface.blit(self.button_play_text, self.button_play_text_rect)
 
     def rooms_page(self):
         '''Exibe a tela de salas onde o jogador pode entrar ou criar uma sala.'''
@@ -229,12 +229,12 @@ class Screen(BaseClient):
         self.elements_cur.append(('button_create', self.button_create_rect))
         self.elements_cur.append(('quant_rooms_text', quant_rooms_rect))
         self.draw_rooms(total_pages)
-        pygame.draw.rect(self.screen, Color.BLACK, self.button_create_border, border_radius=20)
-        pygame.draw.rect(self.screen, Color.GREEN, self.button_create_rect, border_radius=20)
-        self.screen.blit(self.button_create_text, self.button_create_text_rect)
-        self.screen.blit(self.image_logo_big, self.image_logo_big_rect)
-        self.screen.blit(self.available_rooms_text, self.available_rooms_pos)
-        self.screen.blit(quant_rooms_surface, quant_rooms_rect)
+        pygame.draw.rect(self.surface, Color.BLACK, self.button_create_border, border_radius=20)
+        pygame.draw.rect(self.surface, Color.GREEN, self.button_create_rect, border_radius=20)
+        self.surface.blit(self.button_create_text, self.button_create_text_rect)
+        self.surface.blit(self.image_logo_big, self.image_logo_big_rect)
+        self.surface.blit(self.available_rooms_text, self.available_rooms_pos)
+        self.surface.blit(quant_rooms_surface, quant_rooms_rect)
 
     def play_page(self):
         if not self.players:
@@ -249,7 +249,7 @@ class Screen(BaseClient):
                 min(total_height, Size.SCREEN_HEIGHT * 2)
             )
             self.scroll_offset = 0
-        pygame.draw.rect(self.screen, Color.LIGHT_GOLD,
+        pygame.draw.rect(self.surface, Color.LIGHT_GOLD,
                          pygame.Rect(0, 0, self.left_panel.width, 50))
         title_text = self.font_input_name.render(
             'JOGADORES', True, Color.BLACK)
@@ -273,17 +273,17 @@ class Screen(BaseClient):
                 scroll_surface.blit(
                     self.pencil_icon, (self.left_panel.width - 32, y_pos + 36))
 
-        self.inputs[1].draw(self.screen)
-        self.inputs[2].draw(self.screen)
+        self.inputs[1].draw(self.surface)
+        self.inputs[2].draw(self.surface)
         line_x = (self.inputs[1].rect.right + self.inputs[2].rect.left) // 2
-        pygame.draw.line(self.screen, Color.HONEY, (line_x,
+        pygame.draw.line(self.surface, Color.HONEY, (line_x,
                          self.inputs[1].rect.top - 85), (line_x, self.inputs[1].rect.bottom), 2)
 
         button_leave = pygame.Rect(
             Size.SCREEN_WIDTH - 110, Size.SCREEN_HEIGHT - 35, 100, 30)
-        pygame.draw.rect(self.screen, Color.BLACK,
+        pygame.draw.rect(self.surface, Color.BLACK,
                          button_leave.inflate(2, 2), border_radius=20)
-        pygame.draw.rect(self.screen, Color.RED,
+        pygame.draw.rect(self.surface, Color.RED,
                          button_leave, border_radius=20)
 
         button_text = self.font_button.render('Sair', True, Color.WHITE)
@@ -305,7 +305,7 @@ class Screen(BaseClient):
             Size.SCREEN_WIDTH - 175,
             Size.SCREEN_HEIGHT // 2 + 30
         )
-        pygame.draw.rect(self.screen, Color.WHITE, draw_rect, border_radius=20)
+        pygame.draw.rect(self.surface, Color.WHITE, draw_rect, border_radius=20)
 
         image_rect = self.image_logo_small.get_rect(
             center=(Size.SCREEN_WIDTH // 2 - 50, Size.SCREEN_HEIGHT // 2 - 250))
@@ -321,34 +321,34 @@ class Screen(BaseClient):
                 self.players = []
                 print('Saiu da sala, sala apagada.')
 
-        self.screen.blit(scroll_surface, (self.left_panel.x,
+        self.surface.blit(scroll_surface, (self.left_panel.x,
                          self.left_panel.y), self.left_panel)
-        self.screen.blit(title_text, (12, 8))
-        pygame.draw.line(self.screen, Color.HONEY, (40, 50),
+        self.surface.blit(title_text, (12, 8))
+        pygame.draw.line(self.surface, Color.HONEY, (40, 50),
                          (self.left_panel.width - 40, 50), 2)
-        self.screen.blit(button_text, button_text_rect)
-        self.screen.blit(self.image_logo_small, image_rect)
+        self.surface.blit(button_text, button_text_rect)
+        self.surface.blit(self.image_logo_small, image_rect)
 
     def create_room_page(self):
-        self.screen.blit(self.image_logo_big, self.image_logo_big_rect)
+        self.surface.blit(self.image_logo_big, self.image_logo_big_rect)
         for i, label in enumerate(self.create_labels):
             text = self.font_label.render(label['text'], True, Color.BLACK)
-            self.screen.blit(text, text.get_rect(center=label['pos']))
-        self.inputs[3].draw(self.screen)
-        self.inputs[4].draw(self.screen)
-        self.inputs[5].draw(self.screen)
-        pygame.draw.rect(self.screen, Color.WHITE, self.theme_rect, border_radius=5)
-        pygame.draw.rect(self.screen, Color.BLACK, self.theme_rect, 2, border_radius=5)
+            self.surface.blit(text, text.get_rect(center=label['pos']))
+        self.inputs[3].draw(self.surface)
+        self.inputs[4].draw(self.surface)
+        self.inputs[5].draw(self.surface)
+        pygame.draw.rect(self.surface, Color.WHITE, self.theme_rect, border_radius=5)
+        pygame.draw.rect(self.surface, Color.BLACK, self.theme_rect, 2, border_radius=5)
         theme_text = self.font_input_chat.render(self.theme, True, Color.BLACK)
-        self.screen.blit(theme_text, (self.theme_rect.x + 10, self.theme_rect.y + 10))
-        pygame.draw.rect(self.screen, Color.GOLDEN, self.change_theme_button, border_radius=5)
-        self.screen.blit(self.refresh_icon, self.change_theme_button)
-        pygame.draw.rect(self.screen, Color.BLACK, self.button_back_rect.inflate(2, 2), border_radius=20)
-        pygame.draw.rect(self.screen, Color.RED, self.button_back_rect, border_radius=20)        
-        pygame.draw.rect(self.screen, Color.BLACK, self.button_create_prox_rect.inflate(2, 2), border_radius=20)
-        pygame.draw.rect(self.screen, Color.GREEN, self.button_create_prox_rect, border_radius=20)
-        self.screen.blit(self.button_create_prox_text, self.button_create_prox_text.get_rect(center=self.button_create_prox_rect.center))
-        self.screen.blit(self.button_back_text, self.button_back_text.get_rect(center=self.button_back_rect.center))
+        self.surface.blit(theme_text, (self.theme_rect.x + 10, self.theme_rect.y + 10))
+        pygame.draw.rect(self.surface, Color.GOLDEN, self.change_theme_button, border_radius=5)
+        self.surface.blit(self.refresh_icon, self.change_theme_button)
+        pygame.draw.rect(self.surface, Color.BLACK, self.button_back_rect.inflate(2, 2), border_radius=20)
+        pygame.draw.rect(self.surface, Color.RED, self.button_back_rect, border_radius=20)        
+        pygame.draw.rect(self.surface, Color.BLACK, self.button_create_prox_rect.inflate(2, 2), border_radius=20)
+        pygame.draw.rect(self.surface, Color.GREEN, self.button_create_prox_rect, border_radius=20)
+        self.surface.blit(self.button_create_prox_text, self.button_create_prox_text.get_rect(center=self.button_create_prox_rect.center))
+        self.surface.blit(self.button_back_text, self.button_back_text.get_rect(center=self.button_back_rect.center))
 
     def draw_rooms(self, total_pages):
         '''Desenha as salas em um carrossel (6 por página).'''
@@ -370,8 +370,8 @@ class Screen(BaseClient):
                 y = self.rooms_start_y + (i // 3) * 100
                 room_rect = pygame.Rect(x, y, 200, 80)
                 self.elements_cur.append(('room', room_rect, room))
-                pygame.draw.rect(self.screen, Color.WHITE, room_rect, border_radius=10)
-                pygame.draw.rect(self.screen, Color.BLACK, room_rect, 2, border_radius=10)
+                pygame.draw.rect(self.surface, Color.WHITE, room_rect, border_radius=10)
+                pygame.draw.rect(self.surface, Color.BLACK, room_rect, 2, border_radius=10)
                 theme_text, _ = self.font_title_rooms.render(room['name'], fgcolor=Color.DARK_GOLDEN)
                 clients_text, _ = self.font_title_rooms.render(f"{room['current_clients']}/{room['max_clients']}", fgcolor=Color.BLACK)
                 info_surface = pygame.Surface(
@@ -381,19 +381,19 @@ class Screen(BaseClient):
                 )
                 info_surface.blit(theme_text, (0, 0))
                 info_surface.blit(clients_text, (theme_text.get_width() + 10, 0))
-                self.screen.blit(info_surface, info_surface.get_rect(center=room_rect.center))
+                self.surface.blit(info_surface, info_surface.get_rect(center=room_rect.center))
         if self.carousel_config['current_page'] > 0:
             self.elements_cur.append(('arrow_left', self.arrow_left_rect))
         if self.carousel_config['current_page'] < total_pages - 1:
             self.elements_cur.append(('arrow_right', self.arrow_right_rect))
         if self.carousel_config['current_page'] > 0:
-            pygame.draw.polygon(self.screen, Color.BLACK, [
+            pygame.draw.polygon(self.surface, Color.BLACK, [
                 (self.arrow_left_rect.left + 15, self.arrow_left_rect.centery),
                 (self.arrow_left_rect.right, self.arrow_left_rect.top + 10),
                 (self.arrow_left_rect.right, self.arrow_left_rect.bottom - 10)
             ])
         if self.carousel_config['current_page'] < total_pages - 1:
-            pygame.draw.polygon(self.screen, Color.BLACK, [
+            pygame.draw.polygon(self.surface, Color.BLACK, [
                 (self.arrow_right_rect.right - 15, self.arrow_right_rect.centery),
                 (self.arrow_right_rect.left, self.arrow_right_rect.top + 10),
                 (self.arrow_right_rect.left, self.arrow_right_rect.bottom - 10)

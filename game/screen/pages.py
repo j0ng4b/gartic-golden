@@ -3,12 +3,15 @@ import abc
 
 class BasePage(abc.ABC):
     def __init__(self):
+        # Tela de desenho
+        self.surface = None
+
         # Utiliza o goto_page para ir para outra página
         # quando necessário
         self.goto_page = None
 
     @abc.abstractmethod
-    def init(self, goto_page):
+    def init(self, surface, goto_page):
         '''
         Inicializa a página
         --------------------
@@ -17,6 +20,7 @@ class BasePage(abc.ABC):
         deve ser chamada antes de usar a página e deve ser chamada apenas uma vez.
         '''
 
+        self.surface = surface
         self.goto_page = goto_page
 
     @abc.abstractmethod
