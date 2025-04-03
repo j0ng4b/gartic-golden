@@ -169,20 +169,26 @@ class Screen(BaseClient):
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.handle_close_game()
-                elif event.type == pygame.MOUSEBUTTONDOWN:
-                    self.current_input = next(
-                        (input_field for input_field in self.inputs if input_field.rect.collidepoint(event.pos)), None)
-                    for input_field in self.inputs:
-                        input_field.active = input_field == self.current_input
-                elif event.type == pygame.MOUSEWHEEL:
-                    if self.left_panel.collidepoint(pygame.mouse.get_pos()):
-                        self.scroll_offset = max(0, min(
-                            self.scroll_offset - event.y * 20, self.scroll_area.height - self.left_panel.height))
-                if self.current_input:
-                    self.current_input.handle_event(event)
+                else:
+                    self.current_page.handle_event(event)
+            #    elif event.type == pygame.MOUSEBUTTONDOWN:
+            #        self.current_input = next(
+            #            (input_field for input_field in self.inputs if input_field.rect.collidepoint(event.pos)), None)
+            #        for input_field in self.inputs:
+            #            input_field.active = input_field == self.current_input
+            #    elif event.type == pygame.MOUSEWHEEL:
+            #        if self.left_panel.collidepoint(pygame.mouse.get_pos()):
+            #            self.scroll_offset = max(0, min(
+            #                self.scroll_offset - event.y * 20, self.scroll_area.height - self.left_panel.height))
+            #    if self.current_input:
+            #        self.current_input.handle_event(event)
 
+            # Atualiza a página atual
+            self.current_page.update()
+
+            # Desenha a página atual
             self.screen.fill(Color.GOLDEN)
-            self.draw()
+            self.current_page.draw()
             pygame.display.update()
             self.clock.tick(60)
 
