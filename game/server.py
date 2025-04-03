@@ -306,7 +306,7 @@ class Server:
         if room is None:
             return 'Cliente não está em nenhuma sala'
 
-        msg = f'{client['id']}/{msg_type}:{";".join(args)}'.encode()
+        msg = f'{client["id"]}/{msg_type}:{";".join(args)}'.encode()
         for room_client in room['clients']:
             if room_client[0] == dest:
                 self.socket.sendto(msg, (room_client[1], room_client[2]))
