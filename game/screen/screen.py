@@ -177,7 +177,7 @@ class Screen(BaseClient):
                 if event.type == pygame.QUIT:
                     self.handle_close_game()
                 else:
-                    self.current_page.handle_event(event)
+                    self.current_page.handle_input(event)
             #    elif event.type == pygame.MOUSEBUTTONDOWN:
             #        self.current_input = next(
             #            (input_field for input_field in self.inputs if input_field.rect.collidepoint(event.pos)), None)
@@ -204,7 +204,7 @@ class Screen(BaseClient):
     def draw(self):
         '''Filtra a sala que deve ser exibida.'''
         if self.current_page == 'Register':
-            self.register_page()
+            self.register_page_tmp()
         elif self.current_page == 'Rooms':
             self.rooms_page()
         elif self.current_page == 'Create':
@@ -214,7 +214,7 @@ class Screen(BaseClient):
         self.handle_colision_cursor()
         self.handle_click_cursor()
 
-    def register_page(self):
+    def register_page_tmp(self):
         '''Exibe a tela de registro onde o jogador pode inserir um apelido.'''
         self.inputs[0].draw(self.surface)
         pygame.draw.rect(self.surface, Color.BLACK, self.button_play_border, border_radius=20)
