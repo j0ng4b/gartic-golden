@@ -19,6 +19,13 @@ def main(args):
     elif args.gui:
         from game.screen.screen import Screen
         mode = Screen(args.address, args.port)
+
+        # Registra as páginas
+        import game.screen.pages as pages
+        mode.register_page('register', pages.RegisterPage)
+
+        # A primeira página a ser carregada é a de registro do usuário
+        mode.goto_page('register')
     else:
         from game.client.tui import TUIClient
         mode = TUIClient(args.address, args.port)
