@@ -1,5 +1,7 @@
+import abc
 
-class BasePage:
+
+class BasePage(abc.ABC):
     def __init__(self, name):
         self.name = name
 
@@ -7,6 +9,7 @@ class BasePage:
         # quando necessário
         self.goto_page = None
 
+    @abc.abstractmethod
     def init(self, goto_page):
         '''
         Inicializa a página
@@ -18,6 +21,7 @@ class BasePage:
 
         self.goto_page = goto_page
 
+    @abc.abstractmethod
     def update(self):
         '''
         Atualiza a página
@@ -27,6 +31,7 @@ class BasePage:
         '''
         pass
 
+    @abc.abstractmethod
     def draw(self):
         '''
         Desenha a página
@@ -36,7 +41,8 @@ class BasePage:
         '''
         pass
 
-    def handle_input(self):
+    @abc.abstractmethod
+    def handle_input(self, event):
         '''
         Lida com a entrada do usuário
         --------------------
@@ -45,6 +51,7 @@ class BasePage:
         '''
         pass
 
+    @abc.abstractmethod
     def reset(self):
         '''
         Reseta a página
@@ -52,4 +59,25 @@ class BasePage:
 
         Chamada para resetar os elementos que estão na página.
         '''
+        pass
+
+
+class RegisterPage(BasePage):
+    def __init__(self):
+        super().__init__('register')
+
+    def init(self, goto_page):
+        super().init(goto_page)
+        pass
+
+    def update(self):
+        pass
+
+    def draw(self):
+        pass
+
+    def handle_input(self, event):
+        pass
+
+    def reset(self):
         pass
