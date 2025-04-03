@@ -230,7 +230,7 @@ class Screen(BaseClient):
             self.get_rooms()
             self.load_rooms = True
         total_pages = max(1, (len(self.rooms) + 5) // 6)
-        quant_rooms_text = 'Salas ' + (f'{self.carousel_config['current_page'] + 1}/{total_pages}' if self.rooms else f'0/0')
+        quant_rooms_text = 'Salas ' + (f'{self.carousel_config["current_page"] + 1}/{total_pages}' if self.rooms else f'0/0')
         quant_rooms_surface = self.font_input_chat.render(quant_rooms_text, True, Color.BLACK)
         quant_rooms_rect = quant_rooms_surface.get_rect(center=self.quant_rooms_text_pos)
         self.elements_cur.append(('button_create', self.button_create_rect))
