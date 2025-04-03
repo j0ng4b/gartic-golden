@@ -2,9 +2,7 @@ import abc
 
 
 class BasePage(abc.ABC):
-    def __init__(self, name):
-        self.name = name
-
+    def __init__(self):
         # Utiliza o goto_page para ir para outra página
         # quando necessário
         self.goto_page = None
@@ -64,7 +62,7 @@ class BasePage(abc.ABC):
 
 class RegisterPage(BasePage):
     def __init__(self):
-        super().__init__('register')
+        super().__init__()
 
     def init(self, goto_page):
         super().init(goto_page)

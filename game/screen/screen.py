@@ -150,9 +150,9 @@ class Screen(BaseClient):
         self.button_create_prox_text = self.font_button.render('CRIAR SALA', True, Color.WHITE)
         self.button_back_text = self.font_button.render('VOLTAR', True, Color.WHITE)
 
-    def register_page(self, page):
-        if isinstance(page, BasePage) and page.name not in self.pages:
-            self.pages[page.name] = page
+    def register_page(self, page_name, page):
+        if isinstance(page, BasePage) and page_name not in self.pages:
+            self.pages[page_name] = page
 
             # Inicializa a página com o método init
             page.init(self.goto_page)
