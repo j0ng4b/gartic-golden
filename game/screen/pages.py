@@ -1,17 +1,24 @@
 import abc
 
+import pygame
+
+from game.screen.utils.utilities import *
+
 
 class BasePage(abc.ABC):
     def __init__(self):
         # Tela de desenho
         self.surface = None
 
+        # Gerenciador de assets
+        self.resource = None
+
         # Utiliza o goto_page para ir para outra página
         # quando necessário
         self.goto_page = None
 
     @abc.abstractmethod
-    def init(self, surface, goto_page):
+    def init(self, surface, resource, goto_page):
         '''
         Inicializa a página
         --------------------
@@ -21,6 +28,7 @@ class BasePage(abc.ABC):
         '''
 
         self.surface = surface
+        self.resource = resource
         self.goto_page = goto_page
 
     @abc.abstractmethod
@@ -68,8 +76,8 @@ class RegisterPage(BasePage):
     def __init__(self):
         super().__init__()
 
-    def init(self, goto_page):
-        super().init(goto_page)
+    def init(self, surface, resource, goto_page):
+        super().init(surface, resource, goto_page)
         pass
 
     def update(self):

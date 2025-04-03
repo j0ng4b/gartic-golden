@@ -1,13 +1,20 @@
 from game.client.base import BaseClient
-from game.pages import BasePage
+
+from game.screen.pages import BasePage
+from game.screen.resource import Resource
 from game.screen.utils.utilities import *
+
 
 class Screen(BaseClient):
     def __init__(self, address, port):
         super().__init__(address, port)
 
+        # Armazenar as "páginas" (telas) do jogo
         self.pages = {}
         self.current_page = None
+
+        # Gerenciador de assets
+        self.resource = Resource()
 
         pygame.init()
         pygame.freetype.init()
@@ -155,7 +162,7 @@ class Screen(BaseClient):
             self.pages[page_name] = page
 
             # Inicializa a página com o método init
-            page.init(self.surface, self.goto_page)
+            page.init(self.surface, self.resource, self.goto_page)
 
     def goto_page(self, page_name):
         if page_name in self.pages:
