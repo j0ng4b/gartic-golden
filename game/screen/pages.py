@@ -78,15 +78,16 @@ class BasePage(abc.ABC):
         '''
         pass
 
-    def add_component(self, component):
+    def add_components(self, *components):
         '''
         Adiciona um componente à página
         --------------------
 
         Chamada para adicionar um componente à página.
         '''
-        self.components.append(component)
-        component.init(self.surface, self.resource)
+        for component in components:
+            component.init(self.surface, self.resource)
+            self.components.append(component)
 
 
 class RegisterPage(BasePage):
