@@ -20,25 +20,25 @@ class Screen(BaseClient):
         pygame.freetype.init()
         path = os.path.dirname(__file__)
         # Janela
-        pygame.display.set_icon(pygame.image.load(os.path.join(path, 'assets', 'ico.png')))
+        pygame.display.set_icon(pygame.image.load(os.path.join(path, 'assets', 'images', 'ico.png')))
         pygame.display.set_caption('Gartic Golden')
         self.surface = pygame.display.set_mode((Size.SCREEN_WIDTH, Size.SCREEN_HEIGHT))
         self.clock = pygame.time.Clock()
         # Fontes
-        self.font_label = pygame.font.Font(os.path.join(path, 'font', 'Acme-Regular.ttf'), 40)
-        self.font_button = pygame.font.Font(os.path.join(path, 'font', 'Acme-Regular.ttf'), 30)
-        self.font_input_name = pygame.font.Font(os.path.join(path, 'font', 'Acme-Regular.ttf'), 26)
-        self.font_title_rooms = pygame.freetype.Font(os.path.join(path, 'font', 'Acme-Regular.ttf'), 19)
+        self.font_label = pygame.font.Font(os.path.join(path, 'assets', 'fonts', 'Acme-Regular.ttf'), 40)
+        self.font_button = pygame.font.Font(os.path.join(path, 'assets', 'fonts', 'Acme-Regular.ttf'), 30)
+        self.font_input_name = pygame.font.Font(os.path.join(path, 'assets', 'fonts', 'Acme-Regular.ttf'), 26)
+        self.font_title_rooms = pygame.freetype.Font(os.path.join(path, 'assets', 'fonts', 'Acme-Regular.ttf'), 19)
         self.font_title_rooms.strong = True
-        self.font_input_chat = pygame.font.Font(os.path.join(path, 'font', 'Acme-Regular.ttf'), 18)
+        self.font_input_chat = pygame.font.Font(os.path.join(path, 'assets', 'fonts', 'Acme-Regular.ttf'), 18)
         # Imagens
-        self.image_logo_big = pygame.image.load(os.path.join(path, 'assets', 'logo.png'))
-        self.image_logo_small = pygame.image.load(os.path.join(path, 'assets', 'logo_small.png'))
-        self.icon_user = pygame.image.load(os.path.join(path, 'assets', 'user.png'))
+        self.image_logo_big = pygame.image.load(os.path.join(path, 'assets', 'images', 'logo.png'))
+        self.image_logo_small = pygame.image.load(os.path.join(path, 'assets', 'images', 'logo_small.png'))
+        self.icon_user = pygame.image.load(os.path.join(path, 'assets', 'images', 'user.png'))
         self.user_icon = pygame.transform.scale(self.icon_user, (30, 30))
-        self.pencil = pygame.image.load(os.path.join(path, 'assets', 'pencil.png'))
+        self.pencil = pygame.image.load(os.path.join(path, 'assets', 'images', 'pencil.png'))
         self.pencil_icon = pygame.transform.scale(self.pencil, (20, 20))
-        self.refresh_icon = pygame.image.load(os.path.join(path, 'assets', 'refresh.png'))
+        self.refresh_icon = pygame.image.load(os.path.join(path, 'assets', 'images', 'refresh.png'))
         self.refresh_icon = pygame.transform.scale(self.refresh_icon, (35, 35))
         # Estado do jogo
         self.running = True
