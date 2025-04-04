@@ -38,3 +38,38 @@ class BaseComponent:
         Chamada para desenhar os elementos que estão no componente.
         '''
         pass
+
+
+class Button:
+    def __init__(self, text, x, y, width, height, on_click=None, on_hover=None):
+        self.text = text
+
+        self.on_click = on_click
+        self.on_hover = on_hover
+
+        self.rect = pygame.Rect(x, y, width, height)
+
+        self.button_surface = pygame.Surface((width, height))
+        self.button_surface.fill(Color.GREEN)
+
+    def init(self, surface, resource):
+        super().init(surface, resource)
+    
+    def update(self):
+        mouse_pos = pygame.mouse.get_pos()
+        if self.rect.collidepoint(mouse_pos):
+            pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_POINTER)
+
+            if self.on_hover is not None:
+                self.on_hover()
+
+            if pygame.mouse.get_pressed()[0] and self.on_click is not None:
+                self.on_click()
+        else:
+            pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
+
+    def draw(self):
+        self.surface.blit(self.button_surface, self.rect)
+
+    def set_text(self, text):
+        self.text = text

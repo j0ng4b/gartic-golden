@@ -96,7 +96,10 @@ class RegisterPage(BasePage):
 
     def init(self, surface, resource, goto_page):
         super().init(surface, resource, goto_page)
-        pass
+
+        self.add_components(
+            components.Button('Jogar', 100, 100, 200, 50),
+        )
 
     def update(self):
         super().update()
