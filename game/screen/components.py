@@ -41,6 +41,15 @@ class BaseComponent:
         '''
         pass
 
+    def handle_input(self, event):
+        '''
+        Trata o input do componente
+        --------------------
+
+        Chamada para tratar o input do componente.
+        '''
+        pass
+
 
 class Button(BaseComponent):
     def __init__(self, text, x, y, width, height, on_click=None, on_hover=None):
@@ -65,17 +74,21 @@ class Button(BaseComponent):
         self.font = resource.load_font('Acme-Regular', 30)
         self.update_text()
 
-    def update(self):
-        mouse_pos = pygame.mouse.get_pos()
-        if self.rect.collidepoint(mouse_pos):
-            if self.on_hover is not None:
-                self.on_hover()
-
-            if pygame.mouse.get_pressed()[0] and self.on_click is not None:
-                self.on_click()
-
     def draw(self):
         self.surface.blit(self.button_surface, self.rect)
+
+    def handle_input(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.button == 1 and self.rect.collidepoint(event.pos):
+                if self.on_click is not None:
+                    self.on_click()
+        elif event.type == pygame.MOUSEMOTION:
+            if self.rect.collidepoint(event.pos):
+                if self.on_hover is not None:
+                    self.on_hover()
+            else:
+                if self.on_hover is not None:
+                    self.on_hover(False)
 
     def set_text(self, text):
         if self.text == text:

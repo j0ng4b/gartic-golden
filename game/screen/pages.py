@@ -71,7 +71,8 @@ class BasePage(abc.ABC):
 
         Chamada para lidar com a entrada do usuário na página.
         '''
-        pass
+        for component in self.components:
+            component.handle_input(event)
 
     @abc.abstractmethod
     def reset(self):
