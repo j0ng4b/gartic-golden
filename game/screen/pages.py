@@ -41,7 +41,7 @@ class BasePage(abc.ABC):
         '''
         Atualiza a página
         --------------------
-        
+
         Chamada para atualizar os elementos que estão na página.
         '''
         for component in self.components:
