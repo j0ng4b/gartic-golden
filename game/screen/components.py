@@ -42,7 +42,7 @@ class BaseComponent:
         pass
 
 
-class Button:
+class Button(BaseComponent):
     def __init__(self, text, x, y, width, height, on_click=None, on_hover=None):
         self.text = text
 
