@@ -1,5 +1,7 @@
 import pygame
 
+from game.screen.utils.utilities import *
+
 
 class BaseComponent:
     def __init__(self):
