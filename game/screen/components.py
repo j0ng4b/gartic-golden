@@ -54,6 +54,9 @@ class Button(BaseComponent):
         self.button_surface = pygame.Surface((width, height))
         self.button_surface.fill(Color.GREEN)
 
+        self.round_clip = pygame.Surface((width, height), pygame.SRCALPHA)
+        pygame.draw.rect(self.round_clip, Color.WHITE, (0, 0, width, height), border_radius=20)
+
         self.font = None
 
     def init(self, surface, resource):
@@ -90,3 +93,5 @@ class Button(BaseComponent):
             self.rect.width / 2 - text_rect.width / 2,
             self.rect.height / 2 - text_rect.height / 2
         ])
+
+        self.button_surface.blit(self.round_clip, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
