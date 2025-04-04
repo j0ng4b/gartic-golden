@@ -17,6 +17,10 @@ class BasePage(abc.ABC):
         # quando necessário
         self.goto_page = None
 
+        # Lista de componentes que estão na página
+        # Exemplo: botoes, textos, imagens
+        self.components = []
+
     @abc.abstractmethod
     def init(self, surface, resource, goto_page):
         '''
@@ -39,7 +43,8 @@ class BasePage(abc.ABC):
         
         Chamada para atualizar os elementos que estão na página.
         '''
-        pass
+        for component in self.components:
+            component.update()
 
     @abc.abstractmethod
     def draw(self):
@@ -49,7 +54,8 @@ class BasePage(abc.ABC):
 
         Chamada para desenhar os elementos que estão na página.
         '''
-        pass
+        for component in self.components:
+            component.draw()
 
     @abc.abstractmethod
     def handle_input(self, event):
@@ -59,7 +65,8 @@ class BasePage(abc.ABC):
 
         Chamada para lidar com a entrada do usuário na página.
         '''
-        pass
+        for component in self.components:
+            component.handle_input(event)
 
     @abc.abstractmethod
     def reset(self):
@@ -71,6 +78,16 @@ class BasePage(abc.ABC):
         '''
         pass
 
+    def add_component(self, component):
+        '''
+        Adiciona um componente à página
+        --------------------
+
+        Chamada para adicionar um componente à página.
+        '''
+        self.components.append(component)
+        component.init(self.surface, self.resource)
+
 
 class RegisterPage(BasePage):
     def __init__(self):
@@ -81,13 +98,13 @@ class RegisterPage(BasePage):
         pass
 
     def update(self):
-        pass
+        super().update()
 
     def draw(self):
-        pass
+        super().draw()
 
     def handle_input(self, event):
-        pass
+        super().handle_input(event)
 
     def reset(self):
         pass
