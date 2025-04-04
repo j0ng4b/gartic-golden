@@ -54,8 +54,13 @@ class Button(BaseComponent):
         self.button_surface = pygame.Surface((width, height))
         self.button_surface.fill(Color.GREEN)
 
+        self.font = None
+
     def init(self, surface, resource):
         super().init(surface, resource)
+
+        self.font = resource.load_font('Acme-Regular', 30)
+        self.update_text()
 
     def update(self):
         mouse_pos = pygame.mouse.get_pos()
@@ -71,3 +76,11 @@ class Button(BaseComponent):
 
     def set_text(self, text):
         self.text = text
+        self.update_text()
+
+    def update_text(self):
+        text_surface = self.font.render(self.text, True, Color.WHITE)
+        text_rect = text_surface.get_rect(center=self.rect.center)
+
+        self.button_surface.fill(Color.GREEN)
+        self.button_surface.blit(text_surface, text_rect)
