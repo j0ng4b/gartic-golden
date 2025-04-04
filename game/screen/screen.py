@@ -1,8 +1,11 @@
+import pygame
+
 from game.client.base import BaseClient
 
 from game.screen.pages import BasePage
 from game.screen.resource import Resource
 from game.screen.utils.utilities import *
+from game.screen.components import InputField
 
 
 class Screen(BaseClient):
