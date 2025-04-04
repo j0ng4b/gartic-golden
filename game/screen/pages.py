@@ -3,7 +3,7 @@ import abc
 import pygame
 
 import game.screen.components as components
-from game.screen.screen import Screen
+from game.client.base import BaseClient
 from game.screen.utils.utilities import *
 
 
@@ -71,8 +71,7 @@ class BasePage(abc.ABC):
 
         Chamada para lidar com a entrada do usuário na página.
         '''
-        for component in self.components:
-            component.handle_input(event)
+        pass
 
     @abc.abstractmethod
     def reset(self):
@@ -129,6 +128,6 @@ class RegisterPage(BasePage):
     def play_button_click(self):
         # Executa o comando de registro no servidor e outras mágicas da classe
         # BaseClient
-        super(Screen, self.client).start()
+        BaseClient.start(self.client)
 
         self.goto_page('rooms')
