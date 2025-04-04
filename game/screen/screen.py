@@ -539,3 +539,6 @@ class Screen(BaseClient):
 
     def handle_canvas(self, canvas):
         print(f'canvas: {canvas}')
+
+    def handle_draw(self):
+        pass
