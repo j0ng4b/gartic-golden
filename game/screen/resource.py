@@ -1,3 +1,5 @@
+import os
+
 import pygame
 
 
@@ -7,11 +9,13 @@ class Resource:
         self.images = {}
         self.sounds = {}
 
+        self.base_path = os.path.dirname(__file__)
+
     def load_font(self, name, size, path=None):
         if path is not None:
             name = path
         else:
-            name = f'./assets/fonts/{name}.ttf'
+            name = f'{self.base_path}/assets/fonts/{name}.ttf'
 
         if f'{name}-{size}' not in self.fonts:
             self.fonts[f'{name}-{size}'] = pygame.font.Font(name, size)
