@@ -99,8 +99,8 @@ class RegisterPage(BasePage):
     def __init__(self):
         super().__init__()
 
-    def init(self, surface, resource, goto_page):
-        super().init(surface, resource, goto_page)
+    def init(self, client, surface, resource, goto_page):
+        super().init(client, surface, resource, goto_page)
 
         self.add_components(
             components.Button(
