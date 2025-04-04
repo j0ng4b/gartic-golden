@@ -51,7 +51,7 @@ class Button(BaseComponent):
 
         self.rect = pygame.Rect(x, y, width, height)
 
-        self.button_surface = pygame.Surface((width, height))
+        self.button_surface = pygame.Surface((width, height), pygame.SRCALPHA)
         self.button_surface.fill(Color.GREEN)
 
         self.round_clip = pygame.Surface((width, height), pygame.SRCALPHA)
