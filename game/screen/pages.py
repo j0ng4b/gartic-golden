@@ -2,6 +2,7 @@ import abc
 
 import pygame
 
+import game.screen.components as components
 from game.screen.utils.utilities import *
 
 
