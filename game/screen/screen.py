@@ -162,7 +162,7 @@ class Screen(BaseClient):
             self.pages[page_name] = page
 
             # Inicializa a página com o método init
-            page.init(self.surface, self.resource, self.goto_page)
+            page.init(self, self.surface, self.resource, self.goto_page)
 
     def goto_page(self, page_name):
         if page_name in self.pages:

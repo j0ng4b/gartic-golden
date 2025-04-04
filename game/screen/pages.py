@@ -3,6 +3,7 @@ import abc
 import pygame
 
 import game.screen.components as components
+from game.screen.screen import Screen
 from game.screen.utils.utilities import *
 
 
@@ -18,12 +19,15 @@ class BasePage(abc.ABC):
         # quando necessário
         self.goto_page = None
 
+        # Cliente usando para comunicar com o servidor
+        self.client = None
+
         # Lista de componentes que estão na página
         # Exemplo: botoes, textos, imagens
         self.components = []
 
     @abc.abstractmethod
-    def init(self, surface, resource, goto_page):
+    def init(self, client, surface, resource, goto_page):
         '''
         Inicializa a página
         --------------------
@@ -32,6 +36,7 @@ class BasePage(abc.ABC):
         deve ser chamada antes de usar a página e deve ser chamada apenas uma vez.
         '''
 
+        self.client = client
         self.surface = surface
         self.resource = resource
         self.goto_page = goto_page
@@ -122,4 +127,8 @@ class RegisterPage(BasePage):
         pass
 
     def play_button_click(self):
+        # Executa o comando de registro no servidor e outras mágicas da classe
+        # BaseClient
+        super(Screen, self.client).start()
+
         self.goto_page('rooms')
