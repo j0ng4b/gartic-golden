@@ -99,7 +99,14 @@ class RegisterPage(BasePage):
         super().init(surface, resource, goto_page)
 
         self.add_components(
-            components.Button('Jogar', 100, 100, 200, 50),
+            components.Button(
+                'Jogar',
+                Size.SCREEN_WIDTH // 2 - 100,
+                Size.SCREEN_HEIGHT // 2 + 100,
+                200,
+                50,
+                on_click=self.play_button_click,
+            ),
         )
 
     def update(self):
@@ -113,3 +120,6 @@ class RegisterPage(BasePage):
 
     def reset(self):
         pass
+
+    def play_button_click(self):
+        self.goto_page('rooms')
