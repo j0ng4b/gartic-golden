@@ -75,12 +75,18 @@ class Button(BaseComponent):
         self.surface.blit(self.button_surface, self.rect)
 
     def set_text(self, text):
+        if self.text == text:
+            return
+
         self.text = text
         self.update_text()
 
     def update_text(self):
         text_surface = self.font.render(self.text, True, Color.WHITE)
-        text_rect = text_surface.get_rect(center=self.rect.center)
+        text_rect = text_surface.get_rect()
 
         self.button_surface.fill(Color.GREEN)
-        self.button_surface.blit(text_surface, text_rect)
+        self.button_surface.blit(text_surface, [
+            self.rect.width / 2 - text_rect.width / 2,
+            self.rect.height / 2 - text_rect.height / 2
+        ])
