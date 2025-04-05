@@ -128,6 +128,12 @@ class InputField(BaseComponent):
         self.padding = 5
         self.text_offset = 0
 
+        # Processamento de teclas
+        self.key_pressed = None
+        self.key_repeat = False
+        self.key_repeat_time = 0
+        self.key_repeat_delay = 20
+
         self.input_surface = pygame.Surface((rect.width, rect.height), pygame.SRCALPHA)
         self.input_surface.fill(Color.BLACK)
 
@@ -146,7 +152,7 @@ class InputField(BaseComponent):
 
         # Cursor
         self.cursor_pos = 0
-        self.cursor_time = pygame.time.get_ticks()
+        self.cursor_time = 0
         self.cursor_width = 2
         self.cursor_visible = True
         self.cursor_interval = 500
@@ -159,10 +165,51 @@ class InputField(BaseComponent):
         self.font = resource.load_font('Acme-Regular', 30)
 
     def update(self):
+        if not self.active:
+            return
+
         current_time = pygame.time.get_ticks()
         if current_time - self.cursor_time > self.cursor_interval:
             self.cursor_visible = not self.cursor_visible
             self.cursor_time = current_time
+
+        if self.key_pressed is not None:
+            # Repetição de tecla
+            if self.key_repeat and current_time - self.key_repeat_time < self.key_repeat_delay:
+                return
+
+            # A repetição de tecla só passa a valer depois de 200ms da primeira tecla
+            if not self.key_repeat:
+                self.key_repeat = True
+                self.key_repeat_time = current_time + 200
+            else:
+                self.key_repeat_time = current_time
+
+
+            # Se a tecla pressionada for uma tecla de controle, trata o evento
+            if self.key_pressed[0] == pygame.K_BACKSPACE:
+                if len(self.text) > 0 and self.cursor_pos > 0:
+                    self.cursor_pos -= 1
+                    self.text.pop(self.cursor_pos)
+            elif self.key_pressed[0] == pygame.K_DELETE:
+                if self.cursor_pos < len(self.text):
+                    self.text.pop(self.cursor_pos)
+            elif self.key_pressed[0] == pygame.K_LEFT:
+                self.cursor_pos = max(0, self.cursor_pos - 1)
+            elif self.key_pressed[0] == pygame.K_RIGHT:
+                self.cursor_pos = min(len(self.text), self.cursor_pos + 1)
+            elif self.key_pressed[0] == pygame.K_HOME:
+                self.cursor_pos = 0
+            elif self.key_pressed[0] == pygame.K_END:
+                self.cursor_pos = len(self.text)
+            elif self.key_pressed[0] == pygame.K_RETURN:
+                if self.on_enter is not None:
+                    self.on_enter(''.join(self.text))
+            else:
+                self.text.insert(self.cursor_pos, self.key_pressed[1])
+                self.cursor_pos += 1
+
+            self.update_text_offset()
 
     def draw(self):
         if self.surface is None or self.font is None:
@@ -179,6 +226,7 @@ class InputField(BaseComponent):
         )
         self.input_surface.blit(text_surface, text_rect)
 
+        # Desenha o cursor
         if self.active and self.cursor_visible:
             cursor_pixel_pos = self.font.size(text[:self.cursor_pos])[0]
 
@@ -214,29 +262,14 @@ class InputField(BaseComponent):
             self.cursor_time = pygame.time.get_ticks()
             self.cursor_visible = True
 
-            if event.key == pygame.K_BACKSPACE:
-                if len(self.text) > 0 and self.cursor_pos > 0:
-                    self.cursor_pos -= 1
-                    self.text.pop(self.cursor_pos)
-            elif event.key == pygame.K_DELETE:
-                if self.cursor_pos < len(self.text):
-                    self.text.pop(self.cursor_pos)
-            elif event.key == pygame.K_LEFT:
-                self.cursor_pos = max(0, self.cursor_pos - 1)
-            elif event.key == pygame.K_RIGHT:
-                self.cursor_pos = min(len(self.text), self.cursor_pos + 1)
-            elif event.key == pygame.K_HOME:
-                self.cursor_pos = 0
-            elif event.key == pygame.K_END:
-                self.cursor_pos = len(self.text)
-            elif event.key == pygame.K_RETURN:
-                if self.on_enter is not None:
-                    self.on_enter(''.join(self.text))
-            else:
-                self.text.insert(self.cursor_pos, event.unicode)
-                self.cursor_pos += 1
+            self.key_pressed = (event.key, event.unicode)
+            self.key_repeat = False
+            self.key_repeat_time = pygame.time.get_ticks()
+        elif event.type == pygame.KEYUP:
+            if not self.active:
+                return
 
-            self.update_text_offset()
+            self.key_pressed = None
 
     def update_text_offset(self):
         if self.font is None:
