@@ -174,8 +174,8 @@ class InputField(BaseComponent):
                 self.cursor_width
             )
 
-    def handle_inpurt(self, event):
-        if event.type == pygame.MOUSEBUTTONDOWN:
+    def handle_input(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             self.active = self.rect.collidepoint(event.pos)
 
             # Se o campo de entrada estiver ativo, o cursor deve ser posicionado no final
