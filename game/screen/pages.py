@@ -104,12 +104,25 @@ class RegisterPage(BasePage):
         super().init(client, surface, resource, goto_page)
 
         self.add_components(
+            components.InputField(
+                pygame.Rect(
+                    Size.SCREEN_WIDTH // 2 - 150,
+                    Size.SCREEN_HEIGHT // 2,
+                    300,
+                    40
+                ),
+
+                'Digite seu nome',
+                on_enter=self.play_button_click,
+            ),
+
             components.Button(
                 'Jogar',
                 Size.SCREEN_WIDTH // 2 - 100,
                 Size.SCREEN_HEIGHT // 2 + 100,
                 200,
                 50,
+
                 on_click=self.play_button_click,
             ),
         )
@@ -126,9 +139,16 @@ class RegisterPage(BasePage):
     def reset(self):
         pass
 
-    def play_button_click(self):
+    def play_button_click(self, input_value=None):
+        if input_value is None:
+            input_value = self.components[0].get_value()
+
+        # Define o nome do cliente para o valor do input
+        self.client.name = input_value
+
         # Executa o comando de registro no servidor e outras mágicas da classe
         # BaseClient
         BaseClient.start(self.client)
 
         self.goto_page('rooms')
+
