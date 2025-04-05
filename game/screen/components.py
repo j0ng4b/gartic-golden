@@ -195,7 +195,7 @@ class InputField(BaseComponent):
             self.cursor_visible = True
 
             if event.key == pygame.K_BACKSPACE:
-                if len(self.text) > 0:
+                if len(self.text) > 0 and self.cursor_pos > 0:
                     self.cursor_pos -= 1
                     self.text.pop(self.cursor_pos)
             elif event.key == pygame.K_DELETE:
