@@ -98,6 +98,33 @@ class Label(BaseComponent):
         self.update_text()
 
 
+class Image(BaseComponent):
+    def __init__(self, path, x, y, width=None, height=None):
+        self.path = path
+        self.x = x
+        self.y = y
+
+        self.width = width
+        self.height = height
+
+        self.image_surface = None
+        self.image_rect = None
+
+    def init(self, surface, resource):
+        super().init(surface, resource)
+
+        self.image_surface = resource.load_image(self.path)
+        if self.width is not None and self.height is not None:
+            self.image_surface = pygame.transform.scale(
+                self.image_surface, (self.width, self.height))
+        self.image_rect = self.image_surface.get_rect(center=(self.x, self.y))
+
+    def draw(self):
+        if self.surface is None or self.image_surface is None:
+            return
+        self.surface.blit(self.image_surface, self.image_rect)
+
+
 class Button(BaseComponent):
     def __init__(self, text, x, y, width, height, on_click=None, on_hover=None):
         self.text = text
