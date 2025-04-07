@@ -104,6 +104,12 @@ class RegisterPage(BasePage):
         super().init(client, surface, resource, goto_page)
 
         self.add_components(
+            components.Label(
+                'Digite seu nick:',
+                Size.SCREEN_WIDTH // 2,
+                Size.SCREEN_HEIGHT // 2 - 50,
+            ),
+
             components.InputField(
                 pygame.Rect(
                     Size.SCREEN_WIDTH // 2 - 150,
@@ -112,7 +118,7 @@ class RegisterPage(BasePage):
                     40
                 ),
 
-                'Digite seu nome',
+                'elPabloPicasso',
                 on_enter=self.play_button_click,
             ),
 
