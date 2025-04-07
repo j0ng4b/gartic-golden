@@ -104,6 +104,12 @@ class RegisterPage(BasePage):
         super().init(client, surface, resource, goto_page)
 
         self.add_components(
+            components.Image(
+                'logo',
+                Size.SCREEN_WIDTH // 2,
+                Size.SCREEN_HEIGHT // 2 - 200,
+            ),
+
             components.Label(
                 'Digite seu nick:',
                 Size.SCREEN_WIDTH // 2,
