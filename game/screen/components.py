@@ -52,8 +52,9 @@ class BaseComponent:
 
 
 class Label(BaseComponent):
-    def __init__(self, text, x, y, font_size=40):
+    def __init__(self, text, x, y, text_color=Color.WHITE, font_size=40):
         self.text = text
+        self.text_color = text_color
 
         self.x = x
         self.y = y
@@ -73,15 +74,28 @@ class Label(BaseComponent):
     def draw(self):
         if self.surface is None or self.font is None:
             return
-
         self.surface.blit(self.label_surface, self.label_rect)
 
     def update_text(self):
         if self.font is None:
             return
 
-        self.label_surface = self.font.render(self.text, True, Color.WHITE)
+        self.label_surface = self.font.render(self.text, True, self.text_color)
         self.label_rect = self.label_surface.get_rect(center=(self.x, self.y))
+
+    def set_text(self, text):
+        if self.text == text:
+            return
+
+        self.text = text
+        self.update_text()
+
+    def set_color(self, color):
+        if self.text_color == color:
+            return
+
+        self.text_color = color
+        self.update_text()
 
 
 class Button(BaseComponent):
