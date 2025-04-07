@@ -169,6 +169,12 @@ class RoomsPage(BasePage):
     def __init__(self):
         super().__init__()
 
+        self.rooms = []
+
+        # Tempo para atualizar a lista de salas automaticamente
+        self.auto_list_time = 0
+        self.auto_list_interval = 1500
+
     def init(self, client, surface, resource, goto_page):
         super().init(client, surface, resource, goto_page)
 
@@ -199,14 +205,42 @@ class RoomsPage(BasePage):
     def update(self):
         super().update()
 
+        # Atualiza a lista de salas automaticamente
+        current_time = pygame.time.get_ticks()
+        if current_time - self.auto_list_time > self.auto_list_interval:
+            self.update_rooms_list()
+            self.auto_list_time = current_time
+
     def draw(self):
         super().draw()
 
+        # TODO: Desenhar a lista de salas
+
     def handle_input(self, event):
         super().handle_input(event)
+
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            # TODO: Lidar com o clique em uma sala
+            pass
 
     def reset(self):
         super().reset()
 
     def create_room_button_click(self):
         self.goto_page('create_room')
+
+    def update_rooms_list(self):
+        rooms = super().server_list_rooms()
+        if len(rooms) == 1 and rooms[0] == '':
+            return
+
+        self.rooms = []
+        for line in rooms[:-1]:
+            data = line.strip().split(",")
+            self.rooms.append({
+                "type": data[0],
+                "name": data[1],
+                "code": data[2],
+                "num_clients": data[3],
+                "max_clients": data[4]
+            })
