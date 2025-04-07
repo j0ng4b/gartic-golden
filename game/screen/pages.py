@@ -139,18 +139,6 @@ class RegisterPage(BasePage):
             ),
         )
 
-    def update(self):
-        super().update()
-
-    def draw(self):
-        super().draw()
-
-    def handle_input(self, event):
-        super().handle_input(event)
-
-    def reset(self):
-        super().reset()
-
     def play_button_click(self, input_value=None):
         if input_value is None:
             input_value = self.components[0].get_value()
