@@ -149,7 +149,7 @@ class RegisterPage(BasePage):
         super().handle_input(event)
 
     def reset(self):
-        pass
+        super().reset()
 
     def play_button_click(self, input_value=None):
         if input_value is None:
@@ -164,3 +164,37 @@ class RegisterPage(BasePage):
 
         self.goto_page('rooms')
 
+
+class RoomsPage(BasePage):
+    def __init__(self):
+        super().__init__()
+
+    def init(self, client, surface, resource, goto_page):
+        super().init(client, surface, resource, goto_page)
+
+        self.add_components(
+            components.Image(
+                'logo',
+                Size.SCREEN_WIDTH // 2,
+                Size.SCREEN_HEIGHT // 2 - 200,
+            ),
+
+            components.Label(
+                'Salas disponíveis',
+                Size.SCREEN_WIDTH // 2,
+                Size.SCREEN_HEIGHT // 2 - 110,
+            ),
+
+            components.Button(
+                'Criar sala',
+                Size.SCREEN_WIDTH // 2 - 94,
+                Size.SCREEN_HEIGHT // 2 + 210,
+                185,
+                50,
+
+                on_click=self.create_room_button_click,
+            ),
+        )
+
+    def create_room_button_click(self):
+        self.goto_page('create_room')
