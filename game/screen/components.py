@@ -51,6 +51,39 @@ class BaseComponent:
         pass
 
 
+class Label(BaseComponent):
+    def __init__(self, text, x, y, font_size=40):
+        self.text = text
+
+        self.x = x
+        self.y = y
+
+        self.font = None
+        self.font_size = font_size
+
+        self.label_rect = None
+        self.label_surface = None
+
+    def init(self, surface, resource):
+        super().init(surface, resource)
+
+        self.font = resource.load_font('Acme-Regular', self.font_size)
+        self.update_text()
+
+    def draw(self):
+        if self.surface is None or self.font is None:
+            return
+
+        self.surface.blit(self.label_surface, self.label_rect)
+
+    def update_text(self):
+        if self.font is None:
+            return
+
+        self.label_surface = self.font.render(self.text, True, Color.WHITE)
+        self.label_rect = self.label_surface.get_rect(center=(self.x, self.y))
+
+
 class Button(BaseComponent):
     def __init__(self, text, x, y, width, height, on_click=None, on_hover=None):
         self.text = text
