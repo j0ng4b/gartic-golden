@@ -25,7 +25,7 @@ class Resource:
         if path is not None:
             name = path
         else:
-            name = f'./assets/images/{name}.png'
+            name = f'{self.base_path}/assets/images/{name}.png'
 
         if name not in self.images:
             self.images[name] = pygame.image.load(name)
@@ -35,7 +35,7 @@ class Resource:
         if path is not None:
             name = path
         else:
-            name = f'./assets/sounds/{name}.ogg'
+            name = f'{self.base_path}/assets/sounds/{name}.ogg'
 
         if name not in self.sounds:
             self.sounds[name] = pygame.mixer.Sound(name)
