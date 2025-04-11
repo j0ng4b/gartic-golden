@@ -153,7 +153,7 @@ class RegisterPage(BasePage):
 
     def play_button_click(self, input_value=None):
         if input_value is None:
-            input_value = self.components[0].get_value()
+            input_value = self.components[1].get_text()
 
         # Define o nome do cliente para o valor do input
         self.client.name = input_value
