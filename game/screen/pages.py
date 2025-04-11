@@ -234,9 +234,9 @@ class RoomsPage(BasePage):
         if len(rooms) == 1 and rooms[0] == '':
             return
 
-        self.rooms = []
-        for line in rooms[:-1]:
-            data = line.strip().split(",")
+        self.rooms.clear()
+        for room in rooms:
+            data = room.strip().split(",")
             self.rooms.append({
                 "type": data[0],
                 "name": data[1],
