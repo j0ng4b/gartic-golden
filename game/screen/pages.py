@@ -230,7 +230,7 @@ class RoomsPage(BasePage):
         self.goto_page('create_room')
 
     def update_rooms_list(self):
-        rooms = super().server_list_rooms()
+        rooms = self.client.server_list_rooms()
         if len(rooms) == 1 and rooms[0] == '':
             return
 
