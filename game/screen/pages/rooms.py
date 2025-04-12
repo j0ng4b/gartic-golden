@@ -18,7 +18,7 @@ class RoomsPage(BasePage):
 
         # Cria a janela de senha da sala
         self.room_code = None
-        self.room_password_window = components.Window(400, 300)
+        self.room_password_window = components.Window(400, 100)
         self.room_password_window.hide()
 
         self.font = None
@@ -149,10 +149,7 @@ class RoomsPage(BasePage):
     def reset(self):
         super().reset()
 
-    def enter_on_private_room(self, password=None):
-        if password is None:
-            password = self.room_password_window.components[0].get_text()
-
+    def enter_on_private_room(self, password):
         # Entra na sala
         if self.client.server_enter_room(self.room_code, password):
             self.goto_page('play')

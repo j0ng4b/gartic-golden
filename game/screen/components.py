@@ -416,13 +416,13 @@ class Window(BaseComponent):
             self.hide()
             return
 
-        for component in self.components:
-            if hasattr(event, 'pos'):
-                event.pos = (
-                    event.pos[0] - self.rect.x,
-                    event.pos[1] - self.rect.y
-                )
+        if hasattr(event, 'pos'):
+            event.pos = (
+                event.pos[0] - self.rect.x,
+                event.pos[1] - self.rect.y
+            )
 
+        for component in self.components:
             component.handle_input(event)
 
     def add_components(self, *components):
