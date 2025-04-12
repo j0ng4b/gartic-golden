@@ -88,6 +88,8 @@ class RoomsPage(BasePage):
 
         # Verifica se o mouse está sobre uma sala
         for i in range(len(self.rooms)):
+            # TODO: Implementar scroll para mais salas
+
             room_rect = self.room_rect.move(
                 self.room_start_pos[0] + (i % 3) * 220,
                 self.room_start_pos[1] + (i // 3) * 100
@@ -101,6 +103,13 @@ class RoomsPage(BasePage):
             return
 
         for i in range(len(self.rooms)):
+            # Limita o número de salas a serem desenhadas
+            # até que seja implementado o scroll
+            if i >= 6:
+                break
+
+            # TODO: Implementar scroll para mais salas
+
             room = self.rooms[i]
 
             room_rect = self.room_rect.move(
@@ -134,6 +143,8 @@ class RoomsPage(BasePage):
                 return
 
             for i in range(len(self.rooms)):
+                # TODO: Implementar scroll para mais salas
+
                 room_rect = self.room_rect.move(
                     self.room_start_pos[0] + (i % 3) * 220,
                     self.room_start_pos[1] + (i // 3) * 100
