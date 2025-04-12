@@ -419,9 +419,10 @@ class Window(BaseComponent):
         for component in self.components:
             component.handle_input(event)
 
-    def add_component(self, component):
-        component.init(self.window_surface, self.resource)
-        self.components.append(component)
+    def add_components(self, *components):
+        for component in components:
+            component.init(self.window_surface, self.resource)
+            self.components.append(component)
 
     def show(self):
         self.visible = True
