@@ -16,6 +16,10 @@ class RoomsPage(BasePage):
         )
         self.room_rect = pygame.Rect(0, 0, 200, 80)
 
+        # Cria a janela de senha da sala
+        self.room_password_window = components.Window(400, 300)
+        self.room_password_window.hide()
+
         self.font = None
 
         # Tempo para atualizar a lista de salas automaticamente
@@ -49,6 +53,8 @@ class RoomsPage(BasePage):
 
                 on_click=self.create_room_button_click,
             ),
+
+            self.room_password_window,
         )
 
     def update(self):
@@ -73,7 +79,6 @@ class RoomsPage(BasePage):
     def draw(self):
         if self.surface is None or self.font is None:
             return
-        super().draw()
 
         for i in range(len(self.rooms)):
             room = self.rooms[i]
@@ -91,10 +96,16 @@ class RoomsPage(BasePage):
             text_rect = text_surface.get_rect(center=room_rect.center)
             self.surface.blit(text_surface, text_rect)
 
+        # Desenha os componentes depois das salas
+        super().draw()
+
     def handle_input(self, event):
         super().handle_input(event)
 
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            if self.room_password_window.is_visible():
+                return
+
             for i in range(len(self.rooms)):
                 room_rect = self.room_rect.move(
                     self.room_start_pos[0] + (i % 3) * 220,
@@ -110,7 +121,8 @@ class RoomsPage(BasePage):
 
                 room_password = None
                 if room['type'] == 'priv':
-                    pass
+                    self.room_password_window.show()
+                    continue
 
                 # Entra na sala
                 if self.client.server_enter_room(room['code'], room_password):

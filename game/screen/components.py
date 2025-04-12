@@ -429,3 +429,6 @@ class Window(BaseComponent):
     def hide(self):
         self.visible = False
 
+    def is_visible(self):
+        return self.visible
+
