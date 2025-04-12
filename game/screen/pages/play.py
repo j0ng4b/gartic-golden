@@ -58,6 +58,14 @@ class PlayPage(BasePage):
                 'Palpite...',
                 on_enter=self.send_guess,
             ),
+
+            components.Button(
+                'Sair',
+                35,
+                Size.SCREEN_HEIGHT - 45,
+                100, 35,
+                on_click=self.quit_room,
+            ),
         )
 
     def update(self):
@@ -125,6 +133,16 @@ class PlayPage(BasePage):
 
         # Envia o palpite para o servidor
         self.client.client_guess(input_value)
+
+    def quit_room(self):
+        if self.client is None:
+            return
+
+        # Envia a mensagem de saída para o servidor
+        self.client.server_leave_room()
+
+        # Retorna para a tela inicial
+        self.goto_page('rooms')
 
     def inside_round_rect(self, x, y):
         r = self.BORDER_RADIUS
