@@ -1,6 +1,6 @@
 import pygame
 
-from game.screen.utils.utilities import *
+from game.screen.constants import Color, Size
 
 
 class BaseComponent:
@@ -371,4 +371,61 @@ class InputField(BaseComponent):
         self.text = list(text)
         self.cursor_pos = len(self.text)
         self.update_text_offset()
+
+
+class Window(BaseComponent):
+    def __init__(self, width, height):
+        self.visible = True
+
+        self.rect = pygame.Rect(
+            Size.SCREEN_WIDTH // 2 - width // 2,
+            Size.SCREEN_HEIGHT // 2 - height // 2,
+            width, height
+        )
+        self.window_surface = pygame.Surface((width, height), pygame.SRCALPHA)
+
+        # Arredonda as bordas da janela
+        self.round_clip = pygame.Surface((width, height), pygame.SRCALPHA)
+        pygame.draw.rect(self.round_clip, Color.WHITE, (0, 0, width, height), border_radius=20)
+
+        self.components = []
+
+    def init(self, surface, resource):
+        super().init(surface, resource)
+
+    def draw(self):
+        if self.surface is None or not self.visible:
+            return
+
+        self.window_surface.fill(Color.LIGHT_GRAY)
+        self.window_surface.blit(self.round_clip, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
+
+        for component in self.components:
+            component.draw()
+        self.surface.blit(self.window_surface, self.rect)
+
+    def update(self):
+        if not self.visible:
+            return
+
+        for component in self.components:
+            component.update()
+
+    def handle_input(self, event):
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            self.hide()
+            return
+
+        for component in self.components:
+            component.handle_input(event)
+
+    def add_component(self, component):
+        component.init(self.window_surface, self.resource)
+        self.components.append(component)
+
+    def show(self):
+        self.visible = True
+
+    def hide(self):
+        self.visible = False
 
