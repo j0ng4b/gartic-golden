@@ -17,6 +17,7 @@ class RoomsPage(BasePage):
         self.room_rect = pygame.Rect(0, 0, 200, 80)
 
         # Cria a janela de senha da sala
+        self.room_code = None
         self.room_password_window = components.Window(400, 300)
         self.room_password_window.hide()
 
@@ -55,6 +56,15 @@ class RoomsPage(BasePage):
             ),
 
             self.room_password_window,
+        )
+
+        # Deve ser adicionado depois da janela ser inicializada
+        self.room_password_window.add_components(
+            components.InputField(
+                pygame.Rect(50, 50, 300, 40),
+                'Senha da sala',
+                on_enter=self.enter_on_private_room,
+            ),
         )
 
     def update(self):
@@ -121,6 +131,7 @@ class RoomsPage(BasePage):
 
                 room_password = None
                 if room['type'] == 'priv':
+                    self.room_code = room['code']
                     self.room_password_window.show()
                     continue
 
@@ -131,6 +142,17 @@ class RoomsPage(BasePage):
 
     def reset(self):
         super().reset()
+
+    def enter_on_private_room(self, password=None):
+        if password is None:
+            password = self.room_password_window.components[0].get_text()
+
+        # Entra na sala
+        if self.client.server_enter_room(self.room_code, password):
+            self.goto_page('play')
+            return
+
+        self.room_password_window.components[0].set_text('')
 
     def create_room_button_click(self):
         self.goto_page('create_room')
