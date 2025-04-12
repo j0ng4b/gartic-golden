@@ -71,6 +71,7 @@ class BasePage(abc.ABC):
 
         Chamada para lidar com a entrada do usuário na página.
         '''
+        pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
         for component in self.components:
             component.handle_input(event)
 

@@ -155,6 +155,9 @@ class Button(BaseComponent):
         self.surface.blit(self.button_surface, self.rect)
 
     def handle_input(self, event):
+        if self.rect.collidepoint(pygame.mouse.get_pos()):
+            pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
+
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1 and self.rect.collidepoint(event.pos):
                 if self.on_click is not None:
@@ -241,8 +244,6 @@ class InputField(BaseComponent):
     def update(self):
         if self.rect.collidepoint(pygame.mouse.get_pos()):
             pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_IBEAM)
-        else:
-            pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
 
         if not self.active:
             return
