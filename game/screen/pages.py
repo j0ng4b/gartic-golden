@@ -232,19 +232,24 @@ class RoomsPage(BasePage):
         self.goto_page('create_room')
 
     def update_rooms_list(self):
+        self.rooms.clear()
+
         rooms = self.client.server_list_rooms()
         if len(rooms) == 1 and rooms[0] == '':
             return
 
         self.rooms.clear()
         for room in rooms:
-            data = room.strip().split(",")
+            if room == '':
+                continue
+
+            data = room.strip().split(',')
             self.rooms.append({
-                "type": data[0],
-                "name": data[1],
-                "code": data[2],
-                "num_clients": data[3],
-                "max_clients": data[4]
+                'type': data[0],
+                'name': data[1],
+                'code': data[2],
+                'num_clients': data[3],
+                'max_clients': data[4]
             })
 
 
