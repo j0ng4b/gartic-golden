@@ -85,7 +85,8 @@ class RoomsPage(BasePage):
             pygame.draw.rect(self.surface, Color.WHITE, room_rect, border_radius=10)
 
             # Desenha o texto da sala
-            text = f"{room['name']} ({room['num_clients']}/{room['max_clients']})"
+            room_type = '[L] ' if room['type'] == 'priv' else ''
+            text = f"{room_type}{room['name']} ({room['num_clients']}/{room['max_clients']})"
             text_surface = self.font.render(text, True, Color.BLACK)
             text_rect = text_surface.get_rect(center=room_rect.center)
             self.surface.blit(text_surface, text_rect)
@@ -103,7 +104,18 @@ class RoomsPage(BasePage):
                 if not room_rect.collidepoint(pygame.mouse.get_pos()):
                     continue
 
-                # TODO: implementar a lógica de entrar na sala
+                room = self.rooms[i]
+                if room['num_clients'] >= room['max_clients']:
+                    continue
+
+                room_password = None
+                if room['type'] == 'priv':
+                    pass
+
+                # Entra na sala
+                if self.client.server_enter_room(room['code'], room_password):
+                    self.goto_page('play')
+                    return
 
     def reset(self):
         super().reset()
