@@ -279,6 +279,28 @@ class PlayPage(BasePage):
                 Size.SCREEN_WIDTH // 2 - 50,
                 Size.SCREEN_HEIGHT // 2 - 250,
             ),
+
+            components.InputField(
+                pygame.Rect(
+                    Size.SCREEN_WIDTH // 2 - 185,
+                    Size.SCREEN_HEIGHT - 45,
+                    250, 35
+                ),
+
+                'Mensagem...',
+                on_enter=self.send_chat_message,
+            ),
+
+            components.InputField(
+                pygame.Rect(
+                    Size.SCREEN_WIDTH // 2 + 95,
+                    Size.SCREEN_HEIGHT - 45,
+                    250, 35
+                ),
+
+                'Palpite...',
+                on_enter=self.send_guess,
+            ),
         )
 
     def update(self):
@@ -317,6 +339,32 @@ class PlayPage(BasePage):
 
     def reset(self):
         super().reset()
+
+    def send_chat_message(self, input_value=None):
+        if self.client is None:
+            return
+
+        if input_value is None:
+            input_value = self.components[1].get_text()
+
+        # Limpa o campo de texto
+        self.components[1].set_text('')
+
+        # Envia a mensagem para o servidor
+        self.client.client_chat(input_value)
+
+    def send_guess(self, input_value=None):
+        if self.client is None:
+            return
+
+        if input_value is None:
+            input_value = self.components[2].get_text()
+
+        # Limpa o campo de texto
+        self.components[2].set_text('')
+
+        # Envia o palpite para o servidor
+        self.client.client_guess(input_value)
 
     def inside_round_rect(self, x, y):
         r = self.BORDER_RADIUS
