@@ -76,6 +76,9 @@ class RoomsPage(BasePage):
             self.update_rooms_list()
             self.auto_list_time = current_time
 
+        if self.room_password_window.is_visible():
+            return
+
         # Verifica se o mouse está sobre uma sala
         for i in range(len(self.rooms)):
             room_rect = self.room_rect.move(
@@ -111,6 +114,9 @@ class RoomsPage(BasePage):
 
     def handle_input(self, event):
         super().handle_input(event)
+
+        if self.room_password_window.is_visible():
+            return
 
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if self.room_password_window.is_visible():
