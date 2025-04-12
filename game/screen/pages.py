@@ -281,7 +281,13 @@ class PlayPage(BasePage):
         )
 
     def update(self):
+        if self.client is None:
+            return
         super().update()
+
+        if self.client.state == 'draw':
+            canvas_data = pygame.surfarray.array3d(self.canvas)
+            self.client.client_canvas(canvas_data)
 
     def draw(self):
         if self.surface is None:
@@ -291,17 +297,20 @@ class PlayPage(BasePage):
         self.surface.blit(self.canvas, self.canvas_pos)
 
     def handle_input(self, event):
+        if self.client is None:
+            return
         super().handle_input(event)
 
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             pos = (event.pos[0] - self.canvas_pos[0], event.pos[1] - self.canvas_pos[1])
-            if self.inside_round_rect(*pos):
-                self.drawing = pos
+            if self.canvas.get_rect().collidepoint(pos) and self.inside_round_rect(*pos):
+                    self.drawing = pos
         elif event.type == pygame.MOUSEMOTION:
             pos = (event.pos[0] - self.canvas_pos[0], event.pos[1] - self.canvas_pos[1])
-            if self.drawing is not None and self.inside_round_rect(*pos):
-                pygame.draw.circle(self.canvas, Color.BLACK, self.drawing, 4)
-                self.drawing = pos
+            if self.canvas.get_rect().collidepoint(pos):
+                if self.drawing is not None and self.inside_round_rect(*pos):
+                    pygame.draw.circle(self.canvas, Color.BLACK, self.drawing, 4)
+                    self.drawing = pos
         elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
             self.drawing = None
 
