@@ -161,9 +161,13 @@ class TUIClient(BaseClient):
         room_password = None
         room_code = input('Código da sala: ')
         for room in self.rooms:
+            if room_code != room.split(',')[2]:
+                continue
+
             if room.startswith('priv'):
                 room_password = input('Senha da sala privada: ')
-                break
+
+            break
 
         if self.server_enter_room(room_code, room_password):
             print('Entrou na sala')
