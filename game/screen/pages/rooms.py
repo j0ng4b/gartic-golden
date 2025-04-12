@@ -60,6 +60,13 @@ class RoomsPage(BasePage):
 
         # Deve ser adicionado depois da janela ser inicializada
         self.room_password_window.add_components(
+            components.Label(
+                'Sala privada',
+                200,
+                20,
+                font_size=24,
+            ),
+
             components.InputField(
                 pygame.Rect(50, 50, 300, 40),
                 'Senha da sala',
@@ -155,7 +162,7 @@ class RoomsPage(BasePage):
             self.goto_page('play')
             return
 
-        self.room_password_window.components[0].set_text('')
+        self.room_password_window.components[1].set_text('')
 
     def create_room_button_click(self):
         self.goto_page('create_room')
