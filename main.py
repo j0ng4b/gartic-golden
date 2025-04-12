@@ -24,6 +24,7 @@ def main(args):
         import game.screen.pages as pages
         mode.register_page('register', pages.RegisterPage())
         mode.register_page('rooms', pages.RoomsPage())
+        mode.register_page('play', pages.PlayPage())
 
         # A primeira página a ser carregada é a de registro do usuário
         mode.goto_page('register')
