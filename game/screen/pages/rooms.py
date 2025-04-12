@@ -200,7 +200,7 @@ class RoomsPage(BasePage):
                 'name': data[1],
                 'code': data[2],
                 'theme': data[3],
-                'num_clients': data[4],
-                'max_clients': data[5]
+                'num_clients': int(data[4]),
+                'max_clients': int(data[5])
             })
 
