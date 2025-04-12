@@ -256,8 +256,16 @@ class RoomsPage(BasePage):
         super().handle_input(event)
 
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-            # TODO: Lidar com o clique em uma sala
-            pass
+            for i in range(len(self.rooms)):
+                room_rect = self.room_rect.move(
+                    self.room_start_pos[0] + (i % 3) * 220,
+                    self.room_start_pos[1] + (i // 3) * 100
+                )
+
+                if not room_rect.collidepoint(pygame.mouse.get_pos()):
+                    continue
+
+                # TODO: implementar a lógica de entrar na sala
 
     def reset(self):
         super().reset()
