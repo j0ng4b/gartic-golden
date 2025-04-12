@@ -1,10 +1,10 @@
 import pygame
 
 from game.client.base import BaseClient
-
-from game.screen.pages import BasePage
+from game.screen.pages.base import BasePage
 from game.screen.resource import Resource
 from game.screen.utils.utilities import *
+
 
 class Screen(BaseClient):
     def __init__(self, address, port):
