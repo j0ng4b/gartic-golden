@@ -364,3 +364,11 @@ class InputField(BaseComponent):
     def get_text(self):
         return ''.join(self.text)
 
+    def set_text(self, text):
+        if self.text == text:
+            return
+
+        self.text = list(text)
+        self.cursor_pos = len(self.text)
+        self.update_text_offset()
+
