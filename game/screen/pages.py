@@ -82,6 +82,7 @@ class BasePage(abc.ABC):
 
         Chamada para resetar os elementos que estão na página.
         '''
+        pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
         pass
 
     def add_components(self, *components):

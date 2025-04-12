@@ -239,6 +239,11 @@ class InputField(BaseComponent):
         self.font = resource.load_font('Acme-Regular', 30)
 
     def update(self):
+        if self.rect.collidepoint(pygame.mouse.get_pos()):
+            pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_IBEAM)
+        else:
+            pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
+
         if not self.active:
             return
 
