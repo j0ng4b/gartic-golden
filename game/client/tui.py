@@ -101,8 +101,9 @@ class TUIClient(BaseClient):
 
         elif opt == 2:
             name = input('Nome da sala: ')
+            theme = input('Tema da sala: ')
             password = input('Senha da sala: ')
-            ok = self.server_create_room('priv', name, password)
+            ok = self.server_create_room('priv', name, theme, password)
 
         if ok:
             print(f'Código da sala criada: {self.room}')
