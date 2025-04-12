@@ -536,10 +536,13 @@ class Screen(BaseClient):
         ...
 
     def handle_chat(self, client, message):
-        print(f'~{client["name"]}: {message}')
+        if hasattr(self.current_page, 'handle_chat'):
+            self.current_page.handle_chat(client, message)
 
     def handle_canvas(self, canvas):
-        print(f'canvas: {canvas}')
+        if hasattr(self.current_page, 'handle_canvas'):
+            self.current_page.handle_canvas(canvas)
 
     def handle_draw(self):
-        pass
+        if hasattr(self.current_page, 'handle_draw'):
+            self.current_page.handle_draw()
