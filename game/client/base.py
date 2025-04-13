@@ -97,13 +97,13 @@ class BaseClient(abc.ABC):
             with self.mutex:
                 self.msgs[args[0]] = []
 
-            self.room_clients[args[0]] = {
-                'name': None,
-                'msgs': [],
-                'state': None,
-                'score': 0,
-                'self': False,
-            }
+                self.room_clients[args[0]] = {
+                    'name': None,
+                    'msgs': [],
+                    'state': None,
+                    'score': 0,
+                    'self': False,
+                }
 
             self.room_clients[args[0]]['name'] = self.send_message('GREET', dest=args[0])
 
@@ -394,56 +394,64 @@ class BaseClient(abc.ABC):
     ### Métodos de comunicação com outros clientes
     ###
     def client_chat(self, message):
-        for client in self.room_clients.keys():
-            self.send_message('CHAT', message, dest=client, wait_response=False)
+        with self.mutex:
+            for client in self.room_clients.keys():
+                self.send_message('CHAT', message, dest=client, wait_response=False)
 
     def client_guess(self, guess):
-        for client_id, client in self.room_clients.items():
-            if client['state'] == 'draw':
-                response = self.send_message('GUESS', guess, dest=client_id)
+        with self.mutex:
+            for client_id, client in self.room_clients.items():
+                if client['state'] == 'draw':
+                    response = self.send_message('GUESS', guess, dest=client_id)
 
-                if response == 'OK':
-                    self.state = 'guess'
-                    return True
+                    if response == 'OK':
+                        self.state = 'guess'
+                        return True
 
-                self.error = response
-                return False
+                    self.error = response
+                    return False
         return False
 
     def client_draw(self, client):
-        for room_client in self.room_clients.keys():
-            self.send_message('DRAW', client, dest=room_client, wait_response=False)
+        with self.mutex:
+            for room_client in self.room_clients.keys():
+                self.send_message('DRAW', client, dest=room_client, wait_response=False)
 
     def client_finish_draw(self, reason):
-        for client in self.room_clients.keys():
-            self.send_message('FDRAW', reason, dest=client, wait_response=False)
+        with self.mutex:
+            for client in self.room_clients.keys():
+                self.send_message('FDRAW', reason, dest=client, wait_response=False)
 
     def client_skip(self):
-        for client in self.room_clients.keys():
-            self.send_message('SKIP', dest=client, wait_response=False)
+        with self.mutex:
+            for client in self.room_clients.keys():
+                self.send_message('SKIP', dest=client, wait_response=False)
 
     def client_got_the_right_answer(self, client):
-        for room_client in self.room_clients.keys():
-            if client == room_client:
-                continue
+        with self.mutex:
+            for room_client in self.room_clients.keys():
+                if client == room_client:
+                    continue
 
-            self.send_message('GTRA', client, dest=room_client, wait_response=False)
+                self.send_message('GTRA', client, dest=room_client, wait_response=False)
 
     def client_canvas(self, canvas_data):
         # Comprime a imagem e envia para todos os clientes
         canvas_data = zlib.compress(canvas_data)
         canvas_data = base64.b64encode(canvas_data).decode()
 
-        for client in self.room_clients.keys():
-            self.send_message('CANVAS', canvas_data, dest=client, wait_response=False)
+        with self.mutex:
+            for client in self.room_clients.keys():
+                self.send_message('CANVAS', canvas_data, dest=client, wait_response=False)
 
     def client_score(self):
         scores = []
-        for client in self.room_clients.keys():
-            response = self.send_message('SCORE', dest=client)
+        with self.mutex:
+            for client in self.room_clients.keys():
+                response = self.send_message('SCORE', dest=client)
 
-            if response is not None and response.isdigit():
-                scores.append(int(response))
+                if response is not None and response.isdigit():
+                    scores.append(int(response))
 
         freq = {}
         for score in scores:
