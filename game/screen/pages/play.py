@@ -26,6 +26,7 @@ class PlayPage(BasePage):
         self.canvas.blit(self.round_clip, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
 
         self.drawing = None
+        self.draw_points = []
 
     def init(self, client, surface, resource, goto_page):
         super().init(client, surface, resource, goto_page)
@@ -74,13 +75,16 @@ class PlayPage(BasePage):
         super().update()
 
         if self.client.state == 'draw':
-            canvas_data = pygame.surfarray.array3d(self.canvas)
-            self.client.client_canvas(canvas_data)
+            self.client.client_canvas(self.draw_points)
 
     def draw(self):
         if self.surface is None:
             return
         super().draw()
+
+        self.canvas.fill(Color.WHITE)
+        for point in self.draw_points:
+            pygame.draw.circle(self.canvas, Color.BLACK, point, 4)
 
         self.surface.blit(self.canvas, self.canvas_pos)
 
@@ -95,21 +99,33 @@ class PlayPage(BasePage):
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             pos = (event.pos[0] - self.canvas_pos[0], event.pos[1] - self.canvas_pos[1])
             if self.canvas.get_rect().collidepoint(pos) and self.inside_round_rect(*pos):
-                pygame.draw.circle(self.canvas, Color.BLACK, pos, 4)
                 self.drawing = pos
+
+                # Adiciona o ponto à lista de pontos desenhados
+                if pos not in self.draw_points:
+                    self.draw_points.append(pos)
         elif event.type == pygame.MOUSEMOTION:
             if self.drawing is None:
                 return
 
             pos = (event.pos[0] - self.canvas_pos[0], event.pos[1] - self.canvas_pos[1])
             if self.canvas.get_rect().collidepoint(pos) and self.inside_round_rect(*pos):
-                pygame.draw.circle(self.canvas, Color.BLACK, pos, 4)
                 self.drawing = pos
+
+                # Adiciona o ponto à lista de pontos desenhados
+                if pos not in self.draw_points:
+                    self.draw_points.append(pos)
         elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
             self.drawing = None
 
     def reset(self):
         super().reset()
+
+    def handle_canvas(self, canvas_data):
+        if self.client is None or self.client.state == 'draw':
+            return
+
+        self.draw_points = canvas_data
 
     def send_chat_message(self, input_value=None):
         if self.client is None:
