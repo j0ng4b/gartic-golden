@@ -89,19 +89,22 @@ class PlayPage(BasePage):
             return
         super().handle_input(event)
 
-        # if self.client.state != 'draw':
-            # return
+        if self.client.state != 'draw':
+            return
 
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             pos = (event.pos[0] - self.canvas_pos[0], event.pos[1] - self.canvas_pos[1])
             if self.canvas.get_rect().collidepoint(pos) and self.inside_round_rect(*pos):
-                    self.drawing = pos
+                pygame.draw.circle(self.canvas, Color.BLACK, pos, 4)
+                self.drawing = pos
         elif event.type == pygame.MOUSEMOTION:
+            if self.drawing is None:
+                return
+
             pos = (event.pos[0] - self.canvas_pos[0], event.pos[1] - self.canvas_pos[1])
-            if self.canvas.get_rect().collidepoint(pos):
-                if self.drawing is not None and self.inside_round_rect(*pos):
-                    pygame.draw.circle(self.canvas, Color.BLACK, self.drawing, 4)
-                    self.drawing = pos
+            if self.canvas.get_rect().collidepoint(pos) and self.inside_round_rect(*pos):
+                pygame.draw.circle(self.canvas, Color.BLACK, pos, 4)
+                self.drawing = pos
         elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
             self.drawing = None
 

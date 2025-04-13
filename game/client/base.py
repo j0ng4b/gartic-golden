@@ -29,10 +29,7 @@ class BaseClient(abc.ABC):
         self.socket.connect((socket.gethostbyname(address), int(port)))
 
         self.mutex = threading.Lock()
-        self.msgs = {
-            '': [],
-        }
-
+        self.msgs = { '': [] }
         self.error = None
 
     def start(self):
