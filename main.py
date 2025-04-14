@@ -1,5 +1,6 @@
 import argparse
 import logging
+import sys
 
 from game.config import Config
 
@@ -11,6 +12,9 @@ def main(args):
         args.address = Config.SERVER_ADDRESS
         args.port = Config.SERVER_PORT
 
+    # Força o modo GUI se o script estiver sendo executado como um executável
+    if getattr(sys, 'frozen', False):
+        args.gui = True
 
     mode = None
     if args.server:
