@@ -84,8 +84,10 @@ class BaseClient(abc.ABC):
         self.client_finish_draw(reason)
 
         # Inicia o próximo turno
-        # TODO: validar fim das rodadas
-        self.draw_next_client()
+        if len(self.draw_order) > 0:
+            # Se ainda houver clientes na lista, inicia o próximo turno
+            self.draw_next_client()
+        # TODO: Se não houver mais clientes para desenhar, o jogo termina
 
     ###
     ### Métodos de comunicação: manipulação e análise de mensagens
