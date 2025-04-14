@@ -11,6 +11,8 @@ class BaseClient(abc.ABC):
     FRAGMENT_PREFIX = 'FRAG#'
     MESSAGE_MAX_SIZE = 1024
 
+    DRAW_TIMEOUT = 90  # Tempo máximo para o cliente desenhar (em segundos)
+
     def __init__(self, address, port):
         if address is None or port is None:
             raise ValueError('server address and port must be set')
@@ -26,8 +28,10 @@ class BaseClient(abc.ABC):
         # Estado do jogo
         self.name = 'Player'
 
+        self.draw_order = []
         self.draw_theme = None
         self.draw_object = None
+        self.draw_timer = None
 
         # Contexto de execução, armazena informações de execução de cada thread
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -51,6 +55,37 @@ class BaseClient(abc.ABC):
 
         self.server_register()
 
+    def init_game(self):
+        self.draw_order = self.room_clients.keys()
+        random.shuffle(self.draw_order)
+
+        self.draw_next_client()
+
+    def draw_next_client(self):
+        # Seleciona o próximo cliente a desenhar e notifica todos os outros clientes
+        client = self.draw_order.pop(0)
+        self.send_message('DRAW', client)
+
+        with self.mutex:
+            self.room_clients[client]['state'] = 'draw'
+            for client in self.room_clients.keys():
+                self.room_clients[client]['state'] = None
+
+        self.draw_timer = threading.Timer(self.DRAW_TIMEOUT, self.end_draw_turn, args=['timeout'])
+        self.draw_timer.start()
+
+    def end_draw_turn(self, reason):
+        # Finaliza o turno do cliente que está desenhando e notifica todos os outros clientes
+        with self.mutex:
+            for client in self.room_clients.keys():
+                self.room_clients[client]['state'] = None
+
+        # Notifica todos os clientes que o turno acabou
+        self.client_finish_draw(reason)
+
+        # Inicia o próximo turno
+        # TODO: validar fim das rodadas
+        self.draw_next_client()
 
     ###
     ### Métodos de comunicação: manipulação e análise de mensagens
@@ -140,7 +175,7 @@ class BaseClient(abc.ABC):
         elif msg_type == 'PLAY':
             pass
         elif msg_type == 'GAME':
-            pass
+            self.init_game()
 
         return None
 
@@ -221,7 +256,7 @@ class BaseClient(abc.ABC):
                 self.state = 'draw'
 
                 # Chama o método de tratamento de desenho a nível de interface
-                self.handle_draw()
+                self.initiate_drawing()
 
                 return 'OK'
             elif self.room_clients.get(args[0]) is None:
@@ -285,7 +320,7 @@ class BaseClient(abc.ABC):
         raise NotImplementedError('handle_chat must be implemented')
 
     @abc.abstractmethod
-    def handle_draw(self):
+    def initiate_drawing(self):
         '''
         Função que deve ser implementada também pela interface para que possa
         seguir com o processo de iniciar o desenho: escolher uma palavra,
