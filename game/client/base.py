@@ -38,6 +38,10 @@ class BaseClient(abc.ABC):
         self.msg_id = random.randint(0, 1000000)
         self.error = None
 
+        # Informações de fragmentação de mensagens
+        self.fragments = {}
+        self.fragment_mutex = threading.Lock()
+
     def start(self):
         # Inicia o a comunicação com o servidor, deve ser inciado antes de
         # qualquer coisa devido a pilha de mensagem
@@ -55,18 +59,37 @@ class BaseClient(abc.ABC):
         while True:
             msg = self.socket.recv(2048).decode()
 
-            # Verifica se a mensagem está no formato correto
-            if '/' not in msg or ':' not in msg:
-                print('Mensagem inválida:', msg)
-                continue
-
-
             threading.Thread(
                 target=self.parser_message,
                 args=(msg,)
             ).start()
 
     def parser_message(self, msg):
+        if msg.startswith(self.FRAGMENT_PREFIX):
+            header, msg = msg[len(self.FRAGMENT_PREFIX):].split('#', 1)
+            msg_id, fragment_id, total_fragments = header.split(';')
+
+            with self.fragment_mutex:
+                if msg_id not in self.fragments:
+                    self.fragments[msg_id] = {}
+                self.fragments[msg_id][int(fragment_id)] = msg
+
+                # Verifica se todos os fragmentos já foram recebidos
+                if len(self.fragments[msg_id]) == int(total_fragments):
+                    # Ordena os fragmentos
+                    self.fragments[msg_id] = dict(sorted(self.fragments[msg_id].items()))
+
+                    # Junta os fragmentos e remove a mensagem da pilha
+                    msg = ''.join(self.fragments[msg_id].values())
+                    del self.fragments[msg_id]
+                else:
+                    return
+
+        # Verifica se a mensagem está no formato correto
+        if '/' not in msg or ':' not in msg:
+            print('Mensagem inválida:', msg)
+            return
+
         dest, msg = msg.split('/', 1)
         msg_type, args = msg.split(':', 1)
         args = args.split(';')
