@@ -212,7 +212,7 @@ class InputField(BaseComponent):
         self.key_repeat_delay = 20
 
         self.input_surface = pygame.Surface((rect.width, rect.height), pygame.SRCALPHA)
-        self.input_surface.fill(Color.BLACK)
+        self.input_surface.fill(Color.WHITE)
 
         # Arredonda as bordas do campo de entrada
         self.round_clip = pygame.Surface((rect.width, rect.height), pygame.SRCALPHA)
