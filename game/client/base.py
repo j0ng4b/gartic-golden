@@ -98,7 +98,6 @@ class BaseClient(abc.ABC):
         if msg_type == 'RESP':
             with self.mutex:
                 self.msgs[dest].append(args[0])
-
             return
 
         # Caso os argumentos sejam vazios, transforma em uma lista vazia

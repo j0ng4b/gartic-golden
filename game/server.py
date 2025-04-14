@@ -74,7 +74,7 @@ class Server:
 
             with self.fragments_mutex:
                 if msg_id not in self.fragments:
-                    dest = msg.split('/', 1)[0]
+                    dest, msg = msg.split('/', 1)
                     self.fragments[msg_id] = { 'dest': dest, 'count': 0 }
                 else:
                     dest = self.fragments[msg_id]['dest']
@@ -333,8 +333,9 @@ class Server:
             return 'Cliente não está em nenhuma sala'
 
         if header is not None:
-            # Se é um fragmento, adiciona o cabeçalho na mensagem
-            # e por isso o destino não é mais necessário
+            # Inclui o destino apenas no primeiro fragmento
+            if int(header.split(';')[1]) == 1:
+                msg = f'{client["id"]}/{msg}'
             msg = f'{self.FRAGMENT_PREFIX}{header}#{msg}'
         else:
             msg = f'{client["id"]}/{msg}'
