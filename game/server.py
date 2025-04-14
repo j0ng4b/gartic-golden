@@ -103,7 +103,8 @@ class Server:
         if header is not None:
             msg_id, _, total_fragments = header.split(';')
             with self.fragments_mutex:
-                if self.fragments[msg_id]['count'] == int(total_fragments):
+                count = self.fragments.get(msg_id, {}).setdefault('count', 0)
+                if count == int(total_fragments):
                     del self.fragments[msg_id]
 
     def parse_server_message(self, msg_type, args, address):
