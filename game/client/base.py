@@ -62,8 +62,8 @@ class BaseClient(abc.ABC):
             ).start()
 
     def parser_message(self, msg):
-        dest, msg = msg.split('/')
-        msg_type, args = msg.split(':')
+        dest, msg = msg.split('/', 1)
+        msg_type, args = msg.split(':', 1)
         args = args.split(';')
 
         # Verifica se a mensagem é uma resposta
