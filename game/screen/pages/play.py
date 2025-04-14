@@ -20,6 +20,7 @@ class PlayPage(BasePage):
 
         self.drawing = None
         self.draw_points = []
+        self.draw_points_changed = True
 
     def init(self, client, surface, resource, goto_page):
         super().init(client, surface, resource, goto_page)
@@ -67,7 +68,8 @@ class PlayPage(BasePage):
             return
         super().update()
 
-        if self.client.state == 'draw':
+        if self.client.state == 'draw' and self.draw_points_changed:
+            self.draw_points_changed = False
             self.client.client_canvas(self.draw_points)
 
     def draw(self):
@@ -96,6 +98,7 @@ class PlayPage(BasePage):
 
                 # Adiciona o ponto à lista de pontos desenhados
                 self.draw_points.append(pos)
+                self.draw_points_changed = True
         elif event.type == pygame.MOUSEMOTION:
             if self.drawing is None:
                 return
@@ -106,6 +109,7 @@ class PlayPage(BasePage):
 
                 # Adiciona o ponto à lista de pontos desenhados
                 self.draw_points.append(pos)
+                self.draw_points_changed = True
         elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
             self.drawing = None
 
