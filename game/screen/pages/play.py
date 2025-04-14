@@ -82,12 +82,6 @@ class PlayPage(BasePage):
         self.surface.blit(self.canvas, self.canvas_pos)
 
     def handle_input(self, event):
-        def is_far_enough(pos, min_distance=6):
-            for p in self.draw_points:
-                if (p[0] - pos[0])**2 + (p[1] - pos[1])**2 < min_distance**2:
-                    return False
-            return True
-
         if self.client is None:
             return
         super().handle_input(event)
@@ -101,8 +95,7 @@ class PlayPage(BasePage):
                 self.drawing = pos
 
                 # Adiciona o ponto à lista de pontos desenhados
-                if is_far_enough(pos):
-                    self.draw_points.append(pos)
+                self.draw_points.append(pos)
         elif event.type == pygame.MOUSEMOTION:
             if self.drawing is None:
                 return
@@ -112,8 +105,7 @@ class PlayPage(BasePage):
                 self.drawing = pos
 
                 # Adiciona o ponto à lista de pontos desenhados
-                if is_far_enough(pos):
-                    self.draw_points.append(pos)
+                self.draw_points.append(pos)
         elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
             self.drawing = None
 
