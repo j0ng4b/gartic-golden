@@ -16,16 +16,14 @@ def test_valid_destination(server):
 
     address = (server.clients[0]['address'], server.clients[0]['port'])
     dest = 'client2'
-    msg_type = 'TEST'
-    args = ['test']
+    msg = 'TEST:test'
 
-
-    response = server.routes_client_message(dest, msg_type, args, address)
+    response = server.routes_client_message(None, dest, msg, address)
     assert response is None
 
     expected_calls = [
         (
-            f'{server.clients[0]['id']}/{msg_type}:{args[0]}'.encode(),
+            f'{server.clients[0]['id']}/{msg}'.encode(),
             (server.clients[1]['address'], server.clients[1]['port'])
         )
     ]
@@ -35,10 +33,9 @@ def test_valid_destination(server):
 def test_client_not_registered(server):
     address = ('127.0.0.1', 5000)
     dest = 'client2'
-    msg_type = 'TEST'
-    args = ['test']
+    msg = 'TEST:test'
 
-    response = server.routes_client_message(dest, msg_type, args, address)
+    response = server.routes_client_message(None, dest, msg, address)
     assert response == 'Cliente não registrado'
     assert len(server.socket.sendto_calls) == 0
 
@@ -50,11 +47,10 @@ def test_client_not_in_any_room(server):
 
     address = ('127.0.0.1', 5000)
     dest = 'client2'
-    msg_type = 'TEST'
-    args = ['test']
+    msg = 'TEST:test'
 
 
-    response = server.routes_client_message(dest, msg_type, args, address)
+    response = server.routes_client_message(None, dest, msg, address)
     assert response == 'Cliente não está em nenhuma sala'
     assert len(server.socket.sendto_calls) == 0
 
@@ -75,11 +71,10 @@ def test_destination_not_found(server):
 
     address = ('127.0.0.1', 5000)
     dest = 'client2'
-    msg_type = 'TEST'
-    args = ['test']
+    msg = 'TEST:test'
 
 
-    response = server.routes_client_message(dest, msg_type, args, address)
+    response = server.routes_client_message(None, dest, msg, address)
     assert response == 'Cliente destino não encontrado'
     assert len(server.socket.sendto_calls) == 0
 
@@ -100,10 +95,9 @@ def test_no_send_to_self(server):
 
     address = ('127.0.0.1', 5000)
     dest = 'client1'
-    msg_type = 'TEST'
-    args = ['test']
+    msg = 'TEST:test'
 
 
-    response = server.routes_client_message(dest, msg_type, args, address)
+    response = server.routes_client_message(None, dest, msg, address)
     assert response == 'Cliente destino é o próprio cliente'
     assert len(server.socket.sendto_calls) == 0
