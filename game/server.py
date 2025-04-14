@@ -74,7 +74,7 @@ class Server:
 
             with self.fragments_mutex:
                 if msg_id not in self.fragments:
-                    dest, msg = msg.split('/', 1)
+                    dest = msg.split('/', 1)[0]
                     self.fragments[msg_id] = { 'dest': dest, 'count': 0 }
                 else:
                     dest = self.fragments[msg_id]['dest']
