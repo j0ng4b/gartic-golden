@@ -331,9 +331,12 @@ class Server:
         if room is None:
             return 'Cliente não está em nenhuma sala'
 
-        msg = f'{client["id"]}/{msg}'
         if header is not None:
+            # Se é um fragmento, adiciona o cabeçalho na mensagem
+            # e por isso o destino não é mais necessário
             msg = f'{self.FRAGMENT_PREFIX}{header}#{msg}'
+        else:
+            msg = f'{client["id"]}/{msg}'
 
         for room_client in room['clients']:
             if room_client[0] == dest:
