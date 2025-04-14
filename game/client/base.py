@@ -1,5 +1,6 @@
 import abc
 import base64
+import json
 import socket
 import threading
 import zlib
@@ -233,6 +234,7 @@ class BaseClient(abc.ABC):
             # Decodifica a imagem e envia para o método de tratamento
             canvas_data = base64.b64decode(args[0])
             canvas_data = zlib.decompress(canvas_data)
+            canvas_data = json.loads(canvas_data.decode('utf-8'))
 
             # Chama o método de tratamento da imagem a nível de interface
             self.handle_canvas(canvas_data)
@@ -434,6 +436,7 @@ class BaseClient(abc.ABC):
 
     def client_canvas(self, canvas_data):
         # Comprime a imagem e envia para todos os clientes
+        canvas_data = json.dumps(canvas_data).encode('utf-8')
         canvas_data = zlib.compress(canvas_data)
         canvas_data = base64.b64encode(canvas_data).decode()
 

@@ -18,13 +18,6 @@ class PlayPage(BasePage):
         self.canvas = pygame.Surface((self.CANVAS_WIDTH, self.CANVAS_HEIGHT), pygame.SRCALPHA)
         self.canvas.fill(Color.WHITE)
 
-        self.round_clip = pygame.Surface((self.CANVAS_WIDTH, self.CANVAS_HEIGHT), pygame.SRCALPHA)
-        pygame.draw.rect(self.round_clip, Color.WHITE,
-                         (0, 0, self.CANVAS_WIDTH, self.CANVAS_HEIGHT),
-                         border_radius=self.BORDER_RADIUS)
-
-        self.canvas.blit(self.round_clip, (0, 0), special_flags=pygame.BLEND_RGBA_MIN)
-
         self.drawing = None
         self.draw_points = []
 
@@ -89,6 +82,12 @@ class PlayPage(BasePage):
         self.surface.blit(self.canvas, self.canvas_pos)
 
     def handle_input(self, event):
+        def is_far_enough(pos, min_distance=6):
+            for p in self.draw_points:
+                if (p[0] - pos[0])**2 + (p[1] - pos[1])**2 < min_distance**2:
+                    return False
+            return True
+
         if self.client is None:
             return
         super().handle_input(event)
@@ -102,7 +101,7 @@ class PlayPage(BasePage):
                 self.drawing = pos
 
                 # Adiciona o ponto à lista de pontos desenhados
-                if pos not in self.draw_points:
+                if is_far_enough(pos):
                     self.draw_points.append(pos)
         elif event.type == pygame.MOUSEMOTION:
             if self.drawing is None:
@@ -113,13 +112,14 @@ class PlayPage(BasePage):
                 self.drawing = pos
 
                 # Adiciona o ponto à lista de pontos desenhados
-                if pos not in self.draw_points:
+                if is_far_enough(pos):
                     self.draw_points.append(pos)
         elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
             self.drawing = None
 
     def reset(self):
         super().reset()
+        self.draw_points.clear()
 
     def handle_canvas(self, canvas_data):
         if self.client is None or self.client.state == 'draw':
