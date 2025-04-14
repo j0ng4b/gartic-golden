@@ -63,8 +63,8 @@ class Server:
             ).start()
 
     def parse_message(self, msg, address):
-        dest, msg = msg.split('/')
-        msg_type, args = msg.split(':')
+        dest, msg = msg.split('/', 1)
+        msg_type, args = msg.split(':', 1)
         args = args.split(';')
         if len(args) == 1 and args[0] == '':
             args = []
