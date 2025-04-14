@@ -20,7 +20,9 @@ class PlayPage(BasePage):
 
         self.drawing = None
         self.draw_points = []
+        self.draw_points_time = 0
         self.draw_points_changed = True
+        self.draw_points_send_interval = 0.5
 
     def init(self, client, surface, resource, goto_page):
         super().init(client, surface, resource, goto_page)
@@ -69,8 +71,11 @@ class PlayPage(BasePage):
         super().update()
 
         if self.client.state == 'draw' and self.draw_points_changed:
-            self.draw_points_changed = False
-            self.client.client_canvas(self.draw_points)
+            current_time = pygame.time.get_ticks()
+            if current_time - self.draw_points_time >= self.draw_points_send_interval:
+                self.draw_points_time = current_time
+                self.draw_points_changed = False
+                self.client.client_canvas(self.draw_points)
 
     def draw(self):
         if self.surface is None:
@@ -93,22 +98,24 @@ class PlayPage(BasePage):
 
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             pos = (event.pos[0] - self.canvas_pos[0], event.pos[1] - self.canvas_pos[1])
-            if self.canvas.get_rect().collidepoint(pos) and self.inside_round_rect(*pos):
+            if self.canvas.get_rect().collidepoint(pos):
                 self.drawing = pos
 
                 # Adiciona o ponto à lista de pontos desenhados
                 self.draw_points.append(pos)
+                self.draw_points_time = pygame.time.get_ticks()
                 self.draw_points_changed = True
         elif event.type == pygame.MOUSEMOTION:
             if self.drawing is None:
                 return
 
             pos = (event.pos[0] - self.canvas_pos[0], event.pos[1] - self.canvas_pos[1])
-            if self.canvas.get_rect().collidepoint(pos) and self.inside_round_rect(*pos):
+            if self.canvas.get_rect().collidepoint(pos):
                 self.drawing = pos
 
                 # Adiciona o ponto à lista de pontos desenhados
                 self.draw_points.append(pos)
+                self.draw_points_time = pygame.time.get_ticks()
                 self.draw_points_changed = True
         elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
             self.drawing = None
@@ -158,20 +165,4 @@ class PlayPage(BasePage):
 
         # Retorna para a tela inicial
         self.goto_page('rooms')
-
-    def inside_round_rect(self, x, y):
-        r = self.BORDER_RADIUS
-        w = self.CANVAS_WIDTH
-        h = self.CANVAS_HEIGHT
-
-        if x < r and y < r:
-            return (x - r)**2 + (y - r)**2 <= r*r
-        elif x > w - r and y < r:
-            return (x - (w - r))**2 + (y - r)**2 <= r*r
-        elif x < r and y > h - r:
-            return (x - r)**2 + (y - (h - r))**2 <= r*r
-        elif x > w - r and y > h - r:
-            return (x - (w - r))**2 + (y - (h - r))**2 <= r*r
-        else:
-            return True
 
