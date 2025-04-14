@@ -4,6 +4,8 @@ import uuid
 
 
 class Server:
+    FRAGMENT_PREFIX = 'FRAG#'
+
     def __init__(self, address, port):
         if address is None or port is None:
             raise ValueError('server address and port must be set')
@@ -47,39 +49,62 @@ class Server:
         # }
         self.clients = []
 
+        self.fragments = {}
+        self.fragments_mutex = threading.Lock()
+
     def start(self):
         while True:
-            msg, address = self.socket.recvfrom(1024)
+            msg, address = self.socket.recvfrom(2048)
+            msg = msg.decode()
 
             # Parse message
-            msg = msg.decode()
-            if '/' not in msg or ':' not in msg:
-                self.send_message(address, 'RESP', f'Mensagem inválida: {msg}')
-                continue
-
             threading.Thread(
                 target=self.parse_message,
                 args=(msg, address)
             ).start()
 
     def parse_message(self, msg, address):
-        dest, msg = msg.split('/', 1)
-        msg_type, args = msg.split(':', 1)
-        args = args.split(';')
-        if len(args) == 1 and args[0] == '':
-            args = []
+        dest = ''
+
+        # Verifica se a mensagem é um fragmento
+        header = None
+        if msg.startswith(self.FRAGMENT_PREFIX):
+            header, msg = msg[len(self.FRAGMENT_PREFIX):].split('#', 1)
+            msg_id = header.split(';')[0]
+
+            with self.fragments_mutex:
+                if msg_id not in self.fragments:
+                    dest, msg = msg.split('/', 1)
+                    self.fragments[msg_id] = { 'dest': dest, 'count': 0 }
+                else:
+                    dest = self.fragments[msg_id]['dest']
+                self.fragments[msg_id]['count'] += 1
+        else:
+            dest, msg = msg.split('/', 1)
 
         # Verifica se a mensagem é para o servidor
         if dest == '':
+            msg_type, args = msg.split(':', 1)
+            args = args.split(';')
+            if len(args) == 1 and args[0] == '':
+                args = []
+
             response = self.parse_server_message(msg_type, args, address)
             self.send_message(address, 'RESP', f'{response}')
             return
 
         # Repassa a mensagens para o cliente destino
-        response = self.routes_client_message(dest, msg_type, args, address)
+        response = self.routes_client_message(header, dest, msg, address)
         if response is not None:
             self.send_message(address, 'RESP', response)
 
+        # Verifica se a mensagem é um fragmento e se o cliente destino já
+        # recebeu todos os fragmentos então remove o fragmento
+        if header is not None:
+            msg_id, _, total_fragments = header.split(';')
+            with self.fragments_mutex:
+                if self.fragments[msg_id]['count'] == int(total_fragments):
+                    del self.fragments[msg_id]
 
     def parse_server_message(self, msg_type, args, address):
         if msg_type == 'REGISTER':
@@ -294,7 +319,7 @@ class Server:
 
         return 'Tipo de mensagem inválido'
 
-    def routes_client_message(self, dest, msg_type, args, address):
+    def routes_client_message(self, header, dest, msg, address):
         client = self.get_client(address[0], address[1])
         if client is None:
             return 'Cliente não registrado'
@@ -306,10 +331,13 @@ class Server:
         if room is None:
             return 'Cliente não está em nenhuma sala'
 
-        msg = f'{client["id"]}/{msg_type}:{";".join(args)}'.encode()
+        msg = f'{client["id"]}/{msg}'
+        if header is not None:
+            msg = f'{self.FRAGMENT_PREFIX}{header}#{msg}'
+
         for room_client in room['clients']:
             if room_client[0] == dest:
-                self.socket.sendto(msg, (room_client[1], room_client[2]))
+                self.socket.sendto(msg.encode(), (room_client[1], room_client[2]))
                 return None
 
         return 'Cliente destino não encontrado'
