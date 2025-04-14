@@ -24,6 +24,17 @@ Onde:
 - `arg1` é o primeiro argumento da lista de argumentos.
 - `argN` é o último argumento da lista de argumentos.
 
+Outra importante informação é que mensagens longas são fragmentadas e remontadas no lado do cliente, por exemplo,
+mensagens do tipo `CANVAS` têm a tendência de ficarem muito longas para serem transmitidas por isso são fragmentadas.
+
+    FRAG#id_mensagem;id_fragmento;total_fragmentos#mensagem_fragmentada
+
+Onde:
+- `id_mensagem` é um identificador da mensagem transmitida.
+- `id_fragmento` é o índice da mensagem fragmentada, usado para reconstruir a mensagem.
+- `total_fragmentos` é o número de fragmentos qual a mensagem foi dividido.
+- `mensagem_fragmentada` é a parte da mensagem que será transmitida neste fragmento.
+
 > [!IMPORTANT]
 > o campo `cliente` pode ser vazio o que significa que o servidor que pode estar esperando uma resposta.
 > 
