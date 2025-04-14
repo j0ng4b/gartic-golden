@@ -25,6 +25,12 @@ Onde:
 - `arg1` é o primeiro argumento da lista de argumentos.
 - `argN` é o último argumento da lista de argumentos.
 
+> [!WARNING]
+> O cliente pode enviar uma mensagem fragmentada nesse caso ela é repassada para o outro cliente
+> pois o servidor não recebe mensagens fragmentadas (não há necessidade).
+>
+> Para mais informações consulte [client.md](https://github.com/j0ng4b/gartic-golden/blob/main/docs/protocols/client.md).
+
 > [!NOTE]
 > o campo `cliente` pode ser vazio o que faz com que o servidor interprete a mensagem como sendo direcionada
 > para ele.
