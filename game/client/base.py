@@ -1,12 +1,16 @@
 import abc
 import base64
 import json
+import random
 import socket
 import threading
 import zlib
 
 
 class BaseClient(abc.ABC):
+    FRAGMENT_PREFIX = 'FRAG#'
+    MESSAGE_MAX_SIZE = 1024
+
     def __init__(self, address, port):
         if address is None or port is None:
             raise ValueError('server address and port must be set')
@@ -31,6 +35,7 @@ class BaseClient(abc.ABC):
 
         self.mutex = threading.Lock()
         self.msgs = { '': [] }
+        self.msg_id = random.randint(0, 1000000)
         self.error = None
 
     def start(self):
@@ -48,7 +53,7 @@ class BaseClient(abc.ABC):
     ###
     def handle_messages(self):
         while True:
-            msg = self.socket.recv(1024).decode()
+            msg = self.socket.recv(2048).decode()
 
             # Verifica se a mensagem está no formato correto
             if '/' not in msg or ':' not in msg:
@@ -297,8 +302,28 @@ class BaseClient(abc.ABC):
         '''
         Método que envia uma mensagem para o servidor ou para outro cliente.
         '''
-        self.socket.send(f"{dest}/{type}:{';'.join(args)}".encode())
+        msg = f"{dest}/{type}:{';'.join(args)}"
 
+        # Calcula o número de fragmentos necessários para enviar a mensagem
+        total_fragments = len(msg) // self.MESSAGE_MAX_SIZE + 1
+        if total_fragments == 1:
+            self.socket.send(msg.encode())
+            if not wait_response:
+                return None
+            return self.get_message(dest)
+
+
+        # Fragmenta a mensagem caso ela seja muito grande
+        for i in range(total_fragments):
+            # Cria o cabeçalho da mensagem
+            header = f'{self.FRAGMENT_PREFIX}{self.msg_id};{i + 1};{total_fragments}'
+            payload = msg[i * self.MESSAGE_MAX_SIZE:(i + 1) * self.MESSAGE_MAX_SIZE]
+
+            # Envia a mensagem fragmentada
+            self.socket.send(f'{header}#{payload}'.encode())
+        self.msg_id += 1
+
+        # Retorna a resposta do servidor ou do outro cliente
         if not wait_response:
             return None
         return self.get_message(dest)
