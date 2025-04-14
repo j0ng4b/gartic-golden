@@ -182,6 +182,6 @@ class TUIClient(BaseClient):
     def handle_canvas(self, canvas):
         ...
 
-    def handle_draw(self):
+    def initiate_drawing(self):
         ...
 

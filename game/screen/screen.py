@@ -543,6 +543,6 @@ class Screen(BaseClient):
         if hasattr(self.current_page, 'handle_canvas'):
             self.current_page.handle_canvas(canvas)
 
-    def handle_draw(self):
+    def initiate_drawing(self):
         if hasattr(self.current_page, 'handle_draw'):
             self.current_page.handle_draw()
