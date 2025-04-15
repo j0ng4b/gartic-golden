@@ -86,7 +86,7 @@ jobs:
 
     - name: Build executable with PyInstaller
       run: |
-        pyinstaller --onefile --noconsole main.py
+        pyinstaller --onefile --add-data 'game/screen/assets:game/screen/assets' --noconsole main.py
         mkdir -p dist/windows
         mv dist/main.exe dist/windows/gartic-golden.exe
 
@@ -114,7 +114,7 @@ jobs:
 
     - name: Build executable with PyInstaller
       run: |
-        pyinstaller --onefile main.py
+        pyinstaller --onefile --add-data 'game/screen/assets:game/screen/assets' main.py
         mkdir -p dist/linux
         mv dist/main dist/linux/gartic-golden
 
