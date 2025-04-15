@@ -62,6 +62,9 @@ class RegisterPage(BasePage):
         super().reset()
 
     def play_button_click(self, input_value=None):
+        if self.client is None or self.goto_page is None:
+            return
+
         if input_value is None:
             input_value = self.components[2].get_text()
 
