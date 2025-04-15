@@ -56,13 +56,13 @@ class PlayPage(BasePage):
             #     on_enter=self.send_guess,
             # ),
 
-            components.Button(
-                'Começar',
-                20,
-                Size.SCREEN_HEIGHT - 95,
-                130, 35,
-                on_click=self.start_game,
-            ),
+            # components.Button(
+            #     'Começar',
+            #     20,
+            #     Size.SCREEN_HEIGHT - 95,
+            #     130, 35,
+            #     on_click=self.start_game,
+            # ),
 
             components.Button(
                 'Sair',
