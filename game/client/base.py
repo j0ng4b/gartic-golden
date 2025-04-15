@@ -56,20 +56,26 @@ class BaseClient(abc.ABC):
         self.server_register()
 
     def init_game(self):
-        self.draw_order = self.room_clients.keys()
+        self.draw_order = list(self.room_clients.keys()) + [self.id]
         random.shuffle(self.draw_order)
 
         self.draw_next_client()
 
     def draw_next_client(self):
-        # Seleciona o próximo cliente a desenhar e notifica todos os outros clientes
         client = self.draw_order.pop(0)
-        self.send_message('DRAW', client)
 
         with self.mutex:
-            self.room_clients[client]['state'] = 'draw'
+            if client == self.id:
+                self.state = 'draw'
+            else:
+                self.state = 'None'
+
             for client in self.room_clients.keys():
                 self.room_clients[client]['state'] = None
+            self.state = None
+
+        # Seleciona o próximo cliente a desenhar e notifica todos os outros clientes
+        self.client_draw(client)
 
         self.draw_timer = threading.Timer(self.DRAW_TIMEOUT, self.end_draw_turn, args=['timeout'])
         self.draw_timer.start()

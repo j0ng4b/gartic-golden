@@ -101,7 +101,6 @@ class CreateRoomPage(BasePage):
             room_theme = self.components[3].get_text()
 
         if self.client.server_create_room(room_type, room_name, room_theme, room_password):
-            self.client.state = 'draw'
             self.goto_page('play')
 
     def focus_next(self, cur_input):

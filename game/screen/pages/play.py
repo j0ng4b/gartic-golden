@@ -34,26 +34,34 @@ class PlayPage(BasePage):
                 Size.SCREEN_HEIGHT // 2 - 250,
             ),
 
-            components.InputField(
-                pygame.Rect(
-                    Size.SCREEN_WIDTH // 2 - 185,
-                    Size.SCREEN_HEIGHT - 45,
-                    250, 35
-                ),
+            # components.InputField(
+            #     pygame.Rect(
+            #         Size.SCREEN_WIDTH // 2 - 185,
+            #         Size.SCREEN_HEIGHT - 45,
+            #         250, 35
+            #     ),
 
-                'Mensagem...',
-                on_enter=self.send_chat_message,
-            ),
+            #     'Mensagem...',
+            #     on_enter=self.send_chat_message,
+            # ),
 
-            components.InputField(
-                pygame.Rect(
-                    Size.SCREEN_WIDTH // 2 + 95,
-                    Size.SCREEN_HEIGHT - 45,
-                    250, 35
-                ),
+            # components.InputField(
+            #     pygame.Rect(
+            #         Size.SCREEN_WIDTH // 2 + 95,
+            #         Size.SCREEN_HEIGHT - 45,
+            #         250, 35
+            #     ),
 
-                'Palpite...',
-                on_enter=self.send_guess,
+            #     'Palpite...',
+            #     on_enter=self.send_guess,
+            # ),
+
+            components.Button(
+                'Começar',
+                20,
+                Size.SCREEN_HEIGHT - 95,
+                130, 35,
+                on_click=self.start_game,
             ),
 
             components.Button(
@@ -156,8 +164,14 @@ class PlayPage(BasePage):
         # Envia o palpite para o servidor
         self.client.client_guess(input_value)
 
-    def quit_room(self):
+    def start_game(self):
         if self.client is None:
+            return
+
+        self.client.server_close_room()
+
+    def quit_room(self):
+        if self.client is None or self.goto_page is None:
             return
 
         # Envia a mensagem de saída para o servidor

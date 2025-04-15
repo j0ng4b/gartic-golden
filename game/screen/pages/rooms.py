@@ -172,6 +172,7 @@ class RoomsPage(BasePage):
 
     def reset(self):
         super().reset()
+        self.room_password_window.hide()
 
     def enter_on_private_room(self, password):
         if self.client is None or self.goto_page is None:
