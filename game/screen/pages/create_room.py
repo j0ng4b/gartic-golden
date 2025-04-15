@@ -58,7 +58,7 @@ class CreateRoomPage(BasePage):
                 Size.SCREEN_HEIGHT - 100,
                 200, 50,
 
-                on_click=(lambda: self.goto_page('rooms'))
+                on_click=(lambda: goto_page('rooms'))
             ),
 
             components.Button(
@@ -87,6 +87,9 @@ class CreateRoomPage(BasePage):
         self.components[3].set_text('')
 
     def create_room(self, room_theme=None):
+        if self.client is None or self.goto_page is None:
+            return
+
         room_type = 'priv'
         room_name = self.components[1].get_text()
         room_password = self.components[2].get_text()
