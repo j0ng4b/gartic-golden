@@ -133,6 +133,8 @@ class RoomsPage(BasePage):
         super().draw()
 
     def handle_input(self, event):
+        if self.client is None or self.goto_page is None:
+            return
         super().handle_input(event)
 
         if self.room_password_window.is_visible():
@@ -172,6 +174,9 @@ class RoomsPage(BasePage):
         super().reset()
 
     def enter_on_private_room(self, password):
+        if self.client is None or self.goto_page is None:
+            return
+
         # Entra na sala
         if self.client.server_enter_room(self.room_code, password):
             self.goto_page('play')
@@ -180,21 +185,25 @@ class RoomsPage(BasePage):
         self.room_password_window.components[1].set_text('')
 
     def create_room_button_click(self):
-        self.goto_page('create_room')
+        if self.goto_page is not None:
+            self.goto_page('create_room')
 
     def update_rooms_list(self):
+        if self.client is None:
+            return
+
         self.rooms.clear()
 
         rooms = self.client.server_list_rooms()
         if len(rooms) == 1 and rooms[0] == '':
             return
 
-        self.rooms.clear()
         for room in rooms:
             if room == '':
                 continue
 
             data = room.strip().split(',')
+            print(data)
             self.rooms.append({
                 'type': data[0],
                 'name': data[1],
