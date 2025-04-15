@@ -18,6 +18,7 @@ class PlayPage(BasePage):
         self.canvas = pygame.Surface((self.CANVAS_WIDTH, self.CANVAS_HEIGHT), pygame.SRCALPHA)
         self.canvas.fill(Color.WHITE)
 
+        self.erasing = None
         self.drawing = None
         self.draw_points = []
         self.draw_points_time = 0
@@ -104,6 +105,7 @@ class PlayPage(BasePage):
         if self.client.state != 'draw':
             return
 
+        # Desenhar com o botão esquerdo
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             pos = (event.pos[0] - self.canvas_pos[0], event.pos[1] - self.canvas_pos[1])
             if self.canvas.get_rect().collidepoint(pos):
@@ -113,20 +115,41 @@ class PlayPage(BasePage):
                 self.draw_points.append(pos)
                 self.draw_points_time = pygame.time.get_ticks()
                 self.draw_points_changed = True
-        elif event.type == pygame.MOUSEMOTION:
-            if self.drawing is None:
-                return
 
+        # Iniciar apagamento com o botão direito
+        elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 3:
             pos = (event.pos[0] - self.canvas_pos[0], event.pos[1] - self.canvas_pos[1])
             if self.canvas.get_rect().collidepoint(pos):
-                self.drawing = pos
+                self.erasing = pos
+                self.erase_points_at_position(pos)
+                self.draw_points_time = pygame.time.get_ticks()
+                self.draw_points_changed = True
 
+        # Movimento do mouse
+        elif event.type == pygame.MOUSEMOTION:
+            pos = (event.pos[0] - self.canvas_pos[0], event.pos[1] - self.canvas_pos[1])
+            
+            # Continuar desenhando se o botão esquerdo estiver pressionado
+            if self.drawing is not None and self.canvas.get_rect().collidepoint(pos):
+                self.drawing = pos
                 # Adiciona o ponto à lista de pontos desenhados
                 self.draw_points.append(pos)
                 self.draw_points_time = pygame.time.get_ticks()
                 self.draw_points_changed = True
-        elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
-            self.drawing = None
+                
+            # Continuar apagando se o botão direito estiver pressionado
+            if self.erasing is not None and self.canvas.get_rect().collidepoint(pos):
+                self.erasing = pos
+                self.erase_points_at_position(pos)
+                self.draw_points_time = pygame.time.get_ticks()
+                self.draw_points_changed = True
+
+        # Finalizar desenho ou apagamento
+        elif event.type == pygame.MOUSEBUTTONUP:
+            if event.button == 1:
+                self.drawing = None
+            elif event.button == 3:
+                self.erasing = None
 
     def reset(self):
         super().reset()
@@ -179,4 +202,25 @@ class PlayPage(BasePage):
 
         # Retorna para a tela inicial
         self.goto_page('rooms')
+
+    def erase_points_at_position(self, pos, radius=10):
+        """
+        Apaga pontos próximos à posição fornecida.
+
+        Args:
+            pos (tuple): Posição (x, y) onde ocorreu o clique
+            radius (int): Raio da área de apagamento
+        """
+        points_to_keep = []
+        for point in self.draw_points:
+            # Calcula a distância entre o ponto e a posição do clique
+            distance = ((point[0] - pos[0]) ** 2 + (point[1] - pos[1]) ** 2) ** 0.5
+            # Mantém apenas os pontos que estão fora do raio de apagamento
+            if distance > radius:
+                points_to_keep.append(point)
+
+        # Atualiza a lista de pontos
+        if len(points_to_keep) < len(self.draw_points):
+            self.draw_points = points_to_keep
+            self.draw_points_changed = True
 
